@@ -1,0 +1,28 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ca.timestamped-for-f1.data-pipeline.processing</groupId>
+    <artifactId>spark</artifactId>
+    <version>0.1.0</version>
+    <packaging>pom</packaging>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>3.6</maven.compiler.source>
+        <maven.compiler.target>3.6</maven.compiler.target>
+        <spark.version>3.5.4</spark.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.sparkjava</groupId>
+            <artifactId>spark-core</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+    </dependencies>
+</project>
