@@ -76,6 +76,8 @@ services:
 
   openf1:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1:latest
+    ports:
+      - 8000:8000
     depends_on:
       - mongo
     environment:
