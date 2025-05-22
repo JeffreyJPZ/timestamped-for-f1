@@ -76,6 +76,8 @@ services:
 
   openf1:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1:latest
+    depends_on:
+      - mongo
     environment:
       MONGO_CONNECTION_STRING: "mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongo:${MONGO_PORT}"
       OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
