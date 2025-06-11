@@ -33,8 +33,8 @@ services:
 
   connect:
     build:
-      context: .
-      dockerfile: connect.Dockerfile
+      context: ./services/connectors
+      dockerfile: Dockerfile
     hostname: connect
     depends_on:
       - zookeeper
@@ -69,7 +69,9 @@ services:
   mongo:
     image: mongo
     container_name: "mongo"
-    restart: always
+    restart: unless-stopped
+    volumes:
+      - ./data/mongo/db:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGO_ROOT_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGO_ROOT_PASSWORD}"
@@ -83,3 +85,10 @@ services:
     environment:
       MONGO_CONNECTION_STRING: "mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongo:${MONGO_PORT}"
       OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
+
+  historical_processing:
+    build:
+      context: ./services/processing
+      dockerfile: Dockerfile
+    environment:
+      OPENF1_ADDRESS: "openf1:8000"
