@@ -134,3 +134,6 @@ dist
 
 # Development specific files
 /data
+
+# Python bytecode
+__pycache__/
