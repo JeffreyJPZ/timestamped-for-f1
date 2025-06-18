@@ -68,7 +68,6 @@ services:
   
   openf1-db:
     image: mongo
-    container_name: "openf1-db"
     restart: unless-stopped
     volumes:
       - ./data/openf1-db/db:/data/db
