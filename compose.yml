@@ -19,8 +19,8 @@ services:
       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://:9092"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  schema_registry:
-    hostname: schema_registry
+  schema-registry:
+    hostname: schema-registry
     image: confluentinc/cp-schema-registry:latest
     links:
       - kafka
@@ -39,7 +39,7 @@ services:
     depends_on:
       - zookeeper
       - kafka
-      - schema_registry
+      - schema-registry
     ports:
       - "8083:8083"
     environment:
@@ -57,33 +57,33 @@ services:
       CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       CONNECT_PRODUCER_COMPRESSION_TYPE: "snappy"
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
   
-  mongo:
+  openf1-db:
     image: mongo
-    container_name: "mongo"
+    container_name: "openf1-db"
     restart: unless-stopped
     volumes:
-      - ./data/mongo/db:/data/db
+      - ./data/openf1-db/db:/data/db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: "${MONGO_ROOT_USERNAME}"
-      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_ROOT_PASSWORD}"
+      MONGO_INITDB_ROOT_USERNAME: "${OPENF1_DB_ROOT_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${OPENF1_DB_ROOT_PASSWORD}"
 
   openf1:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1:latest
     ports:
       - 8000:8000
     depends_on:
-      - mongo
+      - openf1-db
     environment:
-      MONGO_CONNECTION_STRING: "mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongo:${MONGO_PORT}"
+      MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
       OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
 
   historical_processing:

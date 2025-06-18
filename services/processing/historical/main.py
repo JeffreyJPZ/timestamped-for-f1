@@ -1,5 +1,4 @@
 # Processes events from OpenF1 query api
-import os
 import datetime
 import pathlib
 
@@ -8,7 +7,10 @@ import polars
 import typing
 import loguru
 import requests
+import s3fs
 import typer
+
+import storage
 
 app = typer.Typer()
 
@@ -30,10 +32,7 @@ def process_overtakes(session_key: int) -> None:
     )
     driver_numbers = list(map(lambda driver : driver['driver_number'], driver_data))
 
-    dates = _get_session_dates(session_key)
-    start_date = dates[0]
-
-    for driver_number in [14]:
+    for driver_number in driver_numbers:
 
         loguru.logger.info(f"Starting iteration for driver '{driver_number}'")
 
@@ -44,7 +43,7 @@ def process_overtakes(session_key: int) -> None:
         )
 
         # Ensure that position changes are sorted by date
-        position_data.sort(key=_get_date_attr)
+        position_data.sort(key=lambda position : _to_datetime(position['date']))
 
         # For each position change, check if driver is not currently in pit
         for idx, position in enumerate(position_data):
@@ -89,9 +88,8 @@ def process_overtakes(session_key: int) -> None:
                 num_overtakes = abs(position['position'] - prev_position['position'])
                 overtaken_drivers_position_data_curr = all_overtaken_drivers_position_data_curr[0:num_overtakes]
 
-                print(overtaken_drivers_position_data_curr)
                 for overtaken_position in overtaken_drivers_position_data_curr:
-                    print(_get_overtake_location(session_key=session_key, overtaking_driver_number=driver_number, overtaken_driver_number=overtaken_position['driver_number'], date=position_date, start_date=start_date))
+                    print(_get_estimated_overtake_location(session_key=session_key, overtaking_driver_number=driver_number, overtaken_driver_number=overtaken_position['driver_number'], date=position_date))
 
                 # TODO: create event response - if position_date is > end_date, assume overtake is due to penalty
 
@@ -125,71 +123,51 @@ def process_overtakes(session_key: int) -> None:
                 num_overtakes = abs(position['position'] - prev_position['position'])
                 overtaking_drivers_position_data_curr = all_overtaking_drivers_position_data_curr[0:num_overtakes]
 
-                print(overtaking_drivers_position_data_curr)
                 for overtaking_position in overtaking_drivers_position_data_curr:
-                    print(_get_overtake_location(session_key=session_key, overtaking_driver_number=overtaking_position['driver_number'], overtaken_driver_number=driver_number, date=_to_datetime(overtaking_position['date']), start_date=start_date))
+                    print(_get_estimated_overtake_location(session_key=session_key, overtaking_driver_number=overtaking_position['driver_number'], overtaken_driver_number=driver_number, date=_to_datetime(overtaking_position['date'])))
 
 
-def _get_overtake_location(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime.datetime, start_date: datetime.datetime) -> dict[str, typing.Any]:
+def _generate_events
+
+def _get_estimated_overtake_location(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime.datetime) -> dict[str, typing.Any]:
     """
-    Returns the most likely overtake location for a pursuing driver using the given date
+    Returns the estimated overtake location for an overtaking driver on an overtaken driver using the given date
     i.e. the location where the overtake is considered fully complete
     """
     loguru.logger.info(f"Processing driver {overtaking_driver_number} overtake on {overtaken_driver_number}")
 
-    # TIME_INTERVAL_S should match the interval in _get_driver_ahead and be reasonably close to interval sampling rate (~5hz)
+    # TIME_INTERVAL_S should be around interval sampling rate (~5hz)
     TIME_INTERVAL_S ='5'
     delta = _to_timedelta(TIME_INTERVAL_S)
 
-    most_likely_overtake_date = None
-
-    # Beginning from date, get interval data in batches, sort by descending order, and find interval data point having the overtaken driver ahead
-    curr_date = date
-
-    while most_likely_overtake_date is None and curr_date >= start_date:
-        interval_data = _query_endpoint(
-            base_url=_get_openf1_base_url(),
-            endpoint='intervals',
-            query_string=f'session_key={session_key}&driver_number={overtaking_driver_number}&date>={_to_timestring(curr_date - delta)}&date<={_to_timestring(curr_date)}'
-        )
-
-        interval_data.sort(key=lambda interval : abs(_to_datetime(interval['date']) - curr_date), reverse=True)
-
-        for interval in interval_data:
-            interval_driver_ahead = _get_driver_ahead(
-                session_key=session_key,
-                driver_number=overtaking_driver_number,
-                date=_to_datetime(interval['date'])
-            )
-            loguru.logger.info(f"Curr driver ahead: {interval_driver_ahead}")
-
-            if interval_driver_ahead == overtaken_driver_number or interval_driver_ahead == overtaking_driver_number:
-                # Last data point where overtaken driver is still ahead - likely overtake
-                most_likely_overtake_date = _to_datetime(interval['date'])
-                break
-
-        curr_date -= delta
+    estimated_overtake_date = _get_estimated_overtake_date(
+        session_key=session_key,
+        overtaking_driver_number=overtaking_driver_number,
+        overtaken_driver_number=overtaken_driver_number,
+        date=date
+    )
     
-    if most_likely_overtake_date is None:
+    if estimated_overtake_date is None:
         return None
     
-    most_likely_overtake_location_data = _query_endpoint(
+    estimated_overtake_location_data = _query_endpoint(
         base_url=_get_openf1_base_url(),
         endpoint='location',
-        query_string=f'session_key={session_key}&driver_number={overtaking_driver_number}&date>={_to_timestring(most_likely_overtake_date - _to_timedelta('1'))}&date<={_to_timestring(most_likely_overtake_date + _to_timedelta('1'))}'
+        query_string=f'session_key={session_key}&driver_number={overtaking_driver_number}&date>={_to_timestring(estimated_overtake_date - delta)}&date<={_to_timestring(estimated_overtake_date + delta)}'
     )
 
     # Get closest location data to most likely overtake date
-    return min(most_likely_overtake_location_data, key=lambda location : abs(_to_datetime(location['date']) - most_likely_overtake_date))
+    return min(estimated_overtake_location_data, key=lambda location : abs(_to_datetime(location['date']) - estimated_overtake_date))
 
 
-def _get_driver_ahead(session_key: int, driver_number: int, date: datetime.datetime) -> typing.Optional[int]:
+def _get_estimated_overtake_date(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime.datetime) -> typing.Optional[datetime.datetime]:
     """
-    Returns the driver number immediately ahead of the given driver number at the given date, otherwise None if the driver is leading
+    Returns the estimated date of the overtake for an overtaking driver on an overtaken driver, None if the date cannot be estimated
+    NOTE: this only works for unlapped cars i.e. their gap to leader is not '+1 LAP', '+2 LAPS', etc.
     """
 
-    # TIME_INTERVAL_S should match the interval in _get_overtake_location and be reasonably close to interval sampling rate (~5hz)
-    TIME_INTERVAL_S = '5'
+    # TIME_INTERVAL_S should be relatively large (we know that positions are recorded per lap, therefore the overtake must have occurred on the previous lap)
+    TIME_INTERVAL_S = '300'
     delta = _to_timedelta(TIME_INTERVAL_S)
 
     # Get interval data for all cars, sort by gap to leader and find the driver with next smallest gap to leader
@@ -198,45 +176,31 @@ def _get_driver_ahead(session_key: int, driver_number: int, date: datetime.datet
         endpoint='intervals',
         query_string=f'session_key={session_key}&date>={_to_timestring(date - delta)}&date<={_to_timestring(date)}'
     )
+    overtaken_driver_interval_data = list(filter(lambda interval : interval['driver_number'] == overtaken_driver_number, interval_data))
+    overtaken_driver_interval_data.sort(key=lambda interval : _to_datetime(interval['date']))
 
-    most_recent_interval_data = []
-    most_recent_interval_data_drivers = set() # Keeps track of driver numbers that have already been added to sorted_interval_data
+    overtaking_driver_interval_data = list(filter(lambda interval : interval['driver_number'] == overtaking_driver_number, interval_data))
+    overtaking_driver_interval_data.sort(key=lambda interval : _to_datetime(interval['date']))
 
-    # Get the most recent interval data for each driver in descending order
-    interval_data.sort(key=lambda interval : abs(_to_datetime(interval['date']) - date), reverse=True)
+    for overtaking_driver_interval in overtaking_driver_interval_data:
+        # Want gap to leader by pursuing driver to be initially larger, then smaller than some other driver
+        intervals_before = list(filter(lambda interval : (_to_datetime(interval['date']) < _to_datetime(overtaking_driver_interval['date'])), overtaken_driver_interval_data))
+        intervals_after = list(filter(lambda interval : (_to_datetime(interval['date']) >= _to_datetime(overtaking_driver_interval['date'])), overtaken_driver_interval_data))
 
-    for interval in interval_data:
-        if not interval['driver_number'] in most_recent_interval_data_drivers and interval['gap_to_leader'] is not None:
-            most_recent_interval_data.append(interval)
-            most_recent_interval_data_drivers.add(interval['driver_number'])
+        intervals_with_overtaking_driver_behind_before = list(filter(lambda interval : _to_timedelta(f'{interval['gap_to_leader']}') is not None and _to_timedelta(f'{interval['gap_to_leader']}') < _to_timedelta(f'{overtaking_driver_interval['gap_to_leader']}'), intervals_before))
+        intervals_with_overtaking_driver_ahead_after = list(filter(lambda interval : _to_timedelta(f'{interval['gap_to_leader']}') is not None and _to_timedelta(f'{interval['gap_to_leader']}') > _to_timedelta(f'{overtaking_driver_interval['gap_to_leader']}'), intervals_after))
 
-    # Order interval data by gap to leader
-    most_recent_interval_data.sort(key=lambda interval : (_to_timedelta(f'{interval['gap_to_leader']}') is not None, _to_timedelta(f'{interval['gap_to_leader']}')))
+        driver_numbers_ahead_before = list(map(lambda interval : interval['driver_number'], intervals_with_overtaking_driver_behind_before))
+        driver_numbers_behind_after = list(map(lambda interval : interval['driver_number'], intervals_with_overtaking_driver_ahead_after))
 
-    # Get index of given driver's interval
-    driver_idx = None
+        overtaken_driver_numbers = list(set(driver_numbers_ahead_before) & set(driver_numbers_behind_after))
 
-    for idx, interval in enumerate(most_recent_interval_data):
-        if interval['driver_number'] == driver_number:
-            driver_idx = idx
-
-    if driver_idx == 0:
-        # Driver is leading
-        return driver_number
-    
-    if driver_idx is None:
-        # Driver could not be found
-        return None
-    
-    # Return the driver with the next smallest gap to leader
-    return most_recent_interval_data[driver_idx - 1]['driver_number']
+        if overtaken_driver_number in overtaken_driver_numbers:
+            return _to_datetime(overtaking_driver_interval['date'])
+        
+    return None
 
 
-def _get_date_attr(data: dict[str, typing.Any]) -> datetime.datetime:
-    """
-    Returns the 'date' attribute as a datetime
-    """
-    return _to_datetime(data['date'])
 
 
 @app.command()
@@ -250,8 +214,14 @@ def collect_circuit(circuit_key: int) -> None:
         endpoint=f'circuits/{circuit_key}/{curr_year}'
     )
 
-    with open(pathlib.Path.cwd() / f'{circuit_key}-{curr_year}.json', 'w') as file:
-        json.dump(obj=circuit_data, fp=file)
+    df = polars.DataFrame(data=circuit_data)
+    
+    storage.Storage.write(
+        destination='.parquet',
+        filesystem=s3fs.S3FileSystem(),
+        dataframe=df,
+        format='parquet'
+    )
 
 
 @app.command()
@@ -261,16 +231,16 @@ def collect_session(session_key: int) -> None:
     """
     collections = [
         'car_data',
-        # 'drivers',
-        # 'intervals',
-        # 'laps',
-        # 'location',
-        # 'pit',
-        # 'position',
-        # 'race_control',
-        # 'stints',
-        # 'team_radio',
-        # 'weather'
+        'drivers',
+        'intervals',
+        'laps',
+        'location',
+        'pit',
+        'position',
+        'race_control',
+        'stints',
+        'team_radio',
+        'weather'
     ]
     dates = _get_session_dates(session_key)
     start_date = dates[0]
@@ -278,7 +248,12 @@ def collect_session(session_key: int) -> None:
 
     for collection in collections:
         df = _collect_collection(session_key=session_key, collection=collection, start_date=start_date, end_date=end_date)
-        _write_to_storage(dataframe=df, url=pathlib.Path.cwd() / f'{session_key}-{collection}.parquet')
+        storage.Storage.write(
+            destination='.parquet',
+            filesystem=s3fs.S3FileSystem(),
+            dataframe=df,
+            format='parquet'
+        )
 
 
 def _collect_collection(
@@ -321,14 +296,6 @@ def _collect_collection(
     df = df.rechunk()
 
     return df
-
-
-def _write_to_storage(dataframe: polars.DataFrame, url: str) -> None:
-    """
-    Writes the given dataframe with collection data to the given url
-    """
-
-    dataframe.write_parquet(url)
 
 
 def _get_session_dates(session_key: int) -> tuple[datetime.datetime]:
