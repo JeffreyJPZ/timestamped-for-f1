@@ -70,7 +70,7 @@ services:
     image: mongo
     restart: unless-stopped
     volumes:
-      - ./data/openf1-db/db:/data/db
+      - ./data/openf1-db:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${OPENF1_DB_ROOT_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${OPENF1_DB_ROOT_PASSWORD}"
@@ -85,9 +85,19 @@ services:
       MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
       OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
 
-  historical_processing:
+  historical-processing:
     build:
       context: ./services/processing
       dockerfile: Dockerfile
     environment:
       OPENF1_ADDRESS: "openf1:8000"
+
+  historical-db:
+    image: postgres
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data/historical-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "${HISTORICAL_DB_ROOT_USERNAME}"
+      POSTGRES_PASSWORD: "${HISTORICAL_DB_ROOT_PASSWORD}"

@@ -1,18 +1,22 @@
 # Processes events from OpenF1 query api
-import datetime
-import pathlib
+from datetime import datetime, timedelta
+from pathlib import Path
+import os
 
+import asyncio
 import json
-import polars
-import typing
-import loguru
 import requests
 import s3fs
-import typer
+from sqlalchemy_helpers.aio import AsyncDatabaseManager
+from polars import DataFrame
+from typing import Any, Optional, Union
+from loguru import logger
+from typer import Typer
 
-import storage
+from storage import Storage
+from .api import models
 
-app = typer.Typer()
+app = Typer()
 
 
 @app.command()
@@ -34,7 +38,7 @@ def process_overtakes(session_key: int) -> None:
 
     for driver_number in driver_numbers:
 
-        loguru.logger.info(f"Starting iteration for driver '{driver_number}'")
+        logger.info(f"Starting iteration for driver '{driver_number}'")
 
         position_data = _query_endpoint(
             base_url=_get_openf1_base_url(),
@@ -45,11 +49,13 @@ def process_overtakes(session_key: int) -> None:
         # Ensure that position changes are sorted by date
         position_data.sort(key=lambda position : _to_datetime(position['date']))
 
+        all_overtakes = []
+
         # For each position change, check if driver is not currently in pit
         for idx, position in enumerate(position_data):
             position_date = _to_datetime(position['date'])
 
-            loguru.logger.info(f"Driver: {driver_number}, Position: {position['position']}")
+            logger.info(f"Driver: {driver_number}, Position: {position['position']}")
 
             if idx == 0:
                 # No prev positions to compare, therefore no overtakes
@@ -59,8 +65,9 @@ def process_overtakes(session_key: int) -> None:
             prev_position = position_data[idx - 1]
 
             # If prev position was higher, then categorize as driver overtaking another driver
+            # Since driver x overtaking driver y and driver y being overtaken by driver x are equivalent, we only process the former
             if position['position'] < prev_position['position']:
-                loguru.logger.info(f"Overtaking")
+                logger.info(f"Overtaking")
 
                 all_drivers_ahead_position_data_prev = _query_endpoint(
                     base_url=_get_openf1_base_url(),
@@ -89,52 +96,215 @@ def process_overtakes(session_key: int) -> None:
                 overtaken_drivers_position_data_curr = all_overtaken_drivers_position_data_curr[0:num_overtakes]
 
                 for overtaken_position in overtaken_drivers_position_data_curr:
-                    print(_get_estimated_overtake_location(session_key=session_key, overtaking_driver_number=driver_number, overtaken_driver_number=overtaken_position['driver_number'], date=position_date))
+                    estimated_location =_get_estimated_overtake_location(session_key=session_key, overtaking_driver_number=driver_number, overtaken_driver_number=overtaken_position['driver_number'], date=position_date)
+                    all_overtakes.append((position_data, overtaken_position, estimated_location))
 
-                # TODO: create event response - if position_date is > end_date, assume overtake is due to penalty
-
-            else:
-                loguru.logger.info(f"Overtaken")
-
-                # Categorize as driver being overtaken by another driver
-                all_drivers_behind_position_data_prev = _query_endpoint(
-                    base_url=_get_openf1_base_url(),
-                    endpoint='position',
-                    query_string=f'session_key={session_key}&date<{_to_timestring(position_date)}&position>{prev_position['position']}'
-                )
-                all_drivers_ahead_position_data_curr = _query_endpoint(
-                    base_url=_get_openf1_base_url(),
-                    endpoint='position',
-                    query_string=f'session_key={session_key}&date>={_to_timestring(position_date)}&position<{position['position']}'
-                )
-
-                # Filter for driver numbers that were previously behind the current driver but are now ahead
-                all_driver_numbers_behind_prev = list(map(lambda position : position['driver_number'], all_drivers_behind_position_data_prev))
-                all_driver_numbers_ahead_curr = list(map(lambda position : position['driver_number'], all_drivers_ahead_position_data_curr))
-
-                all_overtaking_driver_numbers = list(set(all_driver_numbers_behind_prev) & set(all_driver_numbers_ahead_curr))
-
-                # Get position data for overtaking drivers
-                all_overtaking_drivers_position_data_curr = list(filter(lambda position : position['driver_number'] in all_overtaking_driver_numbers, all_drivers_ahead_position_data_curr))
-
-                # Get num_overtakes position changes from overtaken drivers closest to the time of the position change from the overtaking driver
-                # - this prevents previous overtakes for the same positions from being processed again
-                all_overtaking_drivers_position_data_curr.sort(key=lambda position : abs(_to_datetime(position['date']) - position_date))
-                num_overtakes = abs(position['position'] - prev_position['position'])
-                overtaking_drivers_position_data_curr = all_overtaking_drivers_position_data_curr[0:num_overtakes]
-
-                for overtaking_position in overtaking_drivers_position_data_curr:
-                    print(_get_estimated_overtake_location(session_key=session_key, overtaking_driver_number=overtaking_position['driver_number'], overtaken_driver_number=driver_number, date=_to_datetime(overtaking_position['date'])))
+        for overtake in all_overtakes:
+            _insert_overtake_event(session_key=session_key, overtake=overtake)
 
 
-def _generate_events
+async def _insert_overtake_event(session_key: int, overtake: Any):
+    # HISTORICAL_DB_CONNECTION_STRING = os.getenv('HISTORICAL_DB_CONNECTION_STRING', '')
+    HISTORICAL_DB_CONNECTION_STRING = 'postgresql://root:W8CZyn5sJHDinR@query-db/root' # TODO: replace with environment variable
+    PATH_TO_ALEMBIC_DIR = str(Path(__file__).parent.joinpath('migrations').absolute())
 
-def _get_estimated_overtake_location(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime.datetime) -> dict[str, typing.Any]:
+    db = AsyncDatabaseManager(HISTORICAL_DB_CONNECTION_STRING, PATH_TO_ALEMBIC_DIR)
+    db_session = db.Session()
+
+    # Position data for initiating driver, position data for overtaken driver and location
+    initiator_position_data, participant_position_data, estimated_location = overtake
+
+    session_content = _query_endpoint(
+        base_url=_get_openf1_base_url(),
+        endpoint='sessions',
+        query_string=f'session_key={session_key}'
+    )
+    session_data = session_content[0]
+
+    meeting_content = _query_endpoint(
+        base_url=_get_openf1_base_url(),
+        endpoint='meetings',
+        query_string=f'meeting_key={db_session['meeting_key']}'
+    )
+    meeting_data = meeting_content[0]
+
+    # Add circuit
+    curr_year = datetime.now().year
+    circuit_data = _query_endpoint(
+        base_url=_get_multiviewer_base_url(),
+        endpoint=f'circuits/{meeting_data['circuit_key']}/{curr_year}'
+    )
+
+    circuit_obj, _ = await models.Circuit.update_or_create(
+        session=db_session,
+        name=meeting_data['circuit_short_name'],
+        country_name=meeting_data['country_name'],
+        country_code=meeting_data['country_code'],
+        location=meeting_data['location'],
+        rotation=circuit_data['rotation'],
+    )
+
+    # Add turns for circuit
+    circuit_turn_data = circuit_data['corners']
+
+    for turn in circuit_turn_data:
+        await models.Turn.update_or_create(
+            session=db_session,
+            number=turn['number'],
+            angle=turn['angle'],
+            length=turn['length'],
+            x=turn['trackPosition']['x'],
+            y=turn['trackPosition']['y'],
+            circuit=circuit_obj
+        )
+
+    # Add meeting
+    meeting_obj, _ = await models.Meeting.update_or_create(
+        session=db_session,
+        year=meeting_data['year'],
+        name=meeting_data['meeting_name'],
+        official_name=meeting_data['meeting_official_name'],
+        start_date=_to_datetime(meeting_data['date_start']),
+        utc_offset=_to_timedelta(meeting_data['gmt_offset']),
+        circuit=circuit_obj
+    )
+
+    # Add session
+    session_obj, _ = await models.Session.update_or_create(
+        session=db_session,
+        year=session_data['year'],
+        name=session_data['session_name'],
+        type=session_data['session_type'],
+        start_date=_to_datetime(session_data['date_start']),
+        end_date=_to_datetime(session_data['date_end']),
+        utc_offset=_to_timedelta(session_data['gmt_offset']),
+        meeting=meeting_obj
+    )
+
+    initiator_driver_content = _query_endpoint(
+        base_url=_get_openf1_base_url(),
+        endpoint='drivers',
+        query_string=f'session_key={session_key}&driver_number={initiator_position_data['driver_number']}'
+    )
+    initiator_driver_data = initiator_driver_content[0]
+
+    participant_driver_content = _query_endpoint(
+        base_url=_get_openf1_base_url(),
+        endpoint='drivers',
+        query_string=f'session_key={session_key}&driver_number={participant_position_data['driver_number']}'
+    )
+    participant_driver_data = participant_driver_content[0]
+
+    # Add team(s)
+    initiator_team_obj, _ = await models.Team.update_or_create(
+        session=db_session,
+        name=initiator_driver_data['team_name'],
+        color=initiator_driver_data['team_colour'],
+        session=session_obj
+    )
+    participant_team_obj, _ = await models.Team.update_or_create(
+        session=db_session,
+        name=participant_driver_data['team_name'],
+        color=participant_driver_data['team_colour'],
+        session=session_obj
+    )
+
+    # Add driver(s)
+    initiator_driver_obj, _ = await models.Driver.update_or_create(
+        session=db_session,
+        driver_number=initiator_driver_data['driver_number'],
+        acronym=initiator_driver_data['name_acronym'],
+        first_name=initiator_driver_data['first_name'],
+        last_name=initiator_driver_data['last_name'],
+        full_name=initiator_driver_data['full_name'],
+        broadcast_name=initiator_driver_data['broadcast_name'],
+        image_url=initiator_driver_data['headshot_url'],
+        country_code=initiator_driver_data['country_code'],
+        session=session_obj,
+        team=initiator_team_obj
+    )
+    participant_driver_obj, _ = await models.Driver.update_or_create(
+        session=db_session,
+        driver_number=participant_driver_data['driver_number'],
+        acronym=participant_driver_data['name_acronym'],
+        first_name=participant_driver_data['first_name'],
+        last_name=participant_driver_data['last_name'],
+        full_name=participant_driver_data['full_name'],
+        broadcast_name=participant_driver_data['broadcast_name'],
+        image_url=participant_driver_data['headshot_url'],
+        country_code=participant_driver_data['country_code'],
+        session=session_obj,
+        team=participant_team_obj
+    )
+
+    # Add location
+    location_obj, _ = await models.Location.update_or_create(
+        session=db_session,
+        date=_to_datetime(estimated_location['date']),
+        x=estimated_location['x'],
+        y=estimated_location['y'],
+        z=estimated_location['z'],
+    )
+
+    # Add event
+    event_obj, _ = await models.Event.update_or_create(
+        session=db_session,
+        date=_to_datetime(estimated_location['date']),
+        elapsed_time=_to_datetime(estimated_location['date']) - _to_datetime(session_data['date_start']),
+        lap_number=_get_lap_number(session_key=session_key, date=_to_datetime(estimated_location['date'])),
+        category='car-action', # TODO: make enum
+        cause='overtake',
+        location=location_obj
+    ) 
+
+    # Associate events with drivers
+    initiator_event_driver_participation_obj = await models.EventDriverParticipation.update_or_create(
+        driver=initiator_driver_obj,
+        role='initiator'
+    )
+    participant_event_driver_participation_obj = await models.EventDriverParticipation.update_or_create(
+        driver=participant_driver_obj,
+        role='participant'
+    )
+    event_obj.drivers.append(initiator_event_driver_participation_obj)
+    event_obj.drivers.append(participant_event_driver_participation_obj)
+
+
+def _get_lap_number(session_key: int, date: datetime) -> int:
+    """
+    Gets the lap number for a race session at the given date (the current lap number of the leading driver)
+    """
+
+    # Get interval data for all drivers that have led before the given date
+    interval_content = _query_endpoint(
+        base_url=_get_openf1_base_url(),
+        endpoint='intervals',
+        query_string=f'session_key={session_key}&date<={_to_timestring(date)}&gap_to_leader=0'
+    )
+
+    # Find the most recent driver that has led
+    most_recent_leader_interval = min(interval_content, key=lambda interval : abs(_to_datetime(interval['date']) - date))
+    most_recent_leader_number = most_recent_leader_interval['driver_number']
+
+    # Find the most recent completed lap
+    lap_content = _query_endpoint(
+        base_url=_get_openf1_base_url(),
+        endpoint='laps',
+        query_string=f'session_key={session_key}&date_start<={_to_timestring(date)}&driver_number={most_recent_leader_number}'
+    )
+    most_recent_leader_completed_lap = min(lap_content, key=lambda interval : abs(_to_datetime(interval['date_start']) - date))
+
+    assert date <= _to_datetime(most_recent_leader_completed_lap['date_start']) + _to_timedelta(most_recent_leader_completed_lap['lap_duration'])
+
+    return most_recent_leader_completed_lap['lap_number']
+    
+
+def _get_estimated_overtake_location(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime) -> dict[str, Any]:
     """
     Returns the estimated overtake location for an overtaking driver on an overtaken driver using the given date
     i.e. the location where the overtake is considered fully complete
     """
-    loguru.logger.info(f"Processing driver {overtaking_driver_number} overtake on {overtaken_driver_number}")
+    logger.info(f"Processing driver {overtaking_driver_number} overtake on {overtaken_driver_number}")
 
     # TIME_INTERVAL_S should be around interval sampling rate (~5hz)
     TIME_INTERVAL_S ='5'
@@ -160,7 +330,7 @@ def _get_estimated_overtake_location(session_key: int, overtaking_driver_number:
     return min(estimated_overtake_location_data, key=lambda location : abs(_to_datetime(location['date']) - estimated_overtake_date))
 
 
-def _get_estimated_overtake_date(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime.datetime) -> typing.Optional[datetime.datetime]:
+def _get_estimated_overtake_date(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime) -> Optional[datetime]:
     """
     Returns the estimated date of the overtake for an overtaking driver on an overtaken driver, None if the date cannot be estimated
     NOTE: this only works for unlapped cars i.e. their gap to leader is not '+1 LAP', '+2 LAPS', etc.
@@ -201,22 +371,20 @@ def _get_estimated_overtake_date(session_key: int, overtaking_driver_number: int
     return None
 
 
-
-
 @app.command()
 def collect_circuit(circuit_key: int) -> None:
     """
     Gathers all data for a circuit using the Multiviewer API, and uploads data to remote storage
     """
-    curr_year = datetime.datetime.now().year
+    curr_year = datetime.now().year
     circuit_data = _query_endpoint(
         base_url=_get_multiviewer_base_url(),
         endpoint=f'circuits/{circuit_key}/{curr_year}'
     )
 
-    df = polars.DataFrame(data=circuit_data)
+    df = DataFrame(data=circuit_data)
     
-    storage.Storage.write(
+    Storage.write(
         destination='.parquet',
         filesystem=s3fs.S3FileSystem(),
         dataframe=df,
@@ -243,12 +411,11 @@ def collect_session(session_key: int) -> None:
         'weather'
     ]
     dates = _get_session_dates(session_key)
-    start_date = dates[0]
-    end_date = dates[1]
+    start_date, end_date = dates
 
     for collection in collections:
         df = _collect_collection(session_key=session_key, collection=collection, start_date=start_date, end_date=end_date)
-        storage.Storage.write(
+        Storage.write(
             destination='.parquet',
             filesystem=s3fs.S3FileSystem(),
             dataframe=df,
@@ -261,7 +428,7 @@ def _collect_collection(
         collection: str,
         start_date: datetime,
         end_date: datetime
-    ) -> polars.DataFrame:
+    ) -> DataFrame:
     """
     Return data from OpenF1 API from start_time until end_time as a DataFrame
     """
@@ -275,20 +442,20 @@ def _collect_collection(
     df = None
 
     while curr_start < end_date:
-        loguru.logger.info(f"Starting iteration for collection '{collection}' with start date '{curr_start}' and end date '{curr_end}'")
+        logger.info(f"Starting iteration for collection '{collection}' with start date '{curr_start}' and end date '{curr_end}'")
 
         collection_batch = _query_endpoint(
             base_url=_get_openf1_base_url(),
             endpoint=collection,
             query_string=f'session_key={session_key}&date>={_to_timestring(curr_start)}&date<={_to_timestring(curr_end)}')
 
-        if isinstance(df, polars.DataFrame):
-            temp_df = polars.DataFrame(data=collection_batch)
+        if isinstance(df, DataFrame):
+            temp_df = DataFrame(data=collection_batch)
 
             # Prefer vstack since we are appending many dataframes and not performing queries
             df = df.vstack(temp_df)
         else:
-            df = polars.DataFrame(data=collection_batch)
+            df = DataFrame(data=collection_batch)
             
         curr_start += delta
         curr_end += delta
@@ -298,7 +465,7 @@ def _collect_collection(
     return df
 
 
-def _get_session_dates(session_key: int) -> tuple[datetime.datetime]:
+def _get_session_dates(session_key: int) -> tuple[datetime, datetime]:
     """
     Returns the dates for a session in the order (start, end)
     """
@@ -318,13 +485,10 @@ def _get_session_dates(session_key: int) -> tuple[datetime.datetime]:
         # Improper schema
         raise ValueError(f"Start and end dates for session with session key ${session_key} could not be found.")
     
-    return (
-        _to_datetime(session['date_start']),
-        _to_datetime(session['date_end'])
-    )
+    return _to_datetime(session['date_start']), _to_datetime(session['date_end'])
 
 
-def _query_endpoint(base_url: str, endpoint: str, query_string: typing.Optional[str] = None) -> list[dict[str, typing.Any]] | dict[str, typing.Any]:
+def _query_endpoint(base_url: str, endpoint: str, query_string: Optional[str] = None) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Returns a Python object from a JSON endpoint
     """
@@ -373,8 +537,8 @@ def _join_url(*args) -> str:
     return "/".join([e.strip("/") for e in args])
 
 
-def _to_timedelta(x: typing.Union[str, datetime.timedelta]) \
-        -> typing.Optional[datetime.timedelta]:
+def _to_timedelta(x: Union[str, datetime]) \
+        -> Optional[datetime]:
     """
     Credit to FastF1 for inspiration https://github.com/theOehrly/Fast-F1/blob/317bacf8c61038d7e8d0f48165330167702b349f/fastf1/utils.py#L120-L175
 
@@ -417,25 +581,25 @@ def _to_timedelta(x: typing.Union[str, datetime.timedelta]) \
             else:
                 msus = 0
 
-            return datetime.timedelta(
+            return timedelta(
                 hours=int(hours), minutes=int(minutes),
                 seconds=int(seconds), microseconds=int(msus)
             )
 
         except Exception as exc:
-            loguru.logger.debug(f"Failed to parse timedelta string '{x}'",
+            logger.debug(f"Failed to parse timedelta string '{x}'",
                           exc_info=exc)
             return None
 
-    elif isinstance(x, datetime.timedelta):
+    elif isinstance(x, datetime):
         return x
 
     else:
         return None
 
 
-def _to_datetime(x: typing.Union[str, datetime.datetime]) \
-        -> typing.Optional[datetime.datetime]:
+def _to_datetime(x: Union[str, datetime]) \
+        -> Optional[datetime]:
     """
     Credit to FastF1 for inspiration https://github.com/theOehrly/Fast-F1/blob/317bacf8c61038d7e8d0f48165330167702b349f/fastf1/utils.py#L178-L227
 
@@ -453,40 +617,40 @@ def _to_datetime(x: typing.Union[str, datetime.datetime]) \
     if isinstance(x, str):
         try:
             if '.' in x:
-                return datetime.datetime.strptime(
+                return datetime.strptime(
                     x,
                     '%Y-%m-%dT%H:%M:%S.%f%z' # Have to use '%z' instead of '%:z' as recommended in the docs since it has not been implemented for strptime yet
                 )
-            return datetime.datetime.strptime(
+            return datetime.strptime(
                     x,
                     '%Y-%m-%dT%H:%M:%S%z'
                 )
         
         except Exception as exc:
-            loguru.logger.debug(f"Failed to parse datetime string '{x}'",
+            logger.debug(f"Failed to parse datetime string '{x}'",
                           exc_info=exc)
             return None
 
-    elif isinstance(x, datetime.datetime):
+    elif isinstance(x, datetime):
         return x
 
     else:
         return None
 
 
-def _to_timestring(x: typing.Union[str, datetime.datetime]) \
-        -> typing.Optional[str]:
+def _to_timestring(x: Union[str, datetime]) \
+        -> Optional[str]:
     """
     Converts a datetime object into its string representation
     """
-    if isinstance(x, datetime.datetime):
+    if isinstance(x, datetime):
         try:
             return x.strftime(
                 '%Y-%m-%dT%H:%M:%S.%f%:z'
             )
 
         except Exception as exc:
-            loguru.logger.debug(f"Failed to convert datetime to string '{x}'",
+            logger.debug(f"Failed to convert datetime to string '{x}'",
                           exc_info=exc)
             return None
 
