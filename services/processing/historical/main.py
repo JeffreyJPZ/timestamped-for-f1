@@ -137,6 +137,7 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
 
     circuit_obj, _ = await models.Circuit.update_or_create(
         session=db_session,
+        year=meeting_data['year'],
         name=meeting_data['circuit_short_name'],
         country_name=meeting_data['country_name'],
         country_code=meeting_data['country_code'],
@@ -155,7 +156,7 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
             length=turn['length'],
             x=turn['trackPosition']['x'],
             y=turn['trackPosition']['y'],
-            circuit=circuit_obj
+            circuit_id=circuit_obj.id
         )
 
     # Add meeting
@@ -166,19 +167,18 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
         official_name=meeting_data['meeting_official_name'],
         start_date=_to_datetime(meeting_data['date_start']),
         utc_offset=_to_timedelta(meeting_data['gmt_offset']),
-        circuit=circuit_obj
+        circuit_id=circuit_obj.id
     )
 
     # Add session
     session_obj, _ = await models.Session.update_or_create(
         session=db_session,
-        year=session_data['year'],
         name=session_data['session_name'],
         type=session_data['session_type'],
         start_date=_to_datetime(session_data['date_start']),
         end_date=_to_datetime(session_data['date_end']),
         utc_offset=_to_timedelta(session_data['gmt_offset']),
-        meeting=meeting_obj
+        meeting_id=meeting_obj.id
     )
 
     initiator_driver_content = _query_endpoint(
@@ -199,15 +199,23 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     initiator_team_obj, _ = await models.Team.update_or_create(
         session=db_session,
         name=initiator_driver_data['team_name'],
-        color=initiator_driver_data['team_colour'],
-        session=session_obj
+        color=initiator_driver_data['team_colour']
     )
     participant_team_obj, _ = await models.Team.update_or_create(
         session=db_session,
         name=participant_driver_data['team_name'],
-        color=participant_driver_data['team_colour'],
-        session=session_obj
+        color=participant_driver_data['team_colour']
     )
+
+    # Associate teams with meetings, sessions, and drivers
+    initiator_team_obj.teams.append(meeting_obj)
+    participant_team_obj.teams.append(meeting_obj)
+
+    initiator_team_obj.teams.append(session_obj)
+    participant_team_obj.teams.append(session_obj)
+
+    initiator_team_obj.teams.append(initiator_driver_obj)
+    participant_team_obj.teams.append(participant_driver_obj)
 
     # Add driver(s)
     initiator_driver_obj, _ = await models.Driver.update_or_create(
@@ -220,8 +228,9 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
         broadcast_name=initiator_driver_data['broadcast_name'],
         image_url=initiator_driver_data['headshot_url'],
         country_code=initiator_driver_data['country_code'],
-        session=session_obj,
-        team=initiator_team_obj
+        meeting_id=meeting_obj.id,
+        session_id=session_obj.id,
+        team_id=initiator_team_obj.id
     )
     participant_driver_obj, _ = await models.Driver.update_or_create(
         session=db_session,
@@ -233,18 +242,17 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
         broadcast_name=participant_driver_data['broadcast_name'],
         image_url=participant_driver_data['headshot_url'],
         country_code=participant_driver_data['country_code'],
-        session=session_obj,
-        team=participant_team_obj
+        meeting_id=meeting_obj.id,
+        session_id=session_obj.id,
+        team_id=participant_team_obj.id
     )
 
-    # Add location
-    location_obj, _ = await models.Location.update_or_create(
-        session=db_session,
-        date=_to_datetime(estimated_location['date']),
-        x=estimated_location['x'],
-        y=estimated_location['y'],
-        z=estimated_location['z'],
-    )
+    # Associate drivers with meetings and sessions
+    initiator_driver_obj.teams.append(meeting_obj)
+    participant_driver_obj.teams.append(meeting_obj)
+
+    initiator_driver_obj.teams.append(session_obj)
+    participant_driver_obj.teams.append(session_obj)
 
     # Add event
     event_obj, _ = await models.Event.update_or_create(
@@ -254,20 +262,33 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
         lap_number=_get_lap_number(session_key=session_key, date=_to_datetime(estimated_location['date'])),
         category='car-action', # TODO: make enum
         cause='overtake',
-        location=location_obj
+        session_id=session_obj.id
     ) 
+
+    # Add location
+    location_obj, _ = await models.Location.update_or_create(
+        session=db_session,
+        date=_to_datetime(estimated_location['date']),
+        x=estimated_location['x'],
+        y=estimated_location['y'],
+        z=estimated_location['z'],
+        event_id=event_obj.id
+    )
 
     # Associate events with drivers
     initiator_event_driver_participation_obj = await models.EventDriverParticipation.update_or_create(
-        driver=initiator_driver_obj,
+        driver_id=initiator_driver_obj.id,
         role='initiator'
     )
     participant_event_driver_participation_obj = await models.EventDriverParticipation.update_or_create(
-        driver=participant_driver_obj,
+        driver_id=participant_driver_obj.id,
         role='participant'
     )
     event_obj.drivers.append(initiator_event_driver_participation_obj)
     event_obj.drivers.append(participant_event_driver_participation_obj)
+
+    db_session.commit()
+    db_session.close()
 
 
 def _get_lap_number(session_key: int, date: datetime) -> int:
