@@ -11,13 +11,13 @@ router = APIRouter(prefix='/api/v1')
 
 @router.get('/circuits')
 async def get_circuits(
-    id: int,
-    year: int,
-    circuit_name: str,
-    country_code: str,
-    country_name: str,
-    location: str,
-    rotation: int,
+    id: int | None = None,
+    year: int | None = None,
+    circuit_name: str | None = None,
+    country_code: str | None = None,
+    country_name: str | None = None,
+    location: str | None = None,
+    rotation: int | None = None,
     db_session: AsyncSession = Depends(gen_db_session)
 ):
     return None
@@ -33,12 +33,12 @@ async def get_circuit(
 
 @router.get('/meetings')
 async def get_meetings(
-    id: int,
-    year: int,
-    meeting_name: str,
-    meeting_official_name: str,
-    start_date: datetime,
-    utc_offset: timedelta,
+    id: int | None = None,
+    year: int | None = None,
+    meeting_name: str | None = None,
+    meeting_official_name: str | None = None,
+    start_date: datetime | None = None,
+    utc_offset: timedelta | None = None,
     db_session: AsyncSession = Depends(gen_db_session)
 ):
     return None
@@ -54,14 +54,14 @@ async def get_meeting(
 
 @router.get('/sessions')
 async def get_sessions(
-    id: int,
-    year: int,
-    meeting_name: str,
-    session_name: str,
-    session_type: str,
-    start_date: datetime,
-    end_date: datetime,
-    utc_offset: timedelta,
+    id: int | None = None,
+    year: int | None = None,
+    meeting_name: str | None = None,
+    session_name: str | None = None,
+    session_type: str | None = None,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+    utc_offset: timedelta | None = None,
     db_session: AsyncSession = Depends(gen_db_session)
 ):
     return None
@@ -77,10 +77,10 @@ async def get_session(
 
 @router.get('/teams')
 async def get_teams(
-    id: int,
-    year: int,
-    name: str,
-    color: str,
+    id: int | None = None,
+    year: int | None = None,
+    name: str | None = None,
+    color: str | None = None,
     db_session: AsyncSession = Depends(gen_db_session)
 ):
     return None
@@ -96,16 +96,16 @@ async def get_team(
 
 @router.get('/drivers')
 async def get_drivers(
-    id: int,
-    year: int,
-    driver_number: int,
-    acronym: str,
-    first_name: str,
-    last_name: str,
-    full_name: str,
-    broadcast_name: str,
-    image_url: str,
-    country_code: str,
+    id: int | None = None,
+    year: int | None = None,
+    driver_number: int | None = None,
+    acronym: str | None = None,
+    first_name: str | None = None,
+    last_name: str | None = None,
+    full_name: str | None = None,
+    broadcast_name: str | None = None,
+    image_url: str | None = None,
+    country_code: str | None = None,
     db_session: AsyncSession = Depends(gen_db_session)
 ):
     return None
@@ -121,12 +121,12 @@ async def get_driver(
 
 @router.get('/events')
 async def get_events(
-    id: int,
-    date: datetime,
-    elapsed_time: timedelta,
-    lap_number: int,
-    category: str,
-    cause: str,
+    id: int | None = None,
+    date: datetime | None = None,
+    elapsed_time: timedelta | None = None,
+    lap_number: int | None = None,
+    category: str | None = None,
+    cause: str | None = None,
     db_session: AsyncSession = Depends(gen_db_session)
 ):
     return None
