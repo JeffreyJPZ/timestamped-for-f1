@@ -1,5 +1,6 @@
 # Processes events from OpenF1 query api
 from datetime import datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 import os
 
@@ -9,12 +10,12 @@ import requests
 import s3fs
 from sqlalchemy_helpers.aio import AsyncDatabaseManager
 from polars import DataFrame
-from typing import Any, Optional, Union
+from typing import Any
 from loguru import logger
 from typer import Typer
 
 from storage import Storage
-from .api import models
+from .api import db_models
 
 app = Typer()
 
@@ -135,32 +136,38 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
         endpoint=f'circuits/{meeting_data['circuit_key']}/{curr_year}'
     )
 
-    circuit_obj, _ = await models.Circuit.update_or_create(
+    circuit_country_obj, _ = await db_models.Circuit.get_or_create(
+        session=db_session,
+        code=meeting_data['country_code'],
+        name=meeting_data['country_name']
+    )
+
+    circuit_obj, _ = await db_models.Circuit.get_or_create(
         session=db_session,
         year=meeting_data['year'],
         name=meeting_data['circuit_short_name'],
-        country_name=meeting_data['country_name'],
-        country_code=meeting_data['country_code'],
         location=meeting_data['location'],
         rotation=circuit_data['rotation'],
+        country_id=circuit_country_obj.id
     )
 
     # Add turns for circuit
     circuit_turn_data = circuit_data['corners']
 
     for turn in circuit_turn_data:
-        await models.Turn.update_or_create(
+        await db_models.Turn.get_or_create(
             session=db_session,
+            year=meeting_data['year'],
             number=turn['number'],
-            angle=turn['angle'],
-            length=turn['length'],
-            x=turn['trackPosition']['x'],
-            y=turn['trackPosition']['y'],
+            angle=_to_decimal(turn['angle']),
+            length=_to_decimal(turn['length']),
+            x=_to_decimal(turn['trackPosition']['x']),
+            y=_to_decimal(turn['trackPosition']['y']),
             circuit_id=circuit_obj.id
         )
 
     # Add meeting
-    meeting_obj, _ = await models.Meeting.update_or_create(
+    meeting_obj, _ = await db_models.Meeting.get_or_create(
         session=db_session,
         year=meeting_data['year'],
         name=meeting_data['meeting_name'],
@@ -171,7 +178,7 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     )
 
     # Add session
-    session_obj, _ = await models.Session.update_or_create(
+    session_obj, _ = await db_models.Session.get_or_create(
         session=db_session,
         name=session_data['session_name'],
         type=session_data['session_type'],
@@ -196,12 +203,12 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     participant_driver_data = participant_driver_content[0]
 
     # Add team(s)
-    initiator_team_obj, _ = await models.Team.update_or_create(
+    initiator_team_obj, _ = await db_models.Team.get_or_create(
         session=db_session,
         name=initiator_driver_data['team_name'],
         color=initiator_driver_data['team_colour']
     )
-    participant_team_obj, _ = await models.Team.update_or_create(
+    participant_team_obj, _ = await db_models.Team.get_or_create(
         session=db_session,
         name=participant_driver_data['team_name'],
         color=participant_driver_data['team_colour']
@@ -218,23 +225,32 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     participant_team_obj.teams.append(participant_driver_obj)
 
     # Add driver(s)
-    initiator_driver_obj, _ = await models.Driver.update_or_create(
+    initiator_driver_country_obj, _ = await db_models.Country.get_or_create(
         session=db_session,
-        driver_number=initiator_driver_data['driver_number'],
+        code=initiator_driver_data['country_code']
+    )
+    participant_driver_country_obj, _ = await db_models.Country.get_or_create(
+        session=db_session,
+        code=participant_driver_data['country_code']
+    )
+
+    initiator_driver_obj, _ = await db_models.Driver.get_or_create(
+        session=db_session,
+        number=initiator_driver_data['driver_number'],
         acronym=initiator_driver_data['name_acronym'],
         first_name=initiator_driver_data['first_name'],
         last_name=initiator_driver_data['last_name'],
         full_name=initiator_driver_data['full_name'],
         broadcast_name=initiator_driver_data['broadcast_name'],
         image_url=initiator_driver_data['headshot_url'],
-        country_code=initiator_driver_data['country_code'],
+        country_id=initiator_driver_country_obj.id,
         meeting_id=meeting_obj.id,
         session_id=session_obj.id,
         team_id=initiator_team_obj.id
     )
-    participant_driver_obj, _ = await models.Driver.update_or_create(
+    participant_driver_obj, _ = await db_models.Driver.get_or_create(
         session=db_session,
-        driver_number=participant_driver_data['driver_number'],
+        number=participant_driver_data['driver_number'],
         acronym=participant_driver_data['name_acronym'],
         first_name=participant_driver_data['first_name'],
         last_name=participant_driver_data['last_name'],
@@ -242,6 +258,7 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
         broadcast_name=participant_driver_data['broadcast_name'],
         image_url=participant_driver_data['headshot_url'],
         country_code=participant_driver_data['country_code'],
+        country_id=participant_driver_country_obj.id,
         meeting_id=meeting_obj.id,
         session_id=session_obj.id,
         team_id=participant_team_obj.id
@@ -255,18 +272,19 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     participant_driver_obj.teams.append(session_obj)
 
     # Add event
-    event_obj, _ = await models.Event.update_or_create(
+    event_obj, _ = await db_models.Event.get_or_create(
         session=db_session,
         date=_to_datetime(estimated_location['date']),
         elapsed_time=_to_datetime(estimated_location['date']) - _to_datetime(session_data['date_start']),
         lap_number=_get_lap_number(session_key=session_key, date=_to_datetime(estimated_location['date'])),
         category='car-action', # TODO: make enum
         cause='overtake',
-        session_id=session_obj.id
+        meeting_id=session_obj.meeting_id,
+        session_name=session_obj.name
     ) 
 
     # Add location
-    location_obj, _ = await models.Location.update_or_create(
+    location_obj, _ = await db_models.Location.get_or_create(
         session=db_session,
         date=_to_datetime(estimated_location['date']),
         x=estimated_location['x'],
@@ -276,11 +294,11 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     )
 
     # Associate events with drivers
-    initiator_event_driver_participation_obj = await models.EventDriverParticipation.update_or_create(
+    initiator_event_driver_participation_obj = await db_models.EventDriverParticipation.get_or_create(
         driver_id=initiator_driver_obj.id,
         role='initiator'
     )
-    participant_event_driver_participation_obj = await models.EventDriverParticipation.update_or_create(
+    participant_event_driver_participation_obj = await db_models.EventDriverParticipation.get_or_create(
         driver_id=participant_driver_obj.id,
         role='participant'
     )
@@ -351,7 +369,7 @@ def _get_estimated_overtake_location(session_key: int, overtaking_driver_number:
     return min(estimated_overtake_location_data, key=lambda location : abs(_to_datetime(location['date']) - estimated_overtake_date))
 
 
-def _get_estimated_overtake_date(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime) -> Optional[datetime]:
+def _get_estimated_overtake_date(session_key: int, overtaking_driver_number: int, overtaken_driver_number: int, date: datetime) -> datetime | None:
     """
     Returns the estimated date of the overtake for an overtaking driver on an overtaken driver, None if the date cannot be estimated
     NOTE: this only works for unlapped cars i.e. their gap to leader is not '+1 LAP', '+2 LAPS', etc.
@@ -509,7 +527,7 @@ def _get_session_dates(session_key: int) -> tuple[datetime, datetime]:
     return _to_datetime(session['date_start']), _to_datetime(session['date_end'])
 
 
-def _query_endpoint(base_url: str, endpoint: str, query_string: Optional[str] = None) -> list[dict[str, Any]] | dict[str, Any]:
+def _query_endpoint(base_url: str, endpoint: str, query_string: str | None = None) -> list[dict[str, Any]] | dict[str, Any]:
     """
     Returns a Python object from a JSON endpoint
     """
@@ -558,8 +576,21 @@ def _join_url(*args) -> str:
     return "/".join([e.strip("/") for e in args])
 
 
-def _to_timedelta(x: Union[str, datetime]) \
-        -> Optional[datetime]:
+def _to_decimal(x: str | float | Decimal) -> Decimal | None:
+    if isinstance(x, str) or isinstance(x, float):
+        try:
+            return Decimal(value=f'{x}')
+        except Exception as exc:
+            logger.debug(f"Failed to parse decimal '{x}'",
+                          exc_info=exc)
+            return None
+    elif isinstance(x, Decimal):
+        return None
+    
+    return None
+    
+
+def _to_timedelta(x: str | datetime) -> datetime | None:
     """
     Credit to FastF1 for inspiration https://github.com/theOehrly/Fast-F1/blob/317bacf8c61038d7e8d0f48165330167702b349f/fastf1/utils.py#L120-L175
 
@@ -619,8 +650,7 @@ def _to_timedelta(x: Union[str, datetime]) \
         return None
 
 
-def _to_datetime(x: Union[str, datetime]) \
-        -> Optional[datetime]:
+def _to_datetime(x: str | datetime) -> datetime | None:
     """
     Credit to FastF1 for inspiration https://github.com/theOehrly/Fast-F1/blob/317bacf8c61038d7e8d0f48165330167702b349f/fastf1/utils.py#L178-L227
 
@@ -659,8 +689,8 @@ def _to_datetime(x: Union[str, datetime]) \
         return None
 
 
-def _to_timestring(x: Union[str, datetime]) \
-        -> Optional[str]:
+def _to_timestring(x: str | datetime) \
+        -> str | None:
     """
     Converts a datetime object into its string representation
     """

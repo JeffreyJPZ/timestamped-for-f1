@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator
 from fastapi import Depends
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy_helpers.fastapi import AsyncDatabaseManager, make_db_session, manager_from_config
 from sqlalchemy_helpers.aio import Base
