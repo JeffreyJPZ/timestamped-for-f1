@@ -1,0 +1,39 @@
+from datetime import datetime
+from decimal import Decimal
+
+from sqlalchemy import ForeignKey, PrimaryKeyConstraint, DateTime, Numeric
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.api.event.models import Event
+from app.db.core import Base
+from app.models import QueryModel, ResponseModel
+
+
+class Pit(Base):
+    __tablename__ = "pit"
+    __table_args__ = (
+        PrimaryKeyConstraint(
+            ("event_id", "date"),
+            name="pk_pit_event_id_and_date"
+        )
+    )
+
+    date: Mapped[DateTime]
+    duration: Mapped[Numeric] = mapped_column(Numeric(precision=6, scale=1)) # Max pit duration should be in the hours
+    
+    # One-to-one weak rel with event as owner
+    event_id: Mapped[int] = mapped_column(ForeignKey(column="event.id"))
+    event: Mapped[Event] = relationship(back_populates="pit", cascade="all, delete-orphan", single_parent=True)
+    
+    def __repr__(self) -> str:
+        return f"Pit(date={self.date!r}, duration={self.duration!r}, event_id={self.event_id!r}"
+
+
+class PitColumns(QueryModel):
+    date: datetime | None = None
+    duration: Decimal | None = None
+
+
+class PitResponse(ResponseModel):
+    date: datetime
+    duration: Decimal

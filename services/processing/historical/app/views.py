@@ -1,21 +1,54 @@
 from datetime import datetime, timedelta
-from typing import Annotated
+from typing import Annotated, Any
 
+import asyncio
 from fastapi import APIRouter, Depends, Query
 
 import models
 import db_models
-from db import AsyncSession, gen_db_session, select
-from helpers import get_non_empty_keys
+from app.db.core import AsyncSession, Subquery, get_db_session, select
+from app.utils import get_non_empty_keys
 
 
-router = APIRouter(prefix='/api/v1')
+router = APIRouter(prefix="/api/v1")
+
+async def create_circuit_response(circuit_result_obj: dict[str, Any], circuit_query: Subquery, turn_query: Subquery, db_session: AsyncSession) -> models.CircuitResponse:
+
+    turn_results = await db_session.execute(
+        select(
+            turn_query.c[models.TurnColumnNamesToResponseNames.number],
+            turn_query.c[models.TurnColumnNamesToResponseNames.angle],
+            turn_query.c[models.TurnColumnNamesToResponseNames.length],
+            turn_query.c[models.TurnColumnNamesToResponseNames.x],
+            turn_query.c[models.TurnColumnNamesToResponseNames.y]
+        )
+        .select_from(turn_query)
+        .join(
+            circuit_query,
+            turn_query.c[models.TurnColumnNamesToResponseNames.circuit_id] == circuit_result_obj[models.CircuitColumnNamesToResponseNames.id]
+        )
+    )
+
+    turns = []
+
+    for turn_result in turn_results:
+        turn_result_obj = turn_result._asdict()
+        turn_response = models.TurnResponse(**turn_result_obj)
+        turns.append(turn_response)
+
+    return models.CircuitResponse(
+        turns=turns,
+        **circuit_result_obj
+    )
 
 
-@router.get('/circuits')
+@router.get(
+    "/circuits",
+    response_model=list[models.CircuitResponse]
+)
 async def get_circuits(
     params: Annotated[models.CircuitFilterParams, Query()],
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     circuit_filters = models.CircuitColumns(
         id=params.circuit_id,
@@ -47,7 +80,15 @@ async def get_circuits(
         db_models.Country.name.label(models.CountryColumnNamesToResponseNames.name)
     ).filter_by(**non_empty_country_filters).subquery()
 
-    # Query all circuits and get all turns for each circuit
+    turn_query = select(
+        db_models.Turn.number.label(models.TurnColumnNamesToResponseNames.number),
+        db_models.Turn.angle.label(models.TurnColumnNamesToResponseNames.angle),
+        db_models.Turn.length.label(models.TurnColumnNamesToResponseNames.length),
+        db_models.Turn.x.label(models.TurnColumnNamesToResponseNames.x),
+        db_models.Turn.y.label(models.TurnColumnNamesToResponseNames.y)
+    ).subquery()
+
+    
     circuit_results = await db_session.execute(
         select(
             circuit_query.c[models.CircuitColumnNamesToResponseNames.id],
@@ -68,151 +109,118 @@ async def get_circuits(
             circuit_query.c[models.CircuitColumnNamesToResponseNames.name]
         )
     )
-    
-    circuits = []
-    
-    for circuit_result in circuit_results:
-        circuit_result_obj = circuit_result._asdict()
 
-        turn_query = select(
-            db_models.Turn.number.label(models.TurnColumnNamesToResponseNames.number),
-            db_models.Turn.angle.label(models.TurnColumnNamesToResponseNames.angle),
-            db_models.Turn.length.label(models.TurnColumnNamesToResponseNames.length),
-            db_models.Turn.x.label(models.TurnColumnNamesToResponseNames.x),
-            db_models.Turn.y.label(models.TurnColumnNamesToResponseNames.y)
-        ).subquery()
-
-        # TODO: make coroutine for all rows instead of loop
-        turn_results = await db_session.execute(
-            select(
-                turn_query.c[models.TurnColumnNamesToResponseNames.number],
-                turn_query.c[models.TurnColumnNamesToResponseNames.angle],
-                turn_query.c[models.TurnColumnNamesToResponseNames.length],
-                turn_query.c[models.TurnColumnNamesToResponseNames.x],
-                turn_query.c[models.TurnColumnNamesToResponseNames.y]
-            )
-            .select_from(turn_query)
-            .join(
-                circuit_query,
-                turn_query.c[models.TurnColumnNamesToResponseNames.circuit_id] == circuit_result_obj[models.CircuitColumnNamesToResponseNames.id]
-            )
-        )
-
-        turns = []
-
-        for turn_result in turn_results:
-            turn_result_obj = turn_result._asdict()
-            turn_response = models.TurnDataResponse(**turn_result_obj)
-            turns.append(turn_response)
-
-        circuit_response = models.CircuitResponse(
-            turns=turns,
-            **circuit_result_obj
-        )
-
-        circuits.append(circuit_response)
+    # Query all circuits and get all turns for each circuit
+    circuits = await asyncio.gather(*[
+        create_circuit_response(
+            circuit_result_obj=circuit_result._asdict(),
+            circuit_query=circuit_query,
+            turn_query=turn_query,
+            db_session=db_session
+        ) for circuit_result in circuit_results
+    ])
 
     return circuits
 
 
-@router.get('/circuits/{id}')
+@router.get("/circuits/{id}")
 async def get_circuit(
     id: int,
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     result = await db_session.get(entity=db_models.Circuit, ident=id)
     return None
 
 
-@router.get('/meetings')
+@router.get("/meetings")
 async def get_meetings(
     params: Annotated[models.MeetingFilterParams, Query()],
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     non_empty_params = get_non_empty_keys(**params.model_dump())
     result = await db_session.scalars(select(db_models.Meeting).filter_by(**non_empty_params)).all()
     return None
 
 
-@router.get('/meetings/{id}')
+@router.get("/meetings/{id}")
 async def get_meeting(
     id: int,
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     return None
 
 
-@router.get('/sessions')
+@router.get("/sessions")
 async def get_sessions(
     params: Annotated[models.SessionFilterParams, Query()],
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     non_empty_params = get_non_empty_keys(**params.model_dump())
     result = await db_session.scalars(select(db_models.Meeting).join(db_models.Meeting.sessions).filter_by(**non_empty_params)).all()
     return None
 
 
-@router.get('/sessions/{id}')
+@router.get("/sessions/{id}")
 async def get_session(
     id: int,
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     result = await db_session.get(entity=db_models.Session, ident=id)
     return None
 
 
-@router.get('/teams')
+@router.get("/teams")
 async def get_teams(
     params: Annotated[models.TeamFilterParams, Query()],
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     non_empty_params = get_non_empty_keys(**params.model_dump())
     result = await db_session.scalars(select(db_models.Team).filter_by(**non_empty_params)).all()
     return None
 
 
-@router.get('/teams/{id}')
+@router.get("/teams/{id}")
 async def get_team(
     id: int,
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     result = await db_session.get(entity=db_models.Team, ident=id)
     return None
 
 
-@router.get('/drivers')
+@router.get("/drivers")
 async def get_drivers(
     params: Annotated[models.DriverFilterParams, Query()],
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     non_empty_params = get_non_empty_keys(**params.model_dump())
     result = await db_session.scalars(select(db_models.Driver).filter_by(**non_empty_params)).all()
     return None
 
 
-@router.get('/drivers/{id}')
+@router.get("/drivers/{id}")
 async def get_driver(
     id: int,
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     result = await db_session.get(entity=db_models.Driver, ident=id)
     return None
 
 
-@router.get('/events')
+@router.get("/events")
 async def get_events(
     params: Annotated[models.EventFilterParams, Query()],
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     non_empty_params = get_non_empty_keys(**params.model_dump())
     result = await db_session.scalars(select(db_models.Event).join(db_models.Event.location).filter_by(**non_empty_params)).all()
     return None
 
 
-@router.get('/event{id}')
+@router.get("/event{id}")
 async def get_event(
     id: int,
-    db_session: AsyncSession = Depends(gen_db_session)
+    db_session: AsyncSession = Depends(get_db_session)
 ):
     result = await db_session.get(entity=db_models.Event, ident=id)
     return None
