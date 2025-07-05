@@ -1,5 +1,3 @@
-from typing import ClassVar
-
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -7,7 +5,7 @@ from app.api.country.models import Country
 from app.api.meeting.models import Meeting
 from app.api.turn.models import Turn, TurnResponse
 from app.db.core import Base
-from app.models import RequestModel, QueryModel, MappingModel, ResponseModel
+from app.models import ResourceModel, ResponseModel
 
 
 class Circuit(Base):
@@ -41,7 +39,11 @@ class Circuit(Base):
         return f"Circuit(id={self.id!r}, year={self.year!r}, name={self.name!r}, country_id={self.country_id!r}, location={self.location!r}, rotation={self.rotation!r})"
     
 
-class CircuitFilterParams(RequestModel):
+class CircuitResource(ResourceModel):
+    """
+    Base Pydantic model for circuit actions.
+    """
+
     circuit_id: int | None = None
     year: int | None = None
     circuit_name: str | None = None
@@ -52,22 +54,12 @@ class CircuitFilterParams(RequestModel):
     country_name: str | None = None
 
 
-class CircuitColumns(QueryModel):
-    id: int | None = None
-    year: int | None = None
-    name: str | None = None
-    location: str | None = None
-    rotation: int | None = None
-    country_id: int | None = None
+class CircuitGet(CircuitResource):
+    """
+    Pydantic model for retrieving circuits.
+    """
 
-
-class CircuitColumnNamesToResponseNames(MappingModel):
-    id: ClassVar[str] = "circuit_id"
-    year: ClassVar[str] = "year"
-    name: ClassVar[str] = "circuit_name"
-    location: ClassVar[str] = "circuit_location"
-    rotation: ClassVar[str] = "circuit_rotation"
-    country_id: ClassVar[str] = "country_id"
+    pass
 
 
 class CircuitResponse(ResponseModel):

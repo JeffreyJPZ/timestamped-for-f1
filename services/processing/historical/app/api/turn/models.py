@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.api.circuit.models import Circuit
 from app.db.core import Base
-from app.models import QueryModel, ResponseModel, MappingModel
+from app.models import ResponseModel
 
 
 class Turn(Base):
@@ -18,6 +18,7 @@ class Turn(Base):
         )
     )
 
+    id: Mapped[int] = mapped_column(unique=True) # For internal use only
     number: Mapped[int]
     angle: Mapped[Numeric] = mapped_column(Numeric(precision=18, scale=15))
     length: Mapped[Numeric] = mapped_column(Numeric(precision=20, scale=15))
@@ -29,25 +30,7 @@ class Turn(Base):
     circuit: Mapped[Circuit] = relationship(back_populates="turns")
 
     def __repr__(self) -> str:
-        return f"Turn(number={self.number!r}, angle={self.angle!r}, length={self.length}, x={self.x!r}, location={self.y!r}, circuit_id={self.circuit_id!r})"
-    
-    
-class TurnColumns(QueryModel):
-    number: int | None = None
-    angle: Decimal | None = None
-    length: Decimal | None = None
-    x: Decimal | None = None
-    y: Decimal | None = None
-    circuit_id: int | None = None
-
-
-class TurnColumnNamesToResponseNames(MappingModel):
-    number: ClassVar[str] = "number"
-    angle: ClassVar[str] = "angle"
-    length: ClassVar[str] = "length"
-    x: ClassVar[str] = "x"
-    y: ClassVar[str] = "y"
-    circuit_id: ClassVar[str] = "circuit_id"
+        return f"Turn(id={self.id!r}, number={self.number!r}, angle={self.angle!r}, length={self.length}, x={self.x!r}, location={self.y!r}, circuit_id={self.circuit_id!r})"
 
 
 class TurnResponse(ResponseModel):

@@ -7,7 +7,7 @@ from app.api.session.models import Session, session_driver_assoc
 from app.api.team.models import Team, team_driver_assoc
 from app.api.event.models import Event
 from app.db.core import Base
-from app.models import QueryModel, RequestModel, ResponseModel
+from app.models import ResourceModel, ResponseModel
 
 
 class Driver(Base):
@@ -51,7 +51,11 @@ class Driver(Base):
         return f"Driver(id={self.id!r}, year={self.year!r}, number={self.number!r}, acronym={self.acronym!r}, first_name={self.first_name!r}, last_name={self.last_name!r}, full_name={self.full_name!r}, broadcast_name={self.broadcast_name!r}, image_url={self.image_url!r}, country_id={self.country_id!r}"
     
 
-class DriverFilterParams(RequestModel):
+class DriverResource(ResourceModel):
+    """
+    Base Pydantic model for driver actions
+    """
+
     driver_id: int | None = None
     year: int | None = None
     driver_number: int | None = None
@@ -65,24 +69,23 @@ class DriverFilterParams(RequestModel):
     country_code: str | None = None
 
 
-class DriverColumns(QueryModel):
-    id: int | None = None
-    year: int | None = None
-    number: int | None = None
-    acronym: str | None = None
-    first_name: str | None = None
-    last_name: str | None = None
-    full_name: str | None = None
-    broadcast_name: str | None = None
-    image_url: str | None = None
+class DriverGet(DriverResource):
+    """
+    Pydantic model for retrieving drivers.
+    """
+
+    pass
 
 
 class DriverResponse(ResponseModel):
+    # NOTE: The length of team_ids depends on the endpoint used - for example, the /sessions/:id/drivers endpoint returns at most one team id (for the given session),
+    # but the /drivers endpoint can return multiple team ids.
+    team_ids: list[int] 
     driver_id: int
-    team_id: int
     year: int
     driver_number: int
     driver_acronym: str
+    first_name: str
     last_name: str
     full_name: str
     broadcast_name: str

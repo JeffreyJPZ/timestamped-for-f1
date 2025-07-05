@@ -10,7 +10,7 @@ from app.api.location.models import Location, LocationResponse
 from app.api.pit.models import Pit, PitResponse
 from app.api.race_control.models import RaceControl, RaceControlResponse
 from app.db.core import Base
-from app.models import QueryModel, RequestModel, ResponseModel
+from app.models import ResourceModel, ResponseModel
 
 class Event(Base):
     __tablename__ = "event"
@@ -50,8 +50,14 @@ class Event(Base):
         return f"Event(id={self.id!r}, date={self.date!r}, elapsed_time={self.elapsed_time!r}), lap_number={self.lap_number!r}, category={self.category!r}, cause={self.cause!r}, meeting_id={self.meeting_id!r}, session_name={self.session_name!r}"
 
 
-class EventFilterParams(RequestModel):
+class EventResource(ResourceModel):
+    """
+    Base Pydantic model for event actions.
+    """
+    
     event_id: int | None = None
+    meeting_id: int | None = None
+    session_name: str | None = None
     date: datetime | None = None
     elapsed_time: timedelta | None = None
     lap_number: int | None = None
@@ -59,13 +65,12 @@ class EventFilterParams(RequestModel):
     cause: str | None = None
 
 
-class EventColumns(QueryModel):
-    id: int | None = None
-    date: datetime | None = None
-    elapsed_time: timedelta | None = None
-    lap_number: int | None = None
-    category: str | None = None
-    cause: str | None = None
+class EventGet(EventResource):
+    """
+    Pydantic model for retrieving events.
+    """
+
+    pass
 
 
 class EventDataResponse(ResponseModel):
@@ -82,5 +87,5 @@ class EventResponse(ResponseModel):
     event_id: int
     circuit_id: int
     meeting_id: int
-    session_id: int
+    session_name: str
     data: EventDataResponse

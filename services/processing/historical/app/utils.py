@@ -1,9 +1,9 @@
 from typing import Any
 
 
-def get_non_empty_keys(**params: Any) -> dict[str, Any]:
+def get_non_empty_entries(**params) -> dict[str, Any]:
     """
-    Returns a dict of keys with values that are not None.
+    Returns a dict with only values that are not None.
     """
 
     non_empty_dict = {}
@@ -13,3 +13,4 @@ def get_non_empty_keys(**params: Any) -> dict[str, Any]:
             non_empty_dict[key] = value
 
     return non_empty_dict
+

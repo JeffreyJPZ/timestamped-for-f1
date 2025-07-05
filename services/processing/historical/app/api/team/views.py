@@ -1,32 +1,88 @@
 from typing import Annotated
 
+import asyncio
 from fastapi import APIRouter, Depends, Query
 
-from app.db.core import AsyncSession, get_db_session, select
-from app.utils import get_non_empty_keys
-from .models import (
-    Team,
-    TeamFilterParams
-)
+from app.api.driver import services as driver_services
+from app.db.core import AsyncSession, get_db_session
+from .models import TeamGet, TeamResponse
+from .services import get, get_all
 
 
 router = APIRouter()
 
 
-@router.get("/")
+@router.get(
+    path="/",
+    response_model=list[TeamResponse]
+)
 async def get_teams(
-    params: Annotated[TeamFilterParams, Query()],
+    params: Annotated[TeamGet, Query()],
     db_session: AsyncSession = Depends(get_db_session)
 ):
-    non_empty_params = get_non_empty_keys(**params.model_dump())
-    result = await db_session.scalars(select(Team).filter_by(**non_empty_params)).all()
-    return None
+    
+    teams = await get_all(
+        db_session=db_session,
+        id=params.team_id,
+        year=params.year,
+        name=params.team_name,
+        color=params.team_color
+    )
+
+    drivers = await asyncio.gather(*[
+        driver_services.get_all_by_team_id(
+            db_session=db_session,
+            team_id=team.id
+        ) for team in teams
+    ])
+        
+    response = []
+
+    for idx, team in enumerate(teams):
+        team_drivers = drivers[idx]
+
+        # Get a list of driver ids
+        team_driver_ids = list(map(lambda driver : driver.id, team_drivers))
+
+        response.append(
+            TeamResponse(
+                driver_ids=team_driver_ids,
+                team_id=team.id,
+                year=team.year,
+                team_name=team.name,
+                team_color=team.color
+            )
+        )
+
+    return response
 
 
-@router.get("/{id}")
+@router.get(
+    path="/{id}",
+    response_model=TeamResponse
+)
 async def get_team(
     id: int,
     db_session: AsyncSession = Depends(get_db_session)
 ):
-    result = await db_session.get(entity=Team, ident=id)
-    return None
+    
+    team = await get(
+        db_session=db_session,
+        id=id
+    )
+
+    drivers = await driver_services.get_all_by_team_id(
+        db_session=db_session,
+        team_id=team.id,
+        year=team.year
+    )
+
+    driver_ids = list(map(lambda driver : driver.id, drivers))
+
+    return TeamResponse(
+        driver_ids=driver_ids,
+        team_id=team.id,
+        year=team.year,
+        team_name=team.name,
+        team_color=team.color
+    )

@@ -6,9 +6,9 @@ from pydantic import BaseModel, ConfigDict
 
 
 # Model config
-class RequestModel(BaseModel):
+class ResourceModel(BaseModel):
     """
-    Base Pydantic model used for validating and parsing parameters
+    Base Pydantic model used for validating and parsing API parameters
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(
         validate_assignment=True,
@@ -19,7 +19,7 @@ class RequestModel(BaseModel):
 
 class QueryModel(BaseModel):
     """
-    Base Pydantic model used for querying/filtering
+    Base Pydantic model used for querying/filtering on database tables
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(
         from_attributes=True,
@@ -41,7 +41,7 @@ class ResponseModel(BaseModel):
 
 class MappingModel(BaseModel):
     """
-    Base Pydantic model used for mapping model names
+    Base Pydantic model used for mapping model attributes
     """
     model_config: ClassVar[ConfigDict] = ConfigDict(
         from_attributes=True,

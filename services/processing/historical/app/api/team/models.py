@@ -5,7 +5,7 @@ from app.api.meeting.models import Meeting, meeting_team_assoc
 from app.api.session.models import Session, session_team_assoc
 from app.api.driver.models import Driver
 from app.db.core import Base
-from app.models import QueryModel, RequestModel, ResponseModel
+from app.models import QueryModel, ResourceModel, ResponseModel
 
 
 team_driver_assoc = Table(
@@ -50,21 +50,29 @@ class Team(Base):
         return f"Team(id={self.id!r}, year={self.year!r}, name={self.name!r}, color={self.color!r}"
     
 
-class TeamFilterParams(RequestModel):
+class TeamResource(ResourceModel):
+    """
+    Base Pydantic model for team actions.
+    """
+
     team_id: int | None = None
     year: int | None = None
     team_name: str | None = None
     team_color: str | None = None
 
 
-class TeamColumns(QueryModel):
-    id: int | None = None
-    year: int | None = None
-    name: str | None = None
-    color: str | None = None
+class TeamGet(TeamResource):
+    """
+    Pydantic model for retrieving teams.
+    """
+
+    pass
 
 
 class TeamResponse(ResponseModel):
+    # NOTE: The length of driver_ids depends on the endpoint used - for example, the /sessions/:id/teams endpoint returns several driver ids at most (for the given session),
+    # but the /teams endpoint can return several or more driver ids.
+    driver_ids: list[int] 
     team_id: int
     year: int
     team_name: str

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Query
 import models
 import db_models
 from app.db.core import AsyncSession, Subquery, get_db_session, select
-from app.utils import get_non_empty_keys
+from app.utils import get_non_empty_entries
 
 
 router = APIRouter(prefix="/api/v1")
@@ -57,14 +57,14 @@ async def get_circuits(
         location=params.circuit_location,
         rotation=params.circuit_rotation
     ).model_dump()
-    non_empty_circuit_filters = get_non_empty_keys(**circuit_filters)
+    non_empty_circuit_filters = get_non_empty_entries(**circuit_filters)
 
     country_filters = models.CountryColumns(
         id=params.country_id,
         code=params.country_code,
         name=params.country_name
     ).model_dump()
-    non_empty_country_filters = get_non_empty_keys(**country_filters)
+    non_empty_country_filters = get_non_empty_entries(**country_filters)
 
     circuit_query = select(
         db_models.Circuit.id.label(models.CircuitColumnNamesToResponseNames.id),
@@ -137,7 +137,7 @@ async def get_meetings(
     params: Annotated[models.MeetingFilterParams, Query()],
     db_session: AsyncSession = Depends(get_db_session)
 ):
-    non_empty_params = get_non_empty_keys(**params.model_dump())
+    non_empty_params = get_non_empty_entries(**params.model_dump())
     result = await db_session.scalars(select(db_models.Meeting).filter_by(**non_empty_params)).all()
     return None
 
@@ -155,7 +155,7 @@ async def get_sessions(
     params: Annotated[models.SessionFilterParams, Query()],
     db_session: AsyncSession = Depends(get_db_session)
 ):
-    non_empty_params = get_non_empty_keys(**params.model_dump())
+    non_empty_params = get_non_empty_entries(**params.model_dump())
     result = await db_session.scalars(select(db_models.Meeting).join(db_models.Meeting.sessions).filter_by(**non_empty_params)).all()
     return None
 
@@ -174,7 +174,7 @@ async def get_teams(
     params: Annotated[models.TeamFilterParams, Query()],
     db_session: AsyncSession = Depends(get_db_session)
 ):
-    non_empty_params = get_non_empty_keys(**params.model_dump())
+    non_empty_params = get_non_empty_entries(**params.model_dump())
     result = await db_session.scalars(select(db_models.Team).filter_by(**non_empty_params)).all()
     return None
 
@@ -193,7 +193,7 @@ async def get_drivers(
     params: Annotated[models.DriverFilterParams, Query()],
     db_session: AsyncSession = Depends(get_db_session)
 ):
-    non_empty_params = get_non_empty_keys(**params.model_dump())
+    non_empty_params = get_non_empty_entries(**params.model_dump())
     result = await db_session.scalars(select(db_models.Driver).filter_by(**non_empty_params)).all()
     return None
 
@@ -212,7 +212,7 @@ async def get_events(
     params: Annotated[models.EventFilterParams, Query()],
     db_session: AsyncSession = Depends(get_db_session)
 ):
-    non_empty_params = get_non_empty_keys(**params.model_dump())
+    non_empty_params = get_non_empty_entries(**params.model_dump())
     result = await db_session.scalars(select(db_models.Event).join(db_models.Event.location).filter_by(**non_empty_params)).all()
     return None
 

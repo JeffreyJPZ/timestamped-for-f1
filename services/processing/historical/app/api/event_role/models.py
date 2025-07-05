@@ -29,12 +29,6 @@ class EventRole(Base):
         return f"EventRole(event_id={self.event_id!r}, driver_id={self.driver_id!r}, role={self.role!r})"
 
 
-class EventRoleColumns(QueryModel):
-    event_id: int | None = None
-    driver_id: int | None = None
-    role: str | None = None
-
-
 class EventRoleResponse(ResponseModel):
     driver_id: int
     role: Literal["initiator"] | Literal["participant"]

@@ -8,7 +8,7 @@ from app.api.driver.models import Driver
 from app.api.session.models import Session
 from app.api.team.models import Team
 from app.db.core import Base
-from app.models import QueryModel, RequestModel, ResponseModel
+from app.models import QueryModel, ResourceModel, ResponseModel
 
 
 meeting_team_assoc = Table(
@@ -71,7 +71,11 @@ class Meeting(Base):
         return f"Meeting(id={self.id!r}, year={self.year!r}, name={self.name!r}, official_name={self.official_name!r}, start_date={self.start_date}, utc_offset={self.utc_offset!r}, circuit_id={self.circuit_id!r})"
     
 
-class MeetingFilterParams(RequestModel):
+class MeetingResource(ResourceModel):
+    """
+    Base Pydantic model for meeting actions.
+    """
+
     meeting_id: int | None = None
     year: int | None = None
     meeting_name: str | None = None
@@ -80,16 +84,16 @@ class MeetingFilterParams(RequestModel):
     utc_offset: timedelta | None = None
 
 
-class MeetingColumns(QueryModel):
-    id: int | None = None
-    year: int | None = None
-    name: str | None = None
-    official_name: str | None = None
-    start_date: datetime | None = None
-    utc_offset: timedelta | None = None
+class MeetingGet(MeetingResource):
+    """
+    Pydantic model for retrieving meetings.
+    """
+
+    pass
 
 
 class MeetingResponse(ResponseModel):
+    session_names: list[str]
     meeting_id: int
     circuit_id: int
     year: int

@@ -1,14 +1,9 @@
-from datetime import datetime, timedelta
-from decimal import Decimal
-from typing import ClassVar
-
-from sqlalchemy import UniqueConstraint, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.api.circuit.models import Circuit
 from app.api.driver.models import Driver
 from app.db.core import Base
-from app.models import QueryModel, MappingModel, ResponseModel
 
 
 class Country(Base):
@@ -28,25 +23,3 @@ class Country(Base):
 
     def __repr__(self) -> str:
         return f"Country(id={self.id!r}, code={self.code!r}, name={self.name!r}"
-    
-
-class CountryColumns(QueryModel):
-    id: int | None = None
-    code: int | None = None
-    name: Decimal | None = None
-
-
-class CountryColumnNamesToResponseNames(MappingModel):
-    id: ClassVar[str] = "country_id"
-    code: ClassVar[str] = "country_code"
-    name: ClassVar[str] = "country_name"
-
-
-class MeetingResponse(ResponseModel):
-    meeting_id: int
-    circuit_id: int
-    year: int
-    meeting_name: str
-    meeting_official_name: str
-    start_date: datetime
-    utc_offset: timedelta

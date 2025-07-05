@@ -8,7 +8,7 @@ from app.api.driver.models import Driver
 from app.api.event.models import Event
 from app.api.team.models import Team
 from app.db.core import Base
-from app.models import QueryModel, RequestModel, ResponseModel
+from app.models import QueryModel, ResourceModel, ResponseModel
 
 
 session_team_assoc = Table(
@@ -50,6 +50,7 @@ session_driver_assoc = Table(
 class Session(Base):
     __tablename__ = "session"
 
+    id: Mapped[int] = mapped_column(unique=True) # For internal use only
     name: Mapped[str] = mapped_column(primary_key=True)
     type: Mapped[str]
     start_date: Mapped[DateTime]
@@ -73,13 +74,17 @@ class Session(Base):
     )
 
     def __repr__(self) -> str:
-        return f"Session(name={self.name!r}, type={self.type!r}, start_date={self.start_date}, end_date={self.end_date}, utc_offset={self.utc_offset!r}, meeting_id={self.meeting_id!r}"
+        return f"Session(id={self.id!r}, name={self.name!r}, type={self.type!r}, start_date={self.start_date}, end_date={self.end_date}, utc_offset={self.utc_offset!r}, meeting_id={self.meeting_id!r}"
     
 
-class SessionFilterParams(RequestModel):
-    session_id: int | None = None
-    year: int | None = None
+class SessionResource(ResourceModel):
+    """
+    Base Pydantic model for session actions.
+    """
+
+    meeting_id: int | None = None
     meeting_name: str | None = None
+    year: int | None = None
     session_name: str | None = None
     session_type: str | None = None
     start_date: datetime | None = None
@@ -87,18 +92,18 @@ class SessionFilterParams(RequestModel):
     utc_offset: timedelta | None = None
 
 
-class SessionColumns(QueryModel):
-    name: str | None = None
-    type: str | None = None
-    start_date: datetime | None = None
-    end_date: datetime | None = None
-    utc_offset: timedelta | None = None
+class SessionGet(SessionResource):
+    """
+    Pydantic model for retrieving sessions.
+    """
+
+    pass
 
 
 class SessionResponse(ResponseModel):
-    session_id: int
     circuit_id: int
     meeting_id: int
+    meeting_name: str
     year: int
     session_name: str
     session_type: str
