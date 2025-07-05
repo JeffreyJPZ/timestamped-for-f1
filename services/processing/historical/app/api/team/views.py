@@ -73,8 +73,7 @@ async def get_team(
 
     drivers = await driver_services.get_all_by_team_id(
         db_session=db_session,
-        team_id=team.id,
-        year=team.year
+        team_id=team.id
     )
 
     driver_ids = list(map(lambda driver : driver.id, drivers))

@@ -64,13 +64,13 @@ async def get_meetings(
         meeting_circuit = circuits[idx]
         meeting_sessions = sessions[idx]
 
-        # Get list of session names
-        meeting_session_names = list(map(lambda session : session.name, meeting_sessions))
+        # Get list of session ids
+        meeting_session_ids = list(map(lambda session : session.id, meeting_sessions))
 
         response.append(
             MeetingResponse(
-                session_names=meeting_session_names,
                 meeting_id=meeting.id,
+                session_ids=meeting_session_ids,
                 circuit_id=meeting_circuit.id,
                 year=meeting.year,
                 meeting_name=meeting.name,
@@ -107,11 +107,11 @@ async def get_meeting(
         meeting_id=meeting.id
     )
     
-    session_names = list(map(lambda session : session.name, sessions))
+    session_ids = list(map(lambda session : session.id, sessions))
 
     return MeetingResponse(
-        session_names=session_names,
         meeting_id=meeting.id,
+        session_ids=session_ids,
         circuit_id=circuit.id,
         year=meeting.year,
         meeting_name=meeting.name,
@@ -141,9 +141,10 @@ async def get_teams_by_meeting(
     )
 
     drivers = await asyncio.gather(*[
-        driver_services.get_all_by_team_id(
+        driver_services.get_all_by_team_id_and_meeting_id(
             db_session=db_session,
-            team_id=team.id
+            team_id=team.id,
+            meeting_id=meeting.id
         ) for team in teams
     ])
         
@@ -257,18 +258,15 @@ async def get_events_by_meeting(
         ) for event in events
     ])
 
-    circuits = await asyncio.gather(*[
-        circuit_services.get_by_meeting_id(
-            db_session=db_session,
-            meeting_id=event.meeting_id
-        ) for event in events
-    ])
+    circuit = await circuit_services.get_by_meeting_id(
+        db_session=db_session,
+        meeting_id=meeting.id
+    )
 
     response = []
 
     for idx, event in enumerate(events):
         event_roles = roles[idx]
-        event_circuit = circuits[idx]
 
         details_response = None
 
@@ -300,9 +298,9 @@ async def get_events_by_meeting(
         response.append(
             EventResponse(
                 event_id=event.id,
-                circuit_id=event_circuit.id,
-                meeting_id=event.meeting_id,
-                session_name=event.session_name,
+                circuit_id=circuit.id,
+                meeting_id=meeting.id,
+                session_id=event.session_id,
                 data=event_data_response
             )
         )

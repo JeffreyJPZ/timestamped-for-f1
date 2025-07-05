@@ -54,6 +54,48 @@ async def get_all_by_driver_id(db_session: AsyncSession, driver_id: int, **filte
     ).scalars().all()
 
 
+async def get_all_by_driver_id_and_meeting_id(db_session: AsyncSession, driver_id: int, meeting_id: int, **filters) -> list[Team]:
+    """
+    Returns all teams that a driver has driven for in a meeting using the given driver id, meeting id and additional filters, in ascending order by team name.
+    """
+    
+    non_empty_filters = get_non_empty_entries(**filters)
+
+    return (
+        await db_session.execute(
+            select(Team)
+            .select_from(Team)
+            .join(Driver, Team.drivers)
+            .join(Meeting, Team.meetings)
+            .filter(Driver.id == driver_id)
+            .filter(Meeting.id == meeting_id)
+            .filter_by(**non_empty_filters)
+            .order_by(Team.name)
+        )
+    ).scalars().all()
+
+
+async def get_all_by_driver_id_and_session_id(db_session: AsyncSession, driver_id: int, session_id: int, **filters) -> list[Team]:
+    """
+    Returns all teams that a driver has driven for in a year using the given driver id and additional filters, in ascending order by team name.
+    """
+    
+    non_empty_filters = get_non_empty_entries(**filters)
+
+    return (
+        await db_session.execute(
+            select(Team)
+            .select_from(Team)
+            .join(Driver, Team.drivers)
+            .join(Session, Team.sessions)
+            .filter(Driver.id == driver_id)
+            .filter(Session.id == session_id)
+            .filter_by(**non_empty_filters)
+            .order_by(Team.name)
+        )
+    ).scalars().all()
+
+
 async def get_all_by_meeting_id(db_session: AsyncSession, meeting_id: int, **filters) -> list[Team]:
     """
     Returns all teams that have participated in a meeting using the given meeting id and additional filters, in ascending order by team name.
@@ -67,6 +109,25 @@ async def get_all_by_meeting_id(db_session: AsyncSession, meeting_id: int, **fil
             .select_from(Team)
             .join(Meeting, Team.meetings)
             .filter(Meeting.id == meeting_id)
+            .filter_by(**non_empty_filters)
+            .order_by(Team.name)
+        )
+    ).scalars().all()
+
+
+async def get_all_by_session_id(db_session: AsyncSession, session_id: int, **filters) -> list[Team]:
+    """
+    Returns all teams that have participated in a session using the given session id and additional filters, in ascending order by team name.
+    """
+    
+    non_empty_filters = get_non_empty_entries(**filters)
+
+    return (
+        await db_session.execute(
+            select(Team)
+            .select_from(Team)
+            .join(Session, Team.sessions)
+            .filter(Session.id == session_id)
             .filter_by(**non_empty_filters)
             .order_by(Team.name)
         )

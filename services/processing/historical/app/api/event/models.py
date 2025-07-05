@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import ForeignKeyConstraint, DateTime, Interval
+from sqlalchemy import ForeignKey, DateTime, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.api.session.models import Session
@@ -14,13 +14,6 @@ from app.models import ResourceModel, ResponseModel
 
 class Event(Base):
     __tablename__ = "event"
-    __table_args__ = (
-        ForeignKeyConstraint(
-            columns=("meeting_id", "session_name"),
-            refcolumns=("session.meeting_id, session.name"),
-            name="fk_event_meeting_id_and_session_name"
-        )
-    )
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     date: Mapped[DateTime]
@@ -30,9 +23,8 @@ class Event(Base):
     cause: Mapped[str]
 
     # Many-to-one rel with session as parent
-    meeting_id: Mapped[int]
-    session_name: Mapped[str]
-    session: Mapped[Session] = relationship(back_populates="events")
+    session_id: Mapped[int] = mapped_column(ForeignKey(column="session.id"))
+    session: Mapped[Session] = relationship(back_populates="events", cascade="all, delete-orphan")
 
     # One-to-one rel with location
     location: Mapped[Location | None] = relationship(back_populates="event", cascade="all, delete-orphan")
@@ -54,10 +46,9 @@ class EventResource(ResourceModel):
     """
     Base Pydantic model for event actions.
     """
-    
+
     event_id: int | None = None
-    meeting_id: int | None = None
-    session_name: str | None = None
+    session_id: str | None = None
     date: datetime | None = None
     elapsed_time: timedelta | None = None
     lap_number: int | None = None
@@ -87,5 +78,5 @@ class EventResponse(ResponseModel):
     event_id: int
     circuit_id: int
     meeting_id: int
-    session_name: str
+    session_id: int
     data: EventDataResponse

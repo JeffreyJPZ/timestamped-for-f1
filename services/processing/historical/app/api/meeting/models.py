@@ -93,8 +93,8 @@ class MeetingGet(MeetingResource):
 
 
 class MeetingResponse(ResponseModel):
-    session_names: list[str]
     meeting_id: int
+    session_ids: list[int]
     circuit_id: int
     year: int
     meeting_name: str

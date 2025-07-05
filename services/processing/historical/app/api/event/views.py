@@ -7,12 +7,13 @@ from app.api.circuit import services as circuit_services
 from app.api.event import services as event_services
 from app.api.event_role import services as event_role_services
 from app.api.location import services as location_services
+from app.api.session import services as session_services
+from app.api.meeting import services as meeting_services
 from app.api.event_role.models import EventRoleResponse
 from app.api.location.models import LocationResponse
 from app.db.core import AsyncSession, get_db_session
 from .enums import EventCauseEnum
 from .models import (
-    Event,
     EventGet,
     EventResponse,
     EventDataResponse
@@ -33,14 +34,27 @@ async def get_events(
     events = await event_services.get_all(
         db_session=db_session,
         id=params.event_id,
-        meeting_id=params.meeting_id,
-        session_name=params.session_name,
+        session_id=params.session_id,
         date=params.date,
         elapsed_time=params.elapsed_time,
         lap_number=params.lap_number,
         category=params.category,
         cause=params.cause,
     )
+
+    sessions = await asyncio.gather(*[
+        session_services.get(
+            db_session=db_session,
+            id=event.session_id
+        ) for event in events
+    ])
+
+    meetings = await asyncio.gather(*[
+        meeting_services.get(
+            db_session=db_session,
+            id=session.meeting_id
+        ) for session in sessions
+    ])
 
     roles = await asyncio.gather(*[
         event_role_services.get_all_by_event_id(
@@ -50,15 +64,17 @@ async def get_events(
     ])
 
     circuits = await asyncio.gather(*[
-        circuit_services.get_by_meeting_id(
+        circuit_services.get_by_session_id(
             db_session=db_session,
-            meeting_id=event.meeting_id
+            session_id=event.session_id
         ) for event in events
     ])
 
     response = []
 
     for idx, event in enumerate(events):
+        event_session = sessions[idx]
+        event_meeting = meetings[idx]
         event_roles = roles[idx]
         event_circuit = circuits[idx]
 
@@ -93,8 +109,8 @@ async def get_events(
             EventResponse(
                 event_id=event.id,
                 circuit_id=event_circuit.id,
-                meeting_id=event.meeting_id,
-                session_name=event.session_name,
+                meeting_id=event_meeting.id,
+                session_id=event_session.id,
                 data=event_data_response
             )
         )
@@ -116,14 +132,24 @@ async def get_event(
         id=event_id
     )
 
+    session = await session_services.get(
+        db_session=db_session,
+        id=event.session_id
+    )
+
+    meeting = await meeting_services.get(
+        db_session=db_session,
+        id=session.meeting_id
+    )
+
     roles = await event_role_services.get_all_by_event_id(
         db_session=db_session,
         event_id=event.id
     )
 
-    circuit = await circuit_services.get_by_meeting_id(
+    circuit = await circuit_services.get_by_session_id(
         db_session=db_session,
-        meeting_id=event.meeting_id
+        session_id=event.session_id
     )
 
     details_response = None
@@ -156,7 +182,7 @@ async def get_event(
     return EventResponse(
         event_id=event.id,
         circuit_id=circuit.id,
-        meeting_id=event.meeting_id,
-        session_name=event.session_name,
+        meeting_id=meeting.id,
+        session_id=session.id,
         data=event_data_response
     )

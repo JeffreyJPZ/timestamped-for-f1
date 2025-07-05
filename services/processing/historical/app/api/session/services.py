@@ -4,7 +4,20 @@ from app.db.core import AsyncSession, select
 from app.utils import get_non_empty_entries
 
 
-async def get(db_session: AsyncSession, meeting_id: int, name: str) -> Session | None:
+async def get(db_session: AsyncSession, id: int) -> Session | None:
+    """
+    Returns a session with the given id, or None if the session does not exist.
+    """
+    
+    return (
+        await db_session.execute(
+            select(Session)
+            .filter(Session.id == id)
+        )
+    ).scalars().one_or_none()
+
+
+async def get_by_meeting_id_and_name(db_session: AsyncSession, meeting_id: int, name: str) -> Session | None:
     """
     Returns a session with the given meeting id and name, or None if the session does not exist.
     """

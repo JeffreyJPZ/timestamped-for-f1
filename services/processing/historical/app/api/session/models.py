@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, PrimaryKeyConstraint, DateTime, Integer, Interval
+from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint, DateTime, Integer, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.api.meeting.models import Meeting
@@ -8,21 +8,15 @@ from app.api.driver.models import Driver
 from app.api.event.models import Event
 from app.api.team.models import Team
 from app.db.core import Base
-from app.models import QueryModel, ResourceModel, ResponseModel
+from app.models import ResourceModel, ResponseModel
 
 
 session_team_assoc = Table(
-    Column("meeting_id", Integer),
-    Column("session_name", Integer),
+    Column("session_id", Integer, ForeignKey("session.id")),
     Column("team_id", Integer, ForeignKey("team.id")),
     PrimaryKeyConstraint(
-        ("meeting_id", "session_name", "team_id"),
-        name="pk_session_team_meeting_id_and_session_name_and_team_id"
-    ),
-    ForeignKeyConstraint(
-        columns=("meeting_id", "session_name"),
-        refcolumns=("session.meeting_id", "session.name"),
-        name="fk_session_team_meeting_id_and_session_name"
+        ("session_id", "team_id"),
+        name="pk_session_team_id_and_team_id"
     ),
     name="session_team",
     metadata=Base.metadata
@@ -30,17 +24,11 @@ session_team_assoc = Table(
 
 
 session_driver_assoc = Table(
-    Column("meeting_id", Integer),
-    Column("session_name", Integer),
+    Column("session_id", Integer, ForeignKey("session.id")),
     Column("driver_id", Integer, ForeignKey("driver.id")),
     PrimaryKeyConstraint(
-        ("meeting_id", "session_name", "driver_id"),
-        name="pk_session_driver_meeting_id_and_session_name_and_driver_id"
-    ),
-    ForeignKeyConstraint(
-        columns=("meeting_id", "session_name"),
-        refcolumns=("session.meeting_id", "session.name"),
-        name="fk_session_driver_meeting_id_and_session_name"
+        ("session_id", "driver_id"),
+        name="pk_session_driver_session_id_and_driver_id"
     ),
     name="session_driver",
     metadata=Base.metadata
@@ -49,16 +37,22 @@ session_driver_assoc = Table(
 
 class Session(Base):
     __tablename__ = "session"
+    __table_args__ = (
+        UniqueConstraint(
+            ("meeting_id", "name"),
+            name="uq_meeting_id_and_name"
+        )
+    )
 
-    id: Mapped[int] = mapped_column(unique=True) # For internal use only
-    name: Mapped[str] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
     type: Mapped[str]
     start_date: Mapped[DateTime]
     end_date: Mapped[DateTime]
     utc_offset: Mapped[Interval]
 
-    # Weak rel with meeting as parent
-    meeting_id: Mapped[int] = mapped_column(ForeignKey(column="meeting.id"), primary_key=True)
+    # Many-to-one rel with meeting as parent
+    meeting_id: Mapped[int] = mapped_column(ForeignKey(column="meeting.id"))
     meeting: Mapped[Meeting] = relationship(back_populates="sessions")
 
     events: Mapped[list[Event]] = relationship(
@@ -82,8 +76,8 @@ class SessionResource(ResourceModel):
     Base Pydantic model for session actions.
     """
 
+    session_id: int | None = None
     meeting_id: int | None = None
-    meeting_name: str | None = None
     year: int | None = None
     session_name: str | None = None
     session_type: str | None = None
@@ -101,9 +95,9 @@ class SessionGet(SessionResource):
 
 
 class SessionResponse(ResponseModel):
+    session_id: int
     circuit_id: int
     meeting_id: int
-    meeting_name: str
     year: int
     session_name: str
     session_type: str

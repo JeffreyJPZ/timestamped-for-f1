@@ -289,8 +289,7 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
         lap_number=_get_lap_number(session_key=session_key, date=_to_datetime(estimated_location["date"])),
         category="car-action", # TODO: make enum
         cause="overtake",
-        meeting_id=session_obj.meeting_id,
-        session_name=session_obj.name
+        session_id=session_obj.id
     ) 
 
     # Add location

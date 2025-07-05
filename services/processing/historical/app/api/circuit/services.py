@@ -1,5 +1,6 @@
 from app.api.circuit.models import Circuit
 from app.api.meeting.models import Meeting
+from app.api.session.models import Session
 from app.db.core import AsyncSession, select
 from app.utils import get_non_empty_entries
 
@@ -28,6 +29,22 @@ async def get_by_meeting_id(db_session: AsyncSession, meeting_id: int) -> Circui
             .select_from(Meeting)
             .join(Circuit, Meeting.circuit_id == Circuit.id)
             .filter(Meeting.id == meeting_id)
+        )
+    ).scalars().one_or_none()
+
+
+async def get_by_session_id(db_session: AsyncSession, session_id: int) -> Circuit | None:
+    """
+    Returns a circuit where the session with the given session id takes place, or None if the circuit does not exist.
+    """
+    
+    return (
+        await db_session.execute(
+            select(Circuit)
+            .select_from(Meeting)
+            .join(Session, Meeting.sessions)
+            .join(Circuit, Meeting.circuit_id == Circuit.id)
+            .filter(Session.id == session_id)
         )
     ).scalars().one_or_none()
 

@@ -44,9 +44,30 @@ async def get_all_by_meeting_id(db_session: AsyncSession, meeting_id: int, **fil
     return (
         await db_session.execute(
             select(Event)
-            .select_from(Event)
-            .join(Meeting, Event.meeting_id == Meeting.id)
+            .select_from(Meeting)
+            .join(Session, Meeting.sessions)
+            .join(Event, Session.id == Event.session_id)
             .filter(Meeting.id == meeting_id)
+            .filter_by(**non_empty_filters)
+            .order_by(Event.date)
+        )
+    ).scalars().all()
+
+
+async def get_all_by_session_id(db_session: AsyncSession, session_id: int, **filters) -> list[Event]:
+    """
+    Returns all events for a session using the given session id and additional filters, in ascending order by date.
+    """
+    
+    non_empty_filters = get_non_empty_entries(**filters)
+
+    return (
+        await db_session.execute(
+            select(Event)
+            .select_from(Meeting)
+            .join(Session, Meeting.sessions)
+            .join(Event, Session.id == Event.session_id)
+            .filter(Session.id == session_id)
             .filter_by(**non_empty_filters)
             .order_by(Event.date)
         )
@@ -63,8 +84,9 @@ async def get_all_by_meeting_id_and_session_name(db_session: AsyncSession, meeti
     return (
         await db_session.execute(
             select(Event)
-            .select_from(Event)
-            .join(Session, Event.meeting_id == Session.meeting_id and Event.session_name == Session.name)
+            .select_from(Meeting)
+            .join(Session, Meeting.sessions)
+            .join(Event, Session.id == Event.session_id)
             .filter(Session.meeting_id == meeting_id)
             .filter(Session.name == session_name)
             .filter_by(**non_empty_filters)
