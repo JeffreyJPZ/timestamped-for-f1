@@ -33,7 +33,7 @@ services:
 
   connect:
     build:
-      context: ./services/connectors
+      context: ./live/connectors
       dockerfile: Dockerfile
     hostname: connect
     depends_on:
@@ -87,7 +87,7 @@ services:
 
   historical-processing:
     build:
-      context: ./services/processing
+      context: ./historical/processing
       dockerfile: Dockerfile
     environment:
       OPENF1_ADDRESS: "openf1:8000"

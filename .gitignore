@@ -137,3 +137,6 @@ dist
 
 # Python bytecode
 __pycache__/
+
+# Python distribution files
+/dist
