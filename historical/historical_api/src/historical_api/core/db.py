@@ -16,7 +16,7 @@ class SQLAlchemyModel(BaseModel):
 
 
 class AlembicModel(BaseModel):
-    migrations_path: DirectoryPath = Path(__file__).parent.joinpath('migrations').absolute()
+    migrations_path: DirectoryPath = Path(__file__).parent.parent.joinpath('migrations').absolute()
 
 
 class DatabaseConfig(BaseSettings):

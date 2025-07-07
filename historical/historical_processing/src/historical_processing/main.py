@@ -428,7 +428,7 @@ def collect_circuit(circuit_key: int) -> None:
     df = DataFrame(data=circuit_data)
     
     Storage.write(
-        destination=".parquet",
+        destination="parquet",
         filesystem=s3fs.S3FileSystem(),
         dataframe=df,
         format="parquet"
@@ -459,7 +459,7 @@ def collect_session(session_key: int) -> None:
     for collection in collections:
         df = _collect_collection(session_key=session_key, collection=collection, start_date=start_date, end_date=end_date)
         Storage.write(
-            destination=".parquet",
+            destination="parquet",
             filesystem=s3fs.S3FileSystem(),
             dataframe=df,
             format="parquet"

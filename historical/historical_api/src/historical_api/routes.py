@@ -1,11 +1,11 @@
 from fastapi import APIRouter
 
-from api.v1.circuit.views import router as circuit_router
-from api.v1.driver.views import router as driver_router
-from api.v1.event.views import router as event_router
-from api.v1.meeting.views import router as meeting_router
-from api.v1.session.views import router as session_router
-from api.v1.team.views import router as team_router
+from historical_api.api.v1.circuit.views import router as circuit_router
+from historical_api.api.v1.driver.views import router as driver_router
+from historical_api.api.v1.event.views import router as event_router
+from historical_api.api.v1.meeting.views import router as meeting_router
+from historical_api.api.v1.session.views import router as session_router
+from historical_api.api.v1.team.views import router as team_router
 
 
 router = APIRouter()

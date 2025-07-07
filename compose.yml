@@ -2,14 +2,14 @@ services:
 
   zookeeper:
     hostname: zookeeper
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:5.0.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       zk_id: "1"
 
   kafka:
     hostname: kafka
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:5.0.0
     links:
       - zookeeper
     ports:
@@ -21,7 +21,7 @@ services:
 
   schema-registry:
     hostname: schema-registry
-    image: confluentinc/cp-schema-registry:latest
+    image: confluentinc/cp-schema-registry:5.0.0
     links:
       - kafka
       - zookeeper
@@ -67,7 +67,7 @@ services:
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
   
   openf1-db:
-    image: mongo
+    image: mongo:8.0.11
     restart: unless-stopped
     volumes:
       - ./data/openf1-db:/data/db
@@ -85,19 +85,33 @@ services:
       MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
       OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
 
+  historical-api:
+    build:
+      context: ./historical/historical_api
+      dockerfile: Dockerfile
+    depends_on:
+      - historical-db
+    environment:
+      SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db/${HISTORICAL_DB_NAME}"
+
   historical-processing:
     build:
-      context: ./historical/processing
+      context: ./historical/historical_processing
       dockerfile: Dockerfile
+    depends_on:
+      - openf1
+      - openf1-db
     environment:
       OPENF1_ADDRESS: "openf1:8000"
+      SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db/${HISTORICAL_DB_NAME}"
 
   historical-db:
-    image: postgres
+    image: postgres:17.5
     ports:
       - 8080:8080
     volumes:
       - ./data/historical-db:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: "${HISTORICAL_DB_ROOT_USERNAME}"
+      POSTGRES_PASSWORD: "${HISTORICAL_DB_ROOT_PASSWORD}"
       POSTGRES_PASSWORD: "${HISTORICAL_DB_ROOT_PASSWORD}"
