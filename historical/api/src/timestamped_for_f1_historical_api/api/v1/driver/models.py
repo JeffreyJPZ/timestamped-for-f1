@@ -1,25 +1,28 @@
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, UniqueConstraint, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
+from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
+from timestamped_for_f1_historical_api.api.v1.meeting.models import meeting_driver_assoc
+from timestamped_for_f1_historical_api.api.v1.session.models import session_driver_assoc
+from timestamped_for_f1_historical_api.api.v1.team.models import team_driver_assoc
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
     from timestamped_for_f1_historical_api.api.v1.country.models import Country
-    from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting, meeting_driver_assoc
+    from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting
     from timestamped_for_f1_historical_api.api.v1.session.models import Session, session_driver_assoc
     from timestamped_for_f1_historical_api.api.v1.team.models import Team, team_driver_assoc
     from timestamped_for_f1_historical_api.api.v1.event.models import Event
-    
 
 
-class Driver(SQLAlchemyBase):
+class Driver(Base):
     __tablename__ = "driver"
     __table_args__ = (
-        UniqueConstraint("year", "number")
+        UniqueConstraint("year", "number"),
     )
+    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     year: Mapped[int]
@@ -33,7 +36,7 @@ class Driver(SQLAlchemyBase):
 
     # Many-to-one rel with country as parent
     country_id: Mapped[int] = mapped_column(ForeignKey(column="country.id"))
-    country: Mapped[Country] = relationship(back_populates="drivers")
+    country: Mapped["Country"] = relationship(back_populates="drivers")
 
     meetings: Mapped[list["Meeting"]] = relationship(
         secondary=meeting_driver_assoc, back_populates="drivers", cascade="all, delete-orphan"
@@ -47,7 +50,7 @@ class Driver(SQLAlchemyBase):
         secondary=team_driver_assoc, back_populates="drivers", cascade="all, delete-orphan"
     )
 
-    events: Mapped[list["Event" | None]] = relationship(back_populates="driver", cascade="all, delete-orphan")
+    events: Mapped[Optional[list["Event"]]] = relationship(back_populates="driver", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"Driver(id={self.id!r}, year={self.year!r}, number={self.number!r}, acronym={self.acronym!r}, first_name={self.first_name!r}, last_name={self.last_name!r}, full_name={self.full_name!r}, broadcast_name={self.broadcast_name!r}, image_url={self.image_url!r}, country_id={self.country_id!r}"

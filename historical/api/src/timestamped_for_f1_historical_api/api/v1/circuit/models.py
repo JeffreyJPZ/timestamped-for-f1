@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
+from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
@@ -12,12 +12,12 @@ if TYPE_CHECKING:
     from timestamped_for_f1_historical_api.api.v1.turn.models import Turn, TurnResponse
     
 
-
-class Circuit(SQLAlchemyBase):
+class Circuit(Base):
     __tablename__ = "circuit"
     __table_args__ = (
-        UniqueConstraint("year", "name")
+        UniqueConstraint("year", "name"),
     )
+    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     year: Mapped[int]
@@ -27,7 +27,7 @@ class Circuit(SQLAlchemyBase):
 
     # Many-to-one rel with country as parent
     country_id: Mapped[int] = mapped_column(ForeignKey(column="country.id"))
-    country: Mapped[Country] = relationship(back_populates="circuits")
+    country: Mapped["Country"] = relationship(back_populates="circuits")
     
     meetings: Mapped[list["Meeting"]] = relationship(
         back_populates="circuit", cascade="all, delete-orphan"
@@ -70,7 +70,7 @@ class CircuitResponse(ResponseModel):
     circuit_name: str
     circuit_location: str
     circuit_rotation: int
-    turns: list[TurnResponse]
+    turns: list["TurnResponse"]
     country_id: int
     country_code: str
     country_name: str

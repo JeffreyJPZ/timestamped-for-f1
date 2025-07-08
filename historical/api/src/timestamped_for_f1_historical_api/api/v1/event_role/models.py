@@ -3,20 +3,22 @@ from typing import Literal, TYPE_CHECKING
 from sqlalchemy import ForeignKey, PrimaryKeyConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
+from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
 from timestamped_for_f1_historical_api.core.models import ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
     from timestamped_for_f1_historical_api.api.v1.event.models import Event
     from timestamped_for_f1_historical_api.api.v1.driver.models import Driver
-    
+
+from .enums import EventRoleEnum
 
 
-class EventRole(SQLAlchemyBase):
+class EventRole(Base):
     __tablename__ = "event_role"
     __table_args__ = (
-        PrimaryKeyConstraint("event_id", "driver_id")
+        PrimaryKeyConstraint("event_id", "driver_id"),
     )
+    metadata = get_base_metadata()
 
     event_id: Mapped[int] = mapped_column(ForeignKey(column="event.id"))
     driver_id: Mapped[int] = mapped_column(ForeignKey(column="driver.id"))
@@ -31,4 +33,4 @@ class EventRole(SQLAlchemyBase):
 
 class EventRoleResponse(ResponseModel):
     driver_id: int
-    role: Literal["initiator"] | Literal["participant"]
+    role: EventRoleEnum

@@ -1,5 +1,4 @@
 from timestamped_for_f1_historical_api.api.v1.event_role.models import EventRole
-from timestamped_for_f1_historical_api.api.v1.driver.models import Driver
 from timestamped_for_f1_historical_api.core.db import AsyncSession, select
 from timestamped_for_f1_historical_api.utils import get_non_empty_entries
 

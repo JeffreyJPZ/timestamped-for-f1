@@ -12,12 +12,14 @@ from timestamped_for_f1_historical_api.api.v1.meeting import services as meeting
 from timestamped_for_f1_historical_api.api.v1.event_role.models import EventRoleResponse
 from timestamped_for_f1_historical_api.api.v1.location.models import LocationResponse
 from timestamped_for_f1_historical_api.core.db import AsyncSession, get_db_session
+
 from .enums import EventCauseEnum
 from .models import (
     EventGet,
     EventResponse,
     EventDataResponse
 )
+
 
 router = APIRouter()
 

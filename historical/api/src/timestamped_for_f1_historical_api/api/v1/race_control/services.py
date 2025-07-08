@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from timestamped_for_f1_historical_api.api.v1.race_control.models import RaceControl
 from timestamped_for_f1_historical_api.api.v1.event.models import Event
 from timestamped_for_f1_historical_api.core.db import AsyncSession, select
@@ -7,7 +5,7 @@ from timestamped_for_f1_historical_api.core.db import AsyncSession, select
 
 async def get(db_session: AsyncSession, event_id: int) -> RaceControl | None:
     """
-    Returns a pit with the given event id and date, or None if the pit does not exist.
+    Returns a race control message with the given event id, or None if the message does not exist.
     """
     
     return (

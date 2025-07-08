@@ -3,29 +3,32 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Table, Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
+from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
+from timestamped_for_f1_historical_api.api.v1.meeting.models import meeting_team_assoc
+from timestamped_for_f1_historical_api.api.v1.session.models import session_team_assoc
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
-    from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting, meeting_team_assoc
-    from timestamped_for_f1_historical_api.api.v1.session.models import Session, session_team_assoc
+    from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting
+    from timestamped_for_f1_historical_api.api.v1.session.models import Session
     from timestamped_for_f1_historical_api.api.v1.driver.models import Driver
 
 
 team_driver_assoc = Table(
+    "team_driver",
+    get_base_metadata(),
     Column("team_id", ForeignKey("team.id")),
     Column("driver_id", ForeignKey("driver.id")),
-    PrimaryKeyConstraint("team_id", "driver_id"),
-    name="team_driver",
-    metadata=SQLAlchemyBase.metadata
+    PrimaryKeyConstraint("team_id", "driver_id")
 )
 
 
-class Team(SQLAlchemyBase):
+class Team(Base):
     __tablename__ = "team"
     __table_args__ = (
-        UniqueConstraint("year", "name")
+        UniqueConstraint("year", "name"),
     )
+    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     year: Mapped[int]

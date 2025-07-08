@@ -949,7 +949,7 @@ wheels = [
 
 [[package]]
 name = "timestamped-for-f1-historical-api"
-version = "0.0.4"
+version = "0.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alembic" },
@@ -961,9 +961,9 @@ dependencies = [
     { name = "sqlalchemy-helpers" },
     { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/87/e6/2c4096b2f294455b1cd45f29381f3287891acca847e55b50f504d68ca5bf/timestamped_for_f1_historical_api-0.0.4.tar.gz", hash = "sha256:08529fda60197839aab8918a2223a0bb341c574f5cd33b17c87e87c03e6a8ea4", size = 18249, upload-time = "2025-07-08T04:00:35.547Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8b/1b/1486091668422e6fc1f33d11b961c1a574e1c4aeffae64db628d8597fed2/timestamped_for_f1_historical_api-0.1.0.tar.gz", hash = "sha256:9da7a64c54a9534b568735d28421cb73258450603e21f054536a72b4a657efcb", size = 18372, upload-time = "2025-07-08T07:08:39.566Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f6/21/f81503ca6c1c1ca4233d691e6bdd1c88f675f0dddbadc554ffee19a62a97/timestamped_for_f1_historical_api-0.0.4-py3-none-any.whl", hash = "sha256:b2d88bfbd53037553a90d974f138810a4cacfd7954c748c481469e990702d488", size = 43000, upload-time = "2025-07-08T04:00:34.25Z" },
+    { url = "https://files.pythonhosted.org/packages/85/6f/e55f579d1ee1a122d148e228f634406b35e90c057922cf8b9291ca3b9688/timestamped_for_f1_historical_api-0.1.0-py3-none-any.whl", hash = "sha256:a808007fe60a9a5ed462ccc7b9fb6fd2864811e29b86b0d2d8e63815060213da", size = 43282, upload-time = "2025-07-08T07:08:38.645Z" },
 ]
 
 [[package]]
@@ -989,7 +989,7 @@ requires-dist = [
     { name = "polars", specifier = ">=1.31.0" },
     { name = "requests", specifier = ">=2.32.4" },
     { name = "s3fs", specifier = ">=2025.5.1" },
-    { name = "timestamped-for-f1-historical-api", specifier = ">=0.0.4" },
+    { name = "timestamped-for-f1-historical-api", specifier = ">=0.1.0" },
     { name = "typer", specifier = ">=0.16.0" },
 ]
 

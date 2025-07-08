@@ -598,7 +598,7 @@ wheels = [
 
 [[package]]
 name = "timestamped-for-f1-historical-api"
-version = "0.0.4"
+version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "alembic" },

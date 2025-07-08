@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 
 from timestamped_for_f1_historical_api.api.v1.driver import services as driver_services
 from timestamped_for_f1_historical_api.core.db import AsyncSession, get_db_session
+
 from .models import TeamGet, TeamResponse
 from .services import get, get_all
 

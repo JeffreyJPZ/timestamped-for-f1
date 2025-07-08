@@ -18,6 +18,7 @@ from timestamped_for_f1_historical_api.api.v1.team.models import TeamResponse
 from timestamped_for_f1_historical_api.api.v1.driver.models import DriverResponse
 from timestamped_for_f1_historical_api.api.v1.event.models import EventDataResponse, EventResponse
 from timestamped_for_f1_historical_api.core.db import AsyncSession, get_db_session
+
 from .models import SessionGet, SessionResponse
 from .services import get, get_all
 

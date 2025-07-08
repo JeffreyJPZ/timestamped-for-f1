@@ -18,6 +18,7 @@ from timestamped_for_f1_historical_api.api.v1.event.models import EventResponse,
 from timestamped_for_f1_historical_api.api.v1.event_role.models import EventRoleResponse
 from timestamped_for_f1_historical_api.api.v1.location.models import LocationResponse
 from timestamped_for_f1_historical_api.core.db import AsyncSession, get_db_session
+
 from .models import MeetingGet, MeetingResponse
 from .services import get, get_all
 

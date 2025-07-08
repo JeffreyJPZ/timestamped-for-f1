@@ -5,19 +5,20 @@ from decimal import Decimal
 from sqlalchemy import ForeignKey, DateTime, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
+from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
 from timestamped_for_f1_historical_api.core.models import ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
     from timestamped_for_f1_historical_api.api.v1.event.models import Event
 
 
-class Pit(SQLAlchemyBase):
-    __tablename__ = "pit"
+class Pit(Base):
+    __tablename__ = "pit",
+    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(unique=True) # For internal use only
-    date: Mapped[DateTime]
-    duration: Mapped[Numeric] = mapped_column(Numeric(precision=6, scale=1)) # Max pit duration should be in the hours
+    date: Mapped[datetime] = mapped_column(DateTime())
+    duration: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=1)) # Max pit duration should be in the hours
     
     # One-to-one weak rel with event as owner
     event_id: Mapped[int] = mapped_column(ForeignKey(column="event.id"), primary_key=True)

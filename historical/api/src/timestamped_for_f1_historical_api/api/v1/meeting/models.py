@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import Table, Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint, DateTime, Integer, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
+from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
@@ -15,35 +15,36 @@ if TYPE_CHECKING:
 
 
 meeting_team_assoc = Table(
+    "meeting_team",
+    get_base_metadata(),
     Column("meeting_id", Integer, ForeignKey("meeting.id")),
     Column("team_id", Integer, ForeignKey("team.id")),
-    PrimaryKeyConstraint("meeting_id", "team_id"),
-    name="meeting_team",
-    metadata=SQLAlchemyBase.metadata
+    PrimaryKeyConstraint("meeting_id", "team_id")
 )
 
 
 meeting_driver_assoc = Table(
+    "meeting_driver",
+    get_base_metadata(),
     Column("meeting_id", Integer, ForeignKey("meeting.id")),
     Column("driver_id", Integer, ForeignKey("driver.id")),
     PrimaryKeyConstraint("meeting_id", "driver_id"),
-    name="meeting_driver",
-    metadata=SQLAlchemyBase.metadata
 )
 
 
-class Meeting(SQLAlchemyBase):
+class Meeting(Base):
     __tablename__ = "meeting"
     __table_args__ = (
-        UniqueConstraint("year", "name")
+        UniqueConstraint("year", "name"),
     )
+    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     year: Mapped[int]
     name: Mapped[str]
     official_name: Mapped[str]
-    start_date: Mapped[DateTime]
-    utc_offset: Mapped[str] = mapped_column(Interval)
+    start_date: Mapped[datetime] = mapped_column(DateTime())
+    utc_offset: Mapped[str] = mapped_column(Interval())
 
     # Many-to-one rel with circuit as parent
     circuit_id: Mapped[int] = mapped_column(ForeignKey(column="circuit.id"))

@@ -4,25 +4,26 @@ from decimal import Decimal
 from sqlalchemy import ForeignKey, PrimaryKeyConstraint, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
+from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
 from timestamped_for_f1_historical_api.core.models import ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
     from timestamped_for_f1_historical_api.api.v1.circuit.models import Circuit
 
 
-class Turn(SQLAlchemyBase):
+class Turn(Base):
     __tablename__ = "turn"
     __table_args__ = (
-        PrimaryKeyConstraint("circuit_id", "number")
+        PrimaryKeyConstraint("circuit_id", "number"),
     )
+    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(unique=True) # For internal use only
     number: Mapped[int]
-    angle: Mapped[Numeric] = mapped_column(Numeric(precision=18, scale=15))
-    length: Mapped[Numeric] = mapped_column(Numeric(precision=20, scale=15))
-    x: Mapped[Numeric] = mapped_column(Numeric(precision=20, scale=15))
-    y: Mapped[Numeric] = mapped_column(Numeric(precision=20, scale=15))
+    angle: Mapped[Decimal] = mapped_column(Numeric(precision=18, scale=15))
+    length: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=15))
+    x: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=15))
+    y: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=15))
 
     # Many-to-one weak rel with circuit as owner
     circuit_id: Mapped[int] = mapped_column(ForeignKey(column="circuit.id"))
