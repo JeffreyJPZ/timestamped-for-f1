@@ -26,5 +26,7 @@ COPY --from=builder --chown=timestamped_for_f1_historical_api:timestamped_for_f1
 
 ENV PATH="/timestamped_for_f1_historical_api/.venv/bin:$PATH"
 
-CMD ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8888"]
+WORKDIR /timestamped_for_f1_historical_api
+
+CMD ["fastapi", "run", "src/timestamped_for_f1_historical_api/main.py", "--host", "0.0.0.0", "--port", "8888"]
 

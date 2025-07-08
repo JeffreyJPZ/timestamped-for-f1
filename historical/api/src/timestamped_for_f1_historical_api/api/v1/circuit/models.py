@@ -1,20 +1,22 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.api.v1.country.models import Country
-from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting
-from timestamped_for_f1_historical_api.api.v1.turn.models import Turn, TurnResponse
-from timestamped_for_f1_historical_api.core.db import Base
+from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
+# Prevent circular imports for SQLAlchemy models since we are using type annotation
+if TYPE_CHECKING:
+    from timestamped_for_f1_historical_api.api.v1.country.models import Country
+    from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting
+    from timestamped_for_f1_historical_api.api.v1.turn.models import Turn, TurnResponse
+    
 
 
-class Circuit(Base):
+class Circuit(SQLAlchemyBase):
     __tablename__ = "circuit"
     __table_args__ = (
-        UniqueConstraint(
-            ("year", "name"),
-            name="uq_circuit_year_and_name"
-        )
+        UniqueConstraint("year", "name")
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -27,11 +29,11 @@ class Circuit(Base):
     country_id: Mapped[int] = mapped_column(ForeignKey(column="country.id"))
     country: Mapped[Country] = relationship(back_populates="circuits")
     
-    meetings: Mapped[list[Meeting]] = relationship(
+    meetings: Mapped[list["Meeting"]] = relationship(
         back_populates="circuit", cascade="all, delete-orphan"
     )
 
-    turns: Mapped[list[Turn]] = relationship(
+    turns: Mapped[list["Turn"]] = relationship(
         back_populates="circuit", cascade="all, delete-orphan"
     )
 

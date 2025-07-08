@@ -1,47 +1,41 @@
+from typing import TYPE_CHECKING
 from datetime import datetime, timedelta
 
-from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint, DateTime, Integer, Interval
+from sqlalchemy import Table, Column, ForeignKey, UniqueConstraint, PrimaryKeyConstraint, DateTime, Integer, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting
-from timestamped_for_f1_historical_api.api.v1.driver.models import Driver
-from timestamped_for_f1_historical_api.api.v1.event.models import Event
-from timestamped_for_f1_historical_api.api.v1.team.models import Team
-from timestamped_for_f1_historical_api.core.db import Base
+from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
+# Prevent circular imports for SQLAlchemy models since we are using type annotation
+if TYPE_CHECKING:
+    from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting
+    from timestamped_for_f1_historical_api.api.v1.driver.models import Driver
+    from timestamped_for_f1_historical_api.api.v1.event.models import Event
+    from timestamped_for_f1_historical_api.api.v1.team.models import Team
 
 
 session_team_assoc = Table(
     Column("session_id", Integer, ForeignKey("session.id")),
     Column("team_id", Integer, ForeignKey("team.id")),
-    PrimaryKeyConstraint(
-        ("session_id", "team_id"),
-        name="pk_session_team_id_and_team_id"
-    ),
+    PrimaryKeyConstraint("session_id", "team_id"),
     name="session_team",
-    metadata=Base.metadata
+    metadata=SQLAlchemyBase.metadata
 )
 
 
 session_driver_assoc = Table(
     Column("session_id", Integer, ForeignKey("session.id")),
     Column("driver_id", Integer, ForeignKey("driver.id")),
-    PrimaryKeyConstraint(
-        ("session_id", "driver_id"),
-        name="pk_session_driver_session_id_and_driver_id"
-    ),
+    PrimaryKeyConstraint("session_id", "driver_id"),
     name="session_driver",
-    metadata=Base.metadata
+    metadata=SQLAlchemyBase.metadata
 )
 
 
-class Session(Base):
+class Session(SQLAlchemyBase):
     __tablename__ = "session"
     __table_args__ = (
-        UniqueConstraint(
-            ("meeting_id", "name"),
-            name="uq_meeting_id_and_name"
-        )
+        UniqueConstraint("meeting_id", "name")
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -53,17 +47,17 @@ class Session(Base):
 
     # Many-to-one rel with meeting as parent
     meeting_id: Mapped[int] = mapped_column(ForeignKey(column="meeting.id"))
-    meeting: Mapped[Meeting] = relationship(back_populates="sessions")
+    meeting: Mapped["Meeting"] = relationship(back_populates="sessions")
 
-    events: Mapped[list[Event]] = relationship(
+    events: Mapped[list["Event"]] = relationship(
         back_populates="session", cascade="all, delete-orphan"
     )
 
-    teams: Mapped[list[Team]] = relationship(
+    teams: Mapped[list["Team"]] = relationship(
         secondary=session_team_assoc, back_populates="sessions", cascade="all, delete-orphan"
     )
 
-    drivers: Mapped[list[Driver]] = relationship(
+    drivers: Mapped[list["Driver"]] = relationship(
         secondary=session_driver_assoc, back_populates="sessions", cascade="all, delete-orphan"
     )
 

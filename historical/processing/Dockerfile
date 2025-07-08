@@ -3,7 +3,6 @@ FROM python:3.13 AS builder
 COPY --from=ghcr.io/astral-sh/uv:0.7.19 /uv /uvx /bin/
 
 ENV UV_COMPILE_BYTECODE=1
-
 ENV UV_LINK_MODE=copy
 
 # Install dependencies
@@ -25,5 +24,7 @@ COPY --from=builder --chown=timestamped_for_f1_historical_processing:timestamped
     /timestamped_for_f1_historical_processing /timestamped_for_f1_historical_processing
 
 ENV PATH="/timestamped_for_f1_historical_processing/.venv/bin:$PATH"
+
+WORKDIR /timestamped_for_f1_historical_processing
 
 CMD ["tail", "-f", "/dev/null"]

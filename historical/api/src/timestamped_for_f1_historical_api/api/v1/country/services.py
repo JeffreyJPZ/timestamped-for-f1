@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from timestamped_for_f1_historical_api.api.v1.country.models import Country
 from timestamped_for_f1_historical_api.core.db import AsyncSession, select
 

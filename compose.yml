@@ -101,6 +101,7 @@ services:
     depends_on:
       - openf1
       - openf1-db
+      - historical-db
     environment:
       OPENF1_ADDRESS: "openf1:8000"
       SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db/${HISTORICAL_DB_NAME}"

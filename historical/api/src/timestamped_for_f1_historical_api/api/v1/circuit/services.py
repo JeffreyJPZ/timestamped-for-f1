@@ -1,8 +1,10 @@
+from typing import TYPE_CHECKING
+
 from timestamped_for_f1_historical_api.api.v1.circuit.models import Circuit
 from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting
 from timestamped_for_f1_historical_api.api.v1.session.models import Session
 from timestamped_for_f1_historical_api.core.db import AsyncSession, select
-from historical_api.api.utils import get_non_empty_entries
+from timestamped_for_f1_historical_api.utils import get_non_empty_entries
 
 
 async def get(db_session: AsyncSession, id: int) -> Circuit | None:

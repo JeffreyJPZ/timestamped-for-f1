@@ -1,22 +1,24 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, UniqueConstraint, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.api.v1.country.models import Country
-from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting, meeting_driver_assoc
-from timestamped_for_f1_historical_api.api.v1.session.models import Session, session_driver_assoc
-from timestamped_for_f1_historical_api.api.v1.team.models import Team, team_driver_assoc
-from timestamped_for_f1_historical_api.api.v1.event.models import Event
-from timestamped_for_f1_historical_api.core.db import Base
+from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
+# Prevent circular imports for SQLAlchemy models since we are using type annotation
+if TYPE_CHECKING:
+    from timestamped_for_f1_historical_api.api.v1.country.models import Country
+    from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting, meeting_driver_assoc
+    from timestamped_for_f1_historical_api.api.v1.session.models import Session, session_driver_assoc
+    from timestamped_for_f1_historical_api.api.v1.team.models import Team, team_driver_assoc
+    from timestamped_for_f1_historical_api.api.v1.event.models import Event
+    
 
 
-class Driver(Base):
+class Driver(SQLAlchemyBase):
     __tablename__ = "driver"
     __table_args__ = (
-        UniqueConstraint(
-            ("year", "number"),
-            name="uq_driver_year_and_number"
-        )
+        UniqueConstraint("year", "number")
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -33,19 +35,19 @@ class Driver(Base):
     country_id: Mapped[int] = mapped_column(ForeignKey(column="country.id"))
     country: Mapped[Country] = relationship(back_populates="drivers")
 
-    meetings: Mapped[list[Meeting]] = relationship(
+    meetings: Mapped[list["Meeting"]] = relationship(
         secondary=meeting_driver_assoc, back_populates="drivers", cascade="all, delete-orphan"
     )
 
-    sessions: Mapped[list[Session]] = relationship(
+    sessions: Mapped[list["Session"]] = relationship(
         secondary=session_driver_assoc, back_populates="drivers", cascade="all, delete-orphan"
     )
 
-    teams: Mapped[list[Team]] = relationship(
+    teams: Mapped[list["Team"]] = relationship(
         secondary=team_driver_assoc, back_populates="drivers", cascade="all, delete-orphan"
     )
 
-    events: Mapped[list[Event | None]] = relationship(back_populates="driver", cascade="all, delete-orphan")
+    events: Mapped[list["Event" | None]] = relationship(back_populates="driver", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         return f"Driver(id={self.id!r}, year={self.year!r}, number={self.number!r}, acronym={self.acronym!r}, first_name={self.first_name!r}, last_name={self.last_name!r}, full_name={self.full_name!r}, broadcast_name={self.broadcast_name!r}, image_url={self.image_url!r}, country_id={self.country_id!r}"

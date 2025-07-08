@@ -1,7 +1,7 @@
 from timestamped_for_f1_historical_api.api.v1.event_role.models import EventRole
 from timestamped_for_f1_historical_api.api.v1.driver.models import Driver
 from timestamped_for_f1_historical_api.core.db import AsyncSession, select
-from historical_api.api.utils import get_non_empty_entries
+from timestamped_for_f1_historical_api.utils import get_non_empty_entries
 
 
 async def get_all_by_event_id(db_session: AsyncSession, event_id: int, **filters) -> list[EventRole]:

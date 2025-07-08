@@ -1,32 +1,30 @@
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Table, Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting, meeting_team_assoc
-from timestamped_for_f1_historical_api.api.v1.session.models import Session, session_team_assoc
-from timestamped_for_f1_historical_api.api.v1.driver.models import Driver
-from timestamped_for_f1_historical_api.core.db import Base
-from timestamped_for_f1_historical_api.core.models import QueryModel, ResourceModel, ResponseModel
+from timestamped_for_f1_historical_api.core.db import SQLAlchemyBase
+from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
+# Prevent circular imports for SQLAlchemy models since we are using type annotation
+if TYPE_CHECKING:
+    from timestamped_for_f1_historical_api.api.v1.meeting.models import Meeting, meeting_team_assoc
+    from timestamped_for_f1_historical_api.api.v1.session.models import Session, session_team_assoc
+    from timestamped_for_f1_historical_api.api.v1.driver.models import Driver
 
 
 team_driver_assoc = Table(
     Column("team_id", ForeignKey("team.id")),
     Column("driver_id", ForeignKey("driver.id")),
-    PrimaryKeyConstraint(
-        ("team_id", "driver_id"),
-        name="pk_team_driver_team_id_and_driver_id"
-    ),
+    PrimaryKeyConstraint("team_id", "driver_id"),
     name="team_driver",
-    metadata=Base.metadata
+    metadata=SQLAlchemyBase.metadata
 )
 
 
-class Team(Base):
+class Team(SQLAlchemyBase):
     __tablename__ = "team"
     __table_args__ = (
-        UniqueConstraint(
-            ("year", "name"),
-            name="uq_team_year_and_name"
-        )
+        UniqueConstraint("year", "name")
     )
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -34,15 +32,15 @@ class Team(Base):
     name: Mapped[str]
     color: Mapped[str] = mapped_column(String(length=6))
 
-    meetings: Mapped[list[Meeting]] = relationship(
+    meetings: Mapped[list["Meeting"]] = relationship(
         secondary=meeting_team_assoc, back_populates="teams", cascade="all, delete-orphan"
     )
 
-    sessions: Mapped[list[Session]] = relationship(
+    sessions: Mapped[list["Session"]] = relationship(
         secondary=session_team_assoc, back_populates="teams", cascade="all, delete-orphan"
     )
 
-    drivers: Mapped[list[Driver]] = relationship(
+    drivers: Mapped[list["Driver"]] = relationship(
         secondary=team_driver_assoc, back_populates="teams", cascade="all, delete-orphan"
     )
 
