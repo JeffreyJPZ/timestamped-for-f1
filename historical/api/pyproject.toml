@@ -1,6 +1,6 @@
 [project]
 name = "timestamped-for-f1-historical-api"
-version = "0.1.0"
+version = "0.1.1"
 requires-python = ">=3.13"
 authors = [
     {name = "Jeffrey Zhang", email = "jeffreyjpizhang@gmail.com"},
@@ -8,6 +8,7 @@ authors = [
 dependencies = [
     "alembic>=1.16.2",
     "asyncio>=3.4.3",
+    "asyncpg>=0.30.0",
     "datetime>=5.5",
     "fastapi[standard]>=0.116.0",
     "pydantic-settings>=2.10.1",

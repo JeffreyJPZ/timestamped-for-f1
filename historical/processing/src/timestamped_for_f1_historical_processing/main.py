@@ -37,8 +37,10 @@ def process_overtakes(session_key: int) -> None:
     Note: session_key must match a race session
     """
 
-    # Read drivers, position, location, multiviewer map data from storage instead of querying
+    asyncio.run(_process_overtakes(session_key=session_key))
 
+
+async def _process_overtakes(session_key: int):
     # Get all drivers for a session by number
     driver_data = _query_endpoint(
         base_url=_get_openf1_base_url(),
@@ -66,7 +68,7 @@ def process_overtakes(session_key: int) -> None:
         for idx, position in enumerate(position_data):
             position_date = _to_datetime(position["date"])
 
-            logger.info(f"Driver: {driver_number}, Position: {position["position"]}")
+            logger.info(f"Driver: {driver_number}, Position: {position['position']}")
 
             if idx == 0:
                 # No prev positions to compare, therefore no overtakes
@@ -83,12 +85,12 @@ def process_overtakes(session_key: int) -> None:
                 all_drivers_ahead_position_data_prev = _query_endpoint(
                     base_url=_get_openf1_base_url(),
                     endpoint="position",
-                    query_string=f"session_key={session_key}&date<{_to_timestring(position_date)}&position<{prev_position["position"]}"
+                    query_string=f"session_key={session_key}&date<{_to_timestring(position_date)}&position<{prev_position['position']}"
                 )
                 all_drivers_behind_position_data_curr = _query_endpoint(
                     base_url=_get_openf1_base_url(),
                     endpoint="position",
-                    query_string=f"session_key={session_key}&date>={_to_timestring(position_date)}&position>{position["position"]}"
+                    query_string=f"session_key={session_key}&date>={_to_timestring(position_date)}&position>{position['position']}"
                 )
 
                 # Filter for driver numbers that were previously ahead of the current driver but are now behind
@@ -110,8 +112,9 @@ def process_overtakes(session_key: int) -> None:
                     estimated_location =_get_estimated_overtake_location(session_key=session_key, overtaking_driver_number=driver_number, overtaken_driver_number=overtaken_position["driver_number"], date=position_date)
                     all_overtakes.append((position_data, overtaken_position, estimated_location))
 
-        for overtake in all_overtakes:
-            _insert_overtake_event(session_key=session_key, overtake=overtake)
+    await asyncio.gather(*[
+        _insert_overtake_event(session_key=session_key, overtake=overtake) for overtake in all_overtakes
+    ])
 
 
 async def _insert_overtake_event(session_key: int, overtake: Any):
@@ -130,7 +133,7 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     meeting_content = _query_endpoint(
         base_url=_get_openf1_base_url(),
         endpoint="meetings",
-        query_string=f"meeting_key={db_session["meeting_key"]}"
+        query_string=f"meeting_key={db_session['meeting_key']}"
     )
     meeting_data = meeting_content[0]
 
@@ -138,7 +141,7 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     curr_year = datetime.now().year
     circuit_data = _query_endpoint(
         base_url=_get_multiviewer_base_url(),
-        endpoint=f"circuits/{meeting_data["circuit_key"]}/{curr_year}"
+        endpoint=f"circuits/{meeting_data['circuit_key']}/{curr_year}"
     )
 
     circuit_country_obj, _ = await Circuit.get_or_create(
@@ -196,14 +199,14 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
     initiator_driver_content = _query_endpoint(
         base_url=_get_openf1_base_url(),
         endpoint="drivers",
-        query_string=f"session_key={session_key}&driver_number={initiator_position_data["driver_number"]}"
+        query_string=f"session_key={session_key}&driver_number={initiator_position_data['driver_number']}"
     )
     initiator_driver_data = initiator_driver_content[0]
 
     participant_driver_content = _query_endpoint(
         base_url=_get_openf1_base_url(),
         endpoint="drivers",
-        query_string=f"session_key={session_key}&driver_number={participant_position_data["driver_number"]}"
+        query_string=f"session_key={session_key}&driver_number={participant_position_data['driver_number']}"
     )
     participant_driver_data = participant_driver_content[0]
 
@@ -400,8 +403,8 @@ def _get_estimated_overtake_date(session_key: int, overtaking_driver_number: int
         intervals_before = list(filter(lambda interval : (_to_datetime(interval["date"]) < _to_datetime(overtaking_driver_interval["date"])), overtaken_driver_interval_data))
         intervals_after = list(filter(lambda interval : (_to_datetime(interval["date"]) >= _to_datetime(overtaking_driver_interval["date"])), overtaken_driver_interval_data))
 
-        intervals_with_overtaking_driver_behind_before = list(filter(lambda interval : _to_timedelta(f"{interval["gap_to_leader"]}") is not None and _to_timedelta(f"{interval["gap_to_leader"]}") < _to_timedelta(f"{overtaking_driver_interval["gap_to_leader"]}"), intervals_before))
-        intervals_with_overtaking_driver_ahead_after = list(filter(lambda interval : _to_timedelta(f"{interval["gap_to_leader"]}") is not None and _to_timedelta(f"{interval["gap_to_leader"]}") > _to_timedelta(f"{overtaking_driver_interval["gap_to_leader"]}"), intervals_after))
+        intervals_with_overtaking_driver_behind_before = list(filter(lambda interval : _to_timedelta(f"{interval['gap_to_leader']}") is not None and _to_timedelta(f"{interval['gap_to_leader']}") < _to_timedelta(f"{overtaking_driver_interval['gap_to_leader']}"), intervals_before))
+        intervals_with_overtaking_driver_ahead_after = list(filter(lambda interval : _to_timedelta(f"{interval['gap_to_leader']}") is not None and _to_timedelta(f"{interval['gap_to_leader']}") > _to_timedelta(f"{overtaking_driver_interval['gap_to_leader']}"), intervals_after))
 
         driver_numbers_ahead_before = list(map(lambda interval : interval["driver_number"], intervals_with_overtaking_driver_behind_before))
         driver_numbers_behind_after = list(map(lambda interval : interval["driver_number"], intervals_with_overtaking_driver_ahead_after))

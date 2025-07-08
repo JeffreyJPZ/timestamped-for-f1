@@ -89,6 +89,8 @@ services:
     build:
       context: ./historical/api
       dockerfile: Dockerfile
+    ports:
+      - 8888:8888
     depends_on:
       - historical-db
     environment:

@@ -9,14 +9,14 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from timestamped_for_f1_historical_api.core.db import get_base_metadata
+from timestamped_for_f1_historical_api.core.db import get_base_metadata, get_db_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
 # Passes in SQLAlchemy connection string from environment.
-config.set_section_option(config.config_ini_section, 'SQLALCHEMY_URL', os.environ.get('HISTORICAL_DB_CONNECTION_STRING', default=''))
+config.set_main_option("sqlalchemy.url", get_db_config().sqlalchemy.url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
