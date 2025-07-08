@@ -1,6 +1,6 @@
 [project]
 name = "timestamped-for-f1-historical-api"
-version = "0.0.3"
+version = "0.0.4"
 requires-python = ">=3.13"
 authors = [
     {name = "Jeffrey Zhang", email = "jeffreyjpizhang@gmail.com"},
