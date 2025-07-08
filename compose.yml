@@ -87,7 +87,7 @@ services:
 
   historical-api:
     build:
-      context: ./historical/historical_api
+      context: ./historical/api
       dockerfile: Dockerfile
     depends_on:
       - historical-db
@@ -96,7 +96,7 @@ services:
 
   historical-processing:
     build:
-      context: ./historical/historical_processing
+      context: ./historical/processing
       dockerfile: Dockerfile
     depends_on:
       - openf1
