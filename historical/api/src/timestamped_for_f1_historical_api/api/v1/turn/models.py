@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, PrimaryKeyConstraint, Numeric
+from sqlalchemy import ForeignKey, UniqueConstraint, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from timestamped_for_f1_historical_api.core.db import Base
@@ -14,10 +14,10 @@ if TYPE_CHECKING:
 class Turn(Base):
     __tablename__ = "turn"
     __table_args__ = (
-        PrimaryKeyConstraint("circuit_id", "number"),
+        UniqueConstraint("circuit_id", "number"),
     )
 
-    id: Mapped[int] = mapped_column(unique=True) # For internal use only
+    id: Mapped[int] = mapped_column(primary_key=True)
     number: Mapped[int]
     angle: Mapped[Decimal] = mapped_column(Numeric(precision=18, scale=15))
     length: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=15))

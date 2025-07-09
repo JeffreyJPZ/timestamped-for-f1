@@ -14,13 +14,13 @@ if TYPE_CHECKING:
 class RaceControl(Base):
     __tablename__ = "race_control"
 
-    id: Mapped[int] = mapped_column(unique=True) # For internal use only
+    id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime] = mapped_column(DateTime())
     message: Mapped[str]
     
     # One-to-one weak rel with event as owner
-    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
-    event: Mapped["Event"] = relationship(back_populates="race_control")
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), unique=True)
+    event: Mapped["Event"] = relationship(back_populates="race_control", single_parent=True)
     
     def __repr__(self) -> str:
         return f"RaceControl(id={self.id!r}, date={self.date!r}, message={self.message!r}, event_id={self.event_id!r}"

@@ -35,17 +35,17 @@ class Event(Base):
 
     # One-to-one rel with location
     location: Mapped[Optional["Location"]] = relationship(
-        back_populates="event", cascade="all, delete-orphan", single_parent=True
+        back_populates="event", cascade="all, delete-orphan"
     )
 
     # One-to-one rel with pit
     pit: Mapped[Optional["Pit"]] = relationship(
-        back_populates="event", cascade="all, delete-orphan", single_parent=True
+        back_populates="event", cascade="all, delete-orphan"
     )
 
     # One-to-one rel with race control
     race_control: Mapped[Optional["RaceControl"]] = relationship(
-        back_populates="event", cascade="all, delete-orphan", single_parent=True
+        back_populates="event", cascade="all, delete-orphan"
     )
 
     # Many-to-many rel with driver

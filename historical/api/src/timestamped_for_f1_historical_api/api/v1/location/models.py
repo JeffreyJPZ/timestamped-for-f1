@@ -15,15 +15,15 @@ if TYPE_CHECKING:
 class Location(Base):
     __tablename__ = "location"
 
-    id: Mapped[int] = mapped_column(unique=True) # For internal use only
+    id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime] = mapped_column(DateTime())
     x: Mapped[int]
     y: Mapped[int]
     z: Mapped[int]
     
     # One-to-one weak rel with event as owner
-    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
-    event: Mapped["Event"] = relationship(back_populates="location")
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), unique=True)
+    event: Mapped["Event"] = relationship(back_populates="location", single_parent=True)
     
     def __repr__(self) -> str:
         return f"Location(id={self.id!r}, date={self.date!r}, x={self.x!r}, y={self.y!r}, z={self.z!r}, event_id={self.event_id!r}"
