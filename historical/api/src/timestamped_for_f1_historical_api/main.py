@@ -2,6 +2,7 @@ import asyncio
 from fastapi import FastAPI
 
 from timestamped_for_f1_historical_api.core.db import get_db_manager
+
 from .routes import router
 
 
@@ -13,5 +14,4 @@ asyncio.run(db_manager.sync())
 app = FastAPI(
     root_path="/api/v1"
 )
-
 app.include_router(router)
