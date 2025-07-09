@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import ForeignKey, DateTime, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
+from timestamped_for_f1_historical_api.core.db import Base
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
 from timestamped_for_f1_historical_api.api.v1.event_role.models import EventRoleResponse
 from timestamped_for_f1_historical_api.api.v1.location.models import LocationResponse
@@ -21,7 +21,6 @@ if TYPE_CHECKING:
 
 class Event(Base):
     __tablename__ = "event"
-    metadata = get_base_metadata()
     
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     date: Mapped[datetime] = mapped_column(DateTime())
@@ -31,20 +30,20 @@ class Event(Base):
     cause: Mapped[str]
 
     # Many-to-one rel with session as parent
-    session_id: Mapped[int] = mapped_column(ForeignKey(column="session.id"))
-    session: Mapped["Session"] = relationship(back_populates="events", cascade="all, delete-orphan")
+    session_id: Mapped[Optional[int]] = mapped_column(ForeignKey("session.id"))
+    session: Mapped[Optional["Session"]] = relationship(back_populates="events")
 
     # One-to-one rel with location
-    location: Mapped[Optional["Location"]] = relationship(back_populates="event", cascade="all, delete-orphan")
+    location: Mapped[Optional["Location"]] = relationship(back_populates="event", cascade="all, delete-orphan", single_parent=True)
 
     # One-to-one rel with pit
-    pit: Mapped[Optional["Pit"]] = relationship(back_populates="event", cascade="all, delete-orphan")
+    pit: Mapped[Optional["Pit"]] = relationship(back_populates="event", cascade="all, delete-orphan", single_parent=True)
 
     # One-to-one rel with race control
-    race_control: Mapped[Optional["RaceControl"]] = relationship(back_populates="event", cascade="all, delete-orphan")
+    race_control: Mapped[Optional["RaceControl"]] = relationship(back_populates="event", cascade="all, delete-orphan", single_parent=True)
 
     # Many-to-many rel with driver
-    drivers: Mapped[Optional[list["Driver"]]] = relationship(back_populates="event", cascade="all, delete-orphan")
+    drivers: Mapped[list["Driver"]] = relationship(back_populates="event", cascade="save-update, merge")
 
     def __repr__(self) -> str:
         return f"Event(id={self.id!r}, date={self.date!r}, elapsed_time={self.elapsed_time!r}), lap_number={self.lap_number!r}, category={self.category!r}, cause={self.cause!r}, meeting_id={self.meeting_id!r}, session_name={self.session_name!r}"

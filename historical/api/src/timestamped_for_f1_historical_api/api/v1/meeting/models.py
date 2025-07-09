@@ -1,10 +1,10 @@
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime, timedelta
 
 from sqlalchemy import Table, Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint, DateTime, Integer, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
+from timestamped_for_f1_historical_api.core.db import Base
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 meeting_team_assoc = Table(
     "meeting_team",
-    get_base_metadata(),
+    Base.metadata,
     Column("meeting_id", Integer, ForeignKey("meeting.id")),
     Column("team_id", Integer, ForeignKey("team.id")),
     PrimaryKeyConstraint("meeting_id", "team_id")
@@ -25,7 +25,7 @@ meeting_team_assoc = Table(
 
 meeting_driver_assoc = Table(
     "meeting_driver",
-    get_base_metadata(),
+    Base.metadata,
     Column("meeting_id", Integer, ForeignKey("meeting.id")),
     Column("driver_id", Integer, ForeignKey("driver.id")),
     PrimaryKeyConstraint("meeting_id", "driver_id"),
@@ -37,7 +37,6 @@ class Meeting(Base):
     __table_args__ = (
         UniqueConstraint("year", "name"),
     )
-    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     year: Mapped[int]
@@ -47,8 +46,8 @@ class Meeting(Base):
     utc_offset: Mapped[str] = mapped_column(Interval())
 
     # Many-to-one rel with circuit as parent
-    circuit_id: Mapped[int] = mapped_column(ForeignKey(column="circuit.id"))
-    circuit: Mapped["Circuit"] = relationship(back_populates="meetings")
+    circuit_id: Mapped[Optional[int]] = mapped_column(ForeignKey("circuit.id"))
+    circuit: Mapped[Optional["Circuit"]] = relationship(back_populates="meetings")
 
     sessions: Mapped[list["Session"]] = relationship(
         back_populates="meeting", cascade="all, delete-orphan"

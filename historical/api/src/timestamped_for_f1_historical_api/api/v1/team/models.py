@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import Table, Column, ForeignKey, PrimaryKeyConstraint, UniqueConstraint, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
+from timestamped_for_f1_historical_api.core.db import Base
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
 from timestamped_for_f1_historical_api.api.v1.meeting.models import meeting_team_assoc
 from timestamped_for_f1_historical_api.api.v1.session.models import session_team_assoc
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 team_driver_assoc = Table(
     "team_driver",
-    get_base_metadata(),
+    Base.metadata,
     Column("team_id", ForeignKey("team.id")),
     Column("driver_id", ForeignKey("driver.id")),
     PrimaryKeyConstraint("team_id", "driver_id")
@@ -28,7 +28,6 @@ class Team(Base):
     __table_args__ = (
         UniqueConstraint("year", "name"),
     )
-    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     year: Mapped[int]
@@ -36,15 +35,15 @@ class Team(Base):
     color: Mapped[str] = mapped_column(String(length=6))
 
     meetings: Mapped[list["Meeting"]] = relationship(
-        secondary=meeting_team_assoc, back_populates="teams", cascade="all, delete-orphan"
+        secondary=meeting_team_assoc, back_populates="teams", cascade="save-update, merge"
     )
 
     sessions: Mapped[list["Session"]] = relationship(
-        secondary=session_team_assoc, back_populates="teams", cascade="all, delete-orphan"
+        secondary=session_team_assoc, back_populates="teams", cascade="save-update, merge"
     )
 
     drivers: Mapped[list["Driver"]] = relationship(
-        secondary=team_driver_assoc, back_populates="teams", cascade="all, delete-orphan"
+        secondary=team_driver_assoc, back_populates="teams", cascade="save-update, merge"
     )
 
     def __repr__(self) -> str:

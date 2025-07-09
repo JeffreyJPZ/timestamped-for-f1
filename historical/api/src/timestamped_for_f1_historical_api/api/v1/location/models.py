@@ -5,7 +5,7 @@ from decimal import Decimal
 from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
+from timestamped_for_f1_historical_api.core.db import Base
 from timestamped_for_f1_historical_api.core.models import ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 class Location(Base):
     __tablename__ = "location"
-    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(unique=True) # For internal use only
     date: Mapped[datetime] = mapped_column(DateTime())
@@ -23,8 +22,8 @@ class Location(Base):
     z: Mapped[int]
     
     # One-to-one weak rel with event as owner
-    event_id: Mapped[int] = mapped_column(ForeignKey(column="event.id"), primary_key=True)
-    event: Mapped["Event"] = relationship(back_populates="location", cascade="all, delete-orphan", single_parent=True)
+    event_id: Mapped[int] = mapped_column(ForeignKey("event.id"), primary_key=True)
+    event: Mapped["Event"] = relationship(back_populates="location")
     
     def __repr__(self) -> str:
         return f"Location(id={self.id!r}, date={self.date!r}, x={self.x!r}, y={self.y!r}, z={self.z!r}, event_id={self.event_id!r}"

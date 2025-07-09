@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
+from timestamped_for_f1_historical_api.core.db import Base
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
@@ -17,7 +17,6 @@ class Circuit(Base):
     __table_args__ = (
         UniqueConstraint("year", "name"),
     )
-    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     year: Mapped[int]
@@ -26,11 +25,11 @@ class Circuit(Base):
     rotation: Mapped[int]
 
     # Many-to-one rel with country as parent
-    country_id: Mapped[int] = mapped_column(ForeignKey(column="country.id"))
-    country: Mapped["Country"] = relationship(back_populates="circuits")
+    country_id: Mapped[Optional[int]] = mapped_column(ForeignKey("country.id"))
+    country: Mapped[Optional["Country"]] = relationship(back_populates="circuits")
     
     meetings: Mapped[list["Meeting"]] = relationship(
-        back_populates="circuit", cascade="all, delete-orphan"
+        back_populates="circuit", cascade="save-update, merge"
     )
 
     turns: Mapped[list["Turn"]] = relationship(

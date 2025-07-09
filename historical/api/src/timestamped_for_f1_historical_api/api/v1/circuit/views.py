@@ -17,7 +17,7 @@ router = APIRouter()
 
 @router.get(
     path="/",
-    response_model=list[CircuitResponse]
+    response_model=list["CircuitResponse"]
 )
 async def get_circuits(
     params: Annotated[CircuitGet, Query()],

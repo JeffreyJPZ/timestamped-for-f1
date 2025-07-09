@@ -4,7 +4,7 @@ from decimal import Decimal
 from sqlalchemy import ForeignKey, PrimaryKeyConstraint, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
+from timestamped_for_f1_historical_api.core.db import Base
 from timestamped_for_f1_historical_api.core.models import ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
@@ -16,7 +16,6 @@ class Turn(Base):
     __table_args__ = (
         PrimaryKeyConstraint("circuit_id", "number"),
     )
-    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(unique=True) # For internal use only
     number: Mapped[int]
@@ -26,7 +25,7 @@ class Turn(Base):
     y: Mapped[Decimal] = mapped_column(Numeric(precision=20, scale=15))
 
     # Many-to-one weak rel with circuit as owner
-    circuit_id: Mapped[int] = mapped_column(ForeignKey(column="circuit.id"))
+    circuit_id: Mapped[int] = mapped_column(ForeignKey("circuit.id"))
     circuit: Mapped["Circuit"] = relationship(back_populates="turns")
 
     def __repr__(self) -> str:

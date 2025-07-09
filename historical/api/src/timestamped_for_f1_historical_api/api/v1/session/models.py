@@ -1,10 +1,10 @@
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime, timedelta
 
 from sqlalchemy import Table, Column, ForeignKey, UniqueConstraint, PrimaryKeyConstraint, DateTime, Integer, Interval
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from timestamped_for_f1_historical_api.core.db import Base, get_base_metadata
+from timestamped_for_f1_historical_api.core.db import Base
 from timestamped_for_f1_historical_api.core.models import ResourceModel, ResponseModel
 # Prevent circular imports for SQLAlchemy models since we are using type annotation
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 session_team_assoc = Table(
     "session_team",
-    get_base_metadata(),
+    Base.metadata,
     Column("session_id", Integer, ForeignKey("session.id")),
     Column("team_id", Integer, ForeignKey("team.id")),
     PrimaryKeyConstraint("session_id", "team_id")
@@ -25,7 +25,7 @@ session_team_assoc = Table(
 
 session_driver_assoc = Table(
     "session_driver",
-    get_base_metadata(),
+    Base.metadata,
     Column("session_id", Integer, ForeignKey("session.id")),
     Column("driver_id", Integer, ForeignKey("driver.id")),
     PrimaryKeyConstraint("session_id", "driver_id")
@@ -37,7 +37,6 @@ class Session(Base):
     __table_args__ = (
         UniqueConstraint("meeting_id", "name"),
     )
-    metadata = get_base_metadata()
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -47,19 +46,19 @@ class Session(Base):
     utc_offset: Mapped[timedelta] = mapped_column(Interval())
 
     # Many-to-one rel with meeting as parent
-    meeting_id: Mapped[int] = mapped_column(ForeignKey(column="meeting.id"))
-    meeting: Mapped["Meeting"] = relationship(back_populates="sessions")
+    meeting_id: Mapped[Optional[int]] = mapped_column(ForeignKey("meeting.id"))
+    meeting: Mapped[Optional["Meeting"]] = relationship(back_populates="sessions")
 
     events: Mapped[list["Event"]] = relationship(
-        back_populates="session", cascade="all, delete-orphan"
+        back_populates="session", cascade="save-update, merge"
     )
 
     teams: Mapped[list["Team"]] = relationship(
-        secondary=session_team_assoc, back_populates="sessions", cascade="all, delete-orphan"
+        secondary=session_team_assoc, back_populates="sessions", cascade="save-update, merge"
     )
 
     drivers: Mapped[list["Driver"]] = relationship(
-        secondary=session_driver_assoc, back_populates="sessions", cascade="all, delete-orphan"
+        secondary=session_driver_assoc, back_populates="sessions", cascade="save-update, merge"
     )
 
     def __repr__(self) -> str:
