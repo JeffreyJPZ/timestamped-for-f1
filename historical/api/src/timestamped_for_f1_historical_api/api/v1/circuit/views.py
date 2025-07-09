@@ -16,8 +16,8 @@ router = APIRouter()
 
 
 @router.get(
-    path="/",
-    response_model=list["CircuitResponse"]
+    path="",
+    response_model=list[CircuitResponse]
 )
 async def get_circuits(
     params: Annotated[CircuitGet, Query()],
@@ -33,6 +33,9 @@ async def get_circuits(
         rotation=params.circuit_rotation
     )
 
+    if not circuits:
+        return []
+    
     # gather should return results in the order of returned circuits
     # TODO: handle exception
     countries = await asyncio.gather(*[

@@ -26,7 +26,7 @@ router = APIRouter()
 
 
 @router.get(
-    path="/",
+    path="",
     response_model=list[SessionResponse]
 )
 async def get_sessions(
@@ -46,6 +46,9 @@ async def get_sessions(
         utc_offset=params.utc_offset
     )
 
+    if not sessions:
+        return []
+    
     meetings = await asyncio.gather(*[
         meeting_services.get(
             db_session=db_session,
@@ -139,6 +142,9 @@ async def get_teams_by_session(
         session_id=session.id
     )
 
+    if not teams:
+        return []
+
     drivers = await asyncio.gather(*[
         driver_services.get_all_by_team_id_and_session_id(
             db_session=db_session,
@@ -186,6 +192,9 @@ async def get_drivers_by_session(
         db_session=db_session,
         session_id=session.id
     )
+
+    if not drivers:
+        return []
 
     teams = await asyncio.gather(*[
         team_services.get_all_by_driver_id_and_session_id(
@@ -249,6 +258,9 @@ async def get_events_by_session(
         db_session=db_session,
         session_id=session.id
     )
+
+    if not events:
+        return []
 
     roles = await asyncio.gather(*[
         event_role_services.get_all_by_event_id(

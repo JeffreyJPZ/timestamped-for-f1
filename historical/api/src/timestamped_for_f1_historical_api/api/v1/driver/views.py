@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.get(
-    path="/",
+    path="",
     response_model=list[DriverResponse]
 )
 async def get_drivers(
@@ -38,6 +38,9 @@ async def get_drivers(
         country_code=params.country_code
     )
 
+    if not drivers:
+        return []
+    
     teams = await asyncio.gather(*[
         team_services.get_all_by_driver_id(
             db_session=db_session,

@@ -25,7 +25,7 @@ router = APIRouter()
 
 
 @router.get(
-    path="/",
+    path="",
     response_model=list[EventResponse]
 )
 async def get_events(
@@ -43,6 +43,9 @@ async def get_events(
         category=params.category,
         cause=params.cause,
     )
+
+    if not events:
+        return []
 
     sessions = await asyncio.gather(*[
         session_services.get(

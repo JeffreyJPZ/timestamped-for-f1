@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.get(
-    path="/",
+    path="",
     response_model=list[TeamResponse]
 )
 async def get_teams(
@@ -30,6 +30,9 @@ async def get_teams(
         color=params.team_color
     )
 
+    if not teams:
+        return []
+    
     drivers = await asyncio.gather(*[
         driver_services.get_all_by_team_id(
             db_session=db_session,

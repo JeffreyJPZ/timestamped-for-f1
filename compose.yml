@@ -69,6 +69,8 @@ services:
   openf1-db:
     image: mongo:8.0.11
     restart: unless-stopped
+    expose:
+      - 27017
     volumes:
       - ./data/openf1-db:/data/db
     environment:
@@ -94,7 +96,7 @@ services:
     depends_on:
       - historical-db
     environment:
-      SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db/${HISTORICAL_DB_NAME}"
+      SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
 
   historical-processing:
     build:
@@ -106,12 +108,13 @@ services:
       - historical-db
     environment:
       OPENF1_ADDRESS: "openf1:8000"
-      SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db/${HISTORICAL_DB_NAME}"
+      SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
 
   historical-db:
     image: postgres:17.5
-    ports:
-      - 8080:8080
+    restart: unless-stopped
+    expose:
+      - 5432
     volumes:
       - ./data/historical-db:/var/lib/postgresql/data
     environment:
