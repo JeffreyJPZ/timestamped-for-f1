@@ -50,7 +50,9 @@ class Driver(Base):
     )
 
     # Many-to-many rel with events
-    events: Mapped[list["Event"]] = relationship(back_populates="driver", cascade="save-update, merge")
+    events: Mapped[list["Event"]] = relationship(
+        back_populates="driver", cascade="save-update, merge"
+    )
 
     def __repr__(self) -> str:
         return f"Driver(id={self.id!r}, year={self.year!r}, number={self.number!r}, acronym={self.acronym!r}, first_name={self.first_name!r}, last_name={self.last_name!r}, full_name={self.full_name!r}, broadcast_name={self.broadcast_name!r}, image_url={self.image_url!r}, country_id={self.country_id!r}"

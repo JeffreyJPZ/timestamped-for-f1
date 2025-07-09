@@ -34,16 +34,24 @@ class Event(Base):
     session: Mapped[Optional["Session"]] = relationship(back_populates="events")
 
     # One-to-one rel with location
-    location: Mapped[Optional["Location"]] = relationship(back_populates="event", cascade="all, delete-orphan", single_parent=True)
+    location: Mapped[Optional["Location"]] = relationship(
+        back_populates="event", cascade="all, delete-orphan", single_parent=True
+    )
 
     # One-to-one rel with pit
-    pit: Mapped[Optional["Pit"]] = relationship(back_populates="event", cascade="all, delete-orphan", single_parent=True)
+    pit: Mapped[Optional["Pit"]] = relationship(
+        back_populates="event", cascade="all, delete-orphan", single_parent=True
+    )
 
     # One-to-one rel with race control
-    race_control: Mapped[Optional["RaceControl"]] = relationship(back_populates="event", cascade="all, delete-orphan", single_parent=True)
+    race_control: Mapped[Optional["RaceControl"]] = relationship(
+        back_populates="event", cascade="all, delete-orphan", single_parent=True
+    )
 
     # Many-to-many rel with driver
-    drivers: Mapped[list["Driver"]] = relationship(back_populates="event", cascade="save-update, merge")
+    drivers: Mapped[list["Driver"]] = relationship(
+        back_populates="event", cascade="save-update, merge"
+    )
 
     def __repr__(self) -> str:
         return f"Event(id={self.id!r}, date={self.date!r}, elapsed_time={self.elapsed_time!r}), lap_number={self.lap_number!r}, category={self.category!r}, cause={self.cause!r}, meeting_id={self.meeting_id!r}, session_name={self.session_name!r}"
