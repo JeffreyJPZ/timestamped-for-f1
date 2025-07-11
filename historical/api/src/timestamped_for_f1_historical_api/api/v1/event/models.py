@@ -80,11 +80,7 @@ class EventGet(EventResource):
 
 
 class EventDataResponse(ResponseModel):
-    date: datetime
-    elapsed_time: timedelta
     lap_number: int | None
-    category: str
-    cause: str
     roles: list[EventRoleResponse] | None
     details: LocationResponse | PitResponse | RaceControlResponse
 
@@ -94,4 +90,8 @@ class EventResponse(ResponseModel):
     circuit_id: int
     meeting_id: int
     session_id: int
+    date: datetime
+    elapsed_time: timedelta
+    category: str
+    cause: str
     data: EventDataResponse

@@ -12,7 +12,7 @@ dependencies = [
     "polars>=1.31.0",
     "requests>=2.32.4",
     "s3fs>=2025.5.1",
-    "timestamped-for-f1-historical-api>=0.1.0",
+    "timestamped-for-f1-historical-api>=0.1.1",
     "typer>=0.16.0",
 ]
 

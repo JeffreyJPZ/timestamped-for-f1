@@ -298,11 +298,7 @@ async def get_events_by_meeting(
         event_roles_response = list(map(lambda event_role : EventRoleResponse(driver_id=event_role.driver_id, role=event_role.role), event_roles))
 
         event_data_response = EventDataResponse(
-            date=event.date,
-            elapsed_time=event.elapsed_time,
             lap_number=event.lap_number,
-            category=event.category,
-            cause=event.cause,
             roles=event_roles_response,
             details=details_response
         )
@@ -313,6 +309,10 @@ async def get_events_by_meeting(
                 circuit_id=circuit.id,
                 meeting_id=meeting.id,
                 session_id=event.session_id,
+                date=event.date,
+                elapsed_time=event.elapsed_time,
+                category=event.category,
+                cause=event.cause,
                 data=event_data_response
             )
         )

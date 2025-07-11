@@ -101,11 +101,7 @@ async def get_events(
         event_roles_response = list(map(lambda event_role : EventRoleResponse(driver_id=event_role.driver_id, role=event_role.role), event_roles))
 
         event_data_response = EventDataResponse(
-            date=event.date,
-            elapsed_time=event.elapsed_time,
             lap_number=event.lap_number,
-            category=event.category,
-            cause=event.cause,
             roles=event_roles_response,
             details=details_response
         )
@@ -116,6 +112,10 @@ async def get_events(
                 circuit_id=event_circuit.id,
                 meeting_id=event_meeting.id,
                 session_id=event_session.id,
+                date=event.date,
+                elapsed_time=event.elapsed_time,
+                category=event.category,
+                cause=event.cause,
                 data=event_data_response
             )
         )
@@ -175,11 +175,7 @@ async def get_event(
     event_roles_response = list(map(lambda event_role : EventRoleResponse(driver_id=event_role.driver_id, role=event_role.role), roles))
 
     event_data_response = EventDataResponse(
-        date=event.date,
-        elapsed_time=event.elapsed_time,
         lap_number=event.lap_number,
-        category=event.category,
-        cause=event.cause,
         roles=event_roles_response,
         details=details_response
     )
@@ -189,5 +185,9 @@ async def get_event(
         circuit_id=circuit.id,
         meeting_id=meeting.id,
         session_id=session.id,
+        date=event.date,
+        elapsed_time=event.elapsed_time,
+        category=event.category,
+        cause=event.cause,
         data=event_data_response
     )

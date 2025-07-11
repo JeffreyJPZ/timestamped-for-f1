@@ -110,7 +110,10 @@ async def _process_overtakes(session_key: int):
 
                 for overtaken_position in overtaken_drivers_position_data_curr:
                     estimated_location =_get_estimated_overtake_location(session_key=session_key, overtaking_driver_number=driver_number, overtaken_driver_number=overtaken_position["driver_number"], date=position_date)
+
+                    logger.info(f"Estimated location: {estimated_location}")
                     all_overtakes.append((position_data, overtaken_position, estimated_location))
+                    
 
     await asyncio.gather(*[
         _insert_overtake_event(session_key=session_key, overtake=overtake) for overtake in all_overtakes
@@ -122,6 +125,8 @@ async def _insert_overtake_event(session_key: int, overtake: Any):
 
     # Position data for initiating driver, position data for overtaken driver and location
     initiator_position_data, participant_position_data, estimated_location = overtake
+
+    logger.info(f"Inserting overtake between `{initiator_position_data['driver_number']}` and `{participant_position_data['driver_number']}")
 
     session_content = _query_endpoint(
         base_url=_get_openf1_base_url(),
@@ -321,6 +326,8 @@ def _get_lap_number(session_key: int, date: datetime) -> int:
     Gets the lap number for a race session at the given date (the current lap number of the leading driver)
     """
 
+    logger.info(f"Retrieving lap number")
+
     # Get interval data for all drivers that have led before the given date
     interval_content = _query_endpoint(
         base_url=_get_openf1_base_url(),
@@ -350,7 +357,7 @@ def _get_estimated_overtake_location(session_key: int, overtaking_driver_number:
     Returns the estimated overtake location for an overtaking driver on an overtaken driver using the given date
     i.e. the location where the overtake is considered fully complete
     """
-    logger.info(f"Processing driver {overtaking_driver_number} overtake on {overtaken_driver_number}")
+    logger.info(f"Retrieving overtake location for driver {overtaking_driver_number} overtake on {overtaken_driver_number}")
 
     # TIME_INTERVAL_S should be around interval sampling rate (~5hz)
     TIME_INTERVAL_S ="5"
@@ -381,6 +388,8 @@ def _get_estimated_overtake_date(session_key: int, overtaking_driver_number: int
     Returns the estimated date of the overtake for an overtaking driver on an overtaken driver, None if the date cannot be estimated
     NOTE: this only works for unlapped cars i.e. their gap to leader is not "+1 LAP", "+2 LAPS", etc.
     """
+
+    logger.info(f"Retrieving overtake date for driver {overtaking_driver_number} overtake on {overtaken_driver_number}")
 
     # TIME_INTERVAL_S should be relatively large (we know that positions are recorded per lap, therefore the overtake must have occurred on the previous lap)
     TIME_INTERVAL_S = "300"
@@ -559,8 +568,7 @@ def _get_openf1_base_url() -> str:
     Base address for the running OpenF1 service
     """
 
-    # ADDRESS = os.getenv("OPENF1_ADDRESS", "0.0.0.0:8000")
-    ADDRESS = "0.0.0.0:8000" # TODO: replace with environment variable
+    ADDRESS = os.getenv("OPENF1_ADDRESS", "0.0.0.0:8000")
 
     return f"http://{ADDRESS}/v1"
 
