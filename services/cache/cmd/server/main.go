@@ -3,10 +3,10 @@ package server
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os/signal"
 	"syscall"
 
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/routes"
 	"github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/server"
 )
 
@@ -32,5 +32,7 @@ func serve(ctx context.Context) error {
 		return fmt.Errorf("server.main: failed to start server. Error: %v", err)
 	}
 
-	return srv.ServeHTTPWithHandler(ctx, &http.ServeMux{})
+	var router *routes.Router
+
+	return srv.ServeHTTPWithHandler(ctx, router.Routes())
 }
