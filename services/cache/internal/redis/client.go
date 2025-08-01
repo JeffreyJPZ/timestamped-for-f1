@@ -23,9 +23,9 @@ func NewClient(url string) (*RedisClient, error) {
 	return &RedisClient{client: r}, nil
 }
 
-// Lookup gets a string value from Redis associated with the given key, returning nil if the key was not found,
+// Get gets a string value from Redis associated with the given key, returning nil if the key was not found,
 // or an error if the value is not a string.
-func (r *RedisClient) Lookup(ctx context.Context, key string) (any, error) {
+func (r *RedisClient) Get(ctx context.Context, key string) (any, error) {
 	value, err := r.client.Get(ctx, key).Result()
 	if err != nil {
 		return nil, err
