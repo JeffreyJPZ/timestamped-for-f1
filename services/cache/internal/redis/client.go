@@ -2,16 +2,19 @@ package redis
 
 import (
 	"context"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
 type RedisClient struct {
+	config Config
 	client *redis.Client
 }
 
-// NewClient initializes a new Redis client with the given URL and options.
+// NewClient initializes a new Redis client with the given URL and configuration given in the URL.
 func NewClient(url string) (*RedisClient, error) {
 	opt, err := redis.ParseURL(url)
 	if err != nil {
@@ -20,7 +23,16 @@ func NewClient(url string) (*RedisClient, error) {
 
 	r := redis.NewClient(opt)
 
-	return &RedisClient{client: r}, nil
+	return &RedisClient{
+		config: Config{
+			Host:     strings.Split(r.Options().Addr, ":")[0],
+			Port:     strings.Split(r.Options().Addr, ":")[1],
+			User:     r.Options().Username,
+			Password: r.Options().Password,
+			DB:       strconv.Itoa(r.Options().DB),
+		},
+		client: r,
+	}, nil
 }
 
 // Get gets a string value from Redis associated with the given key, returning nil if the key was not found,
