@@ -48,8 +48,8 @@ func (r *RedisClient) Get(ctx context.Context, key string) (any, error) {
 
 // Set assigns a value to the given key in Redis, returning nil if the key was successfully set,
 // otherwise returning an error.
-func (r *RedisClient) Set(ctx context.Context, key string, value any, expirationTime time.Duration) error {
-	err := r.client.Set(ctx, key, value, expirationTime).Err()
+func (r *RedisClient) Set(ctx context.Context, key string, value any, expirationTime float64) error {
+	err := r.client.Set(ctx, key, value, time.Duration(expirationTime)).Err()
 	if err != nil {
 		return err
 	}
