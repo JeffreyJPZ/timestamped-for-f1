@@ -45,10 +45,10 @@ func (r *Router) handleCacheGet(c cache.Cache) http.HandlerFunc {
 
 		var response *cache_api_v1.CacheGetResponse
 
-		// Extract key from wildcard in path
+		// Extract key from wildcard in path.
 		key := r.PathValue("key")
 
-		// Get value from cache
+		// Get value from cache.
 		ctx := r.Context()
 		result, err := c.Get(ctx, key)
 		if err != nil {
@@ -87,7 +87,7 @@ func (r *Router) handleCacheSet(c cache.Cache) http.HandlerFunc {
 		var data *cache_api_v1.CacheSetRequest
 		var response *cache_api_v1.CacheSetResponse
 
-		// Parse body (stored at data)
+		// Parse body (stored at data).
 		status, err := jsonutils.Unmarshal(w, r, data)
 		if status != http.StatusOK || data == nil {
 			response = &cache_api_v1.CacheSetResponse{
@@ -98,7 +98,7 @@ func (r *Router) handleCacheSet(c cache.Cache) http.HandlerFunc {
 			return
 		}
 
-		// Set key-value in cache
+		// Set key-value in cache.
 		ctx := r.Context()
 		err = c.Set(ctx, data.Key, data.Value, data.ExpirationTime)
 		if err != nil {
