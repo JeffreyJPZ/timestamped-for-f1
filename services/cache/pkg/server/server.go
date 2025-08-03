@@ -10,6 +10,10 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	grpc_cache_service "github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/grpc"
+	pb "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api/grpc/v1"
+	"google.golang.org/grpc"
 )
 
 type Server struct {
@@ -22,13 +26,12 @@ type Server struct {
 // If address is empty, the listener will listen on all interfaces.
 // If port is empty, a random port is assigned.
 func NewServer(ip string, port string) (*Server, error) {
-
 	// Create network address.
 	address := fmt.Sprintf("%s:%s", ip, port)
 
 	listener, err := net.Listen("tcp", address)
 	if err == nil {
-		return nil, fmt.Errorf("server.NewServer: failed to create listener on address %s. Error: %v", address, err)
+		return nil, fmt.Errorf("failed to create listener on address %s. Error: %v", address, err)
 	}
 
 	return &Server{
@@ -40,10 +43,10 @@ func NewServer(ip string, port string) (*Server, error) {
 
 // ServeHTTPWithHandler enables the server to accept incoming HTTP requests on its listener.
 // When it is executed, it blocks when the server begins serving,
-// and shuts down gracefully when its context is closed.
+// and shuts down gracefully when its context is closed. After it is closed, the server cannot be reused.
 func (s *Server) ServeHTTPWithHandler(ctx context.Context, handler http.Handler) error {
 	// Create http server struct with defaults.
-	sHttp := &http.Server{
+	sHTTP := &http.Server{
 		ReadHeaderTimeout: 5 * time.Second, // This allows handlers to set per-request timeouts.
 		Handler:           handler,
 	}
@@ -54,22 +57,73 @@ func (s *Server) ServeHTTPWithHandler(ctx context.Context, handler http.Handler)
 		// Wait for server context to close.
 		<-ctx.Done()
 
-		// Create a timed context with a server shutdown grace period.
+		// Create a timed context with a server shutdown grace period of 5 seconds.
 		timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 
-		shutdownErrCh <- sHttp.Shutdown(timeoutCtx)
-
+		shutdownErrCh <- sHTTP.Shutdown(timeoutCtx)
 	}()
 
 	// Run the server and block.
-	if err := sHttp.Serve(s.Listener()); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("server.ServeHTTPWithHandler: failed to serve on address %s. Error: %v", s.Address(), err)
+	if err := sHTTP.Serve(s.Listener()); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("failed to serve on address %s. Error: %v", s.Address(), err)
 	}
 
 	// Return any error during the shutdown process.
 	if err := <-shutdownErrCh; err != nil {
-		return fmt.Errorf("server.ServeHTTPWithHandler: shutdown failure on address %s. Error: %v", s.Address(), err)
+		return fmt.Errorf("shutdown failure on address %s. Error: %v", s.Address(), err)
+	}
+
+	return nil
+}
+
+// ServeGRPC enables the server to accept gRPC requests on its listener.
+// When it is executed, it blocks when the server begins serving,
+// and shuts down gracefully when its context is closed. After it is closed, the server cannot be reused.
+func (s *Server) ServeGRPC(ctx context.Context) error {
+	sGRPC := grpc.NewServer()
+
+	cache_service, err := grpc_cache_service.NewService()
+	if err != nil {
+		return fmt.Errorf("failed to serve on address %s. Error: %v", s.Address(), err)
+	}
+
+	pb.RegisterCacheServer(sGRPC, cache_service)
+
+	// Handle server shutdown.
+	shutdownErrCh := make(chan error, 1)
+	go func() {
+		// Wait for server context to close.
+		<-ctx.Done()
+
+		// Create a timed context with a server shutdown grace period of 5 seconds.
+		timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		errCh := make(chan error, 1)
+		go func() {
+			sGRPC.GracefulStop()
+			close(errCh)
+		}()
+
+		select {
+		case <-errCh:
+			// Server successfully shut down.
+			shutdownErrCh <- nil
+		case <-timeoutCtx.Done():
+			// Timeout elapsed.
+			shutdownErrCh <- fmt.Errorf("shutdown timed out on address %s", s.Address())
+		}
+	}()
+
+	// Run the server and block.
+	if err := sGRPC.Serve(s.Listener()); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
+		return fmt.Errorf("failed to serve on address %s. Error: %v", s.Address(), err)
+	}
+
+	// Return any error during the shutdown process.
+	if err := <-shutdownErrCh; err != nil {
+		return fmt.Errorf("shutdown failure on address %s. Error: %v", s.Address(), err)
 	}
 
 	return nil

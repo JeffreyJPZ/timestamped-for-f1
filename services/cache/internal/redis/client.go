@@ -6,10 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/cache"
 	"github.com/redis/go-redis/v9"
 )
 
 type RedisClient struct {
+	cache.Cache
 	config Config
 	client *redis.Client
 }

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option go_package = "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api/grpc/v1;cache_api_grpc_v1";
+option java_multiple_files = true;
+option java_package = "com.github.jeffreyjpz.timestamped_for_f1.cache_api_grpc_v1";
+option java_outer_classname = "TimestampedForF1CacheApiGrpcV1";
+
+package v1;
+
+// The main cache service.
+service Cache {
+    // Get is a unary RPC that takes in a key for a cache item and returns the result of a cache lookup.
+    rpc Get(CacheKey) returns (CacheResult) {}
+
+    // Get is a unary RPC that takes a cache item and returns the result of a cache write.
+    rpc Set(CacheItem) returns (CacheResult) {}
+}
+
+message CacheKey {
+    // The key to perform a cache lookup for.
+    string key = 1;
+}
+
+message CacheItem {
+    // The new key for the cache item.
+    string key = 1;
+    // The new value of the cache item.
+    string value = 2;
+    // The TTL for the cache item, in seconds.
+    double expirationTime = 3;
+}
+
+message CacheResult {
+    // The key for the cache item, if the item exists.
+    string key = 1;
+    // The value of the cache item, if the item exists.
+    string value = 2;
+
+    // Unique error code, if the cache item does not exist.
+    string code = 3;
+    // Error details, if the cache item does not exist.
+    string message = 4;
+}

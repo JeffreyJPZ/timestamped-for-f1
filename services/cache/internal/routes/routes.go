@@ -7,7 +7,8 @@ import (
 
 	"github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/jsonutils"
 	"github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/redis"
-	cache_api_v1 "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api/v1"
+	cache_api "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api"
+	cache_api_http_v1 "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api/http/v1"
 	"github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/cache"
 )
 
@@ -28,7 +29,7 @@ func (r *Router) Routes() *http.ServeMux {
 	cache, err := redis.NewClient(config.ConnectionURL())
 
 	if err != nil {
-		fmt.Printf("router.Routes: failed to connect to Redis. Error: %v", err)
+		fmt.Printf("failed to connect to Redis. Error: %v", err)
 	}
 
 	router.HandleFunc(makePattern(http.MethodGet, "v1/get/{key}"), r.handleCacheGet(cache))
@@ -41,9 +42,9 @@ func (r *Router) Routes() *http.ServeMux {
 // indicating whether the key was in the cache or not.
 func (r *Router) handleCacheGet(c cache.Cache) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set(cache_api_v1.HeaderAPIVersion, cache_api_v1.APIVersion)
+		w.Header().Set(cache_api_http_v1.HeaderAPIVersion, cache_api_http_v1.APIVersion)
 
-		var response *cache_api_v1.CacheGetResponse
+		var response *cache_api_http_v1.CacheGetResponse
 
 		// Extract key from wildcard in path.
 		key := r.PathValue("key")
@@ -52,9 +53,9 @@ func (r *Router) handleCacheGet(c cache.Cache) http.HandlerFunc {
 		ctx := r.Context()
 		result, err := c.Get(ctx, key)
 		if err != nil {
-			response = &cache_api_v1.CacheGetResponse{
-				ErrorCode:    cache_api_v1.KEY_NOT_FOUND_ERROR.String(),
-				ErrorMessage: fmt.Errorf("router.handleCacheGet: key %s does not exist in cache. Error: %v", key, err).Error(),
+			response = &cache_api_http_v1.CacheGetResponse{
+				Code:    cache_api.KEY_NOT_FOUND_ERROR.String(),
+				Message: fmt.Errorf("key %s does not exist in cache", key).Error(),
 			}
 			jsonutils.MarshalResponse(w, http.StatusNotFound, *response)
 			return
@@ -62,15 +63,15 @@ func (r *Router) handleCacheGet(c cache.Cache) http.HandlerFunc {
 
 		value, ok := result.(string)
 		if !ok {
-			response = &cache_api_v1.CacheGetResponse{
-				ErrorCode:    cache_api_v1.VALUE_INVALID_FORMAT_ERROR.String(),
-				ErrorMessage: fmt.Errorf("router.handleCacheGet: failed to coerce value %v associated with key %s to string", result, key).Error(),
+			response = &cache_api_http_v1.CacheGetResponse{
+				Code:    cache_api.VALUE_INVALID_FORMAT_ERROR.String(),
+				Message: fmt.Errorf("failed to coerce value %v associated with key %s to string", result, key).Error(),
 			}
 			jsonutils.MarshalResponse(w, http.StatusBadRequest, *response)
 			return
 		}
 
-		response = &cache_api_v1.CacheGetResponse{
+		response = &cache_api_http_v1.CacheGetResponse{
 			Key:   key,
 			Value: value,
 		}
@@ -82,17 +83,17 @@ func (r *Router) handleCacheGet(c cache.Cache) http.HandlerFunc {
 // and creates/replaces the entry in the cache for the key.
 func (r *Router) handleCacheSet(c cache.Cache) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set(cache_api_v1.HeaderAPIVersion, cache_api_v1.APIVersion)
+		w.Header().Set(cache_api_http_v1.HeaderAPIVersion, cache_api_http_v1.APIVersion)
 
-		var data *cache_api_v1.CacheSetRequest
-		var response *cache_api_v1.CacheSetResponse
+		var data *cache_api_http_v1.CacheSetRequest
+		var response *cache_api_http_v1.CacheSetResponse
 
 		// Parse body (stored at data).
 		status, err := jsonutils.Unmarshal(w, r, data)
-		if status != http.StatusOK || data == nil {
-			response = &cache_api_v1.CacheSetResponse{
-				ErrorCode:    cache_api_v1.INVALID_REQUEST_ERROR.String(),
-				ErrorMessage: fmt.Errorf("router.handleCacheSet: failed to parse request body. Error: %v", err).Error(),
+		if status != http.StatusOK || err != nil || data == nil {
+			response = &cache_api_http_v1.CacheSetResponse{
+				Code:    cache_api.INVALID_REQUEST_ERROR.String(),
+				Message: fmt.Errorf("failed to parse request body").Error(),
 			}
 			jsonutils.MarshalResponse(w, http.StatusBadRequest, *response)
 			return
@@ -102,15 +103,15 @@ func (r *Router) handleCacheSet(c cache.Cache) http.HandlerFunc {
 		ctx := r.Context()
 		err = c.Set(ctx, data.Key, data.Value, data.ExpirationTime)
 		if err != nil {
-			response = &cache_api_v1.CacheSetResponse{
-				ErrorCode:    cache_api_v1.CACHE_ERROR.String(),
-				ErrorMessage: fmt.Errorf("router.handleCacheSet: failed to set value %s for key %s. Error: %v", data.Value, data.Key, err).Error(),
+			response = &cache_api_http_v1.CacheSetResponse{
+				Code:    cache_api.CACHE_ERROR.String(),
+				Message: fmt.Errorf("failed to set value %s for key %s", data.Value, data.Key).Error(),
 			}
 			jsonutils.MarshalResponse(w, http.StatusInternalServerError, *response)
 			return
 		}
 
-		response = &cache_api_v1.CacheSetResponse{
+		response = &cache_api_http_v1.CacheSetResponse{
 			Key:   data.Key,
 			Value: data.Value,
 		}

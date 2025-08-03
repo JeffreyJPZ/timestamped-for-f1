@@ -1,8 +1,9 @@
-package server
+package http
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/signal"
 	"syscall"
 
@@ -26,13 +27,16 @@ func main() {
 }
 
 func serve(ctx context.Context) error {
-	srv, err := server.NewServer("", "5555")
+	s, err := server.NewServer(
+		os.Getenv("TIMESTAMPED_FOR_F1_CACHE_IP"),
+		os.Getenv("TIMESTAMPED_FOR_F1_CACHE_PORT"),
+	)
 
 	if err != nil {
-		return fmt.Errorf("server.main: failed to start server. Error: %v", err)
+		return fmt.Errorf("failed to start server. Error: %v", err)
 	}
 
 	var router *routes.Router
 
-	return srv.ServeHTTPWithHandler(ctx, router.Routes())
+	return s.ServeHTTPWithHandler(ctx, router.Routes())
 }
