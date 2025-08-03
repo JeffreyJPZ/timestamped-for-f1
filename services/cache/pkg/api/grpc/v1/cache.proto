@@ -12,7 +12,7 @@ service Cache {
     // Get is a unary RPC that takes in a key for a cache item and returns the result of a cache lookup.
     rpc Get(CacheKey) returns (CacheResult) {}
 
-    // Get is a unary RPC that takes a cache item and returns the result of a cache write.
+    // Set is a unary RPC that takes a cache item and returns the result of a cache write.
     rpc Set(CacheItem) returns (CacheResult) {}
 }
 
