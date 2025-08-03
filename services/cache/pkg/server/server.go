@@ -83,6 +83,7 @@ func (s *Server) ServeHTTPWithHandler(ctx context.Context, handler http.Handler)
 func (s *Server) ServeGRPC(ctx context.Context) error {
 	sGRPC := grpc.NewServer()
 
+	// Start and register cache service
 	cache_service, err := grpc_cache_service.NewService()
 	if err != nil {
 		return fmt.Errorf("failed to serve on address %s. Error: %v", s.Address(), err)

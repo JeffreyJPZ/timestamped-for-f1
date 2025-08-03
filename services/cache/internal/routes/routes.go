@@ -32,6 +32,7 @@ func (r *Router) Routes() *http.ServeMux {
 		fmt.Printf("failed to connect to Redis. Error: %v", err)
 	}
 
+	// Register routes.
 	router.HandleFunc(makePattern(http.MethodGet, "v1/get/{key}"), r.handleCacheGet(cache))
 	router.HandleFunc(makePattern(http.MethodPut, "v1/set"), r.handleCacheSet(cache))
 
