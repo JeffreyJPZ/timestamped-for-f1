@@ -1,5 +1,17 @@
 services:
   
+  cache:
+    build:
+      context: ./services/cache
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - 6379
+    volumes:
+      - ./services/cache/config/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./services/cache/data:/data
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+
   openf1-live-mq:
     build:
       context: ./services/openf1-live-mq
@@ -8,6 +20,10 @@ services:
     expose:
       - 5672
       - 15672
+    volumes:
+      - ./services/openf1-live-mq/config/definitions.json:/etc/rabbitmq/definitions.json
+    environment:
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\""
 
   openf1-db:
     build:
@@ -17,7 +33,7 @@ services:
     expose:
       - 27017
     volumes:
-      - ./data/openf1-db:/data/db
+      - ./services/openf1-db/data:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${OPENF1_DB_ROOT_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${OPENF1_DB_ROOT_PASSWORD}"
@@ -45,7 +61,7 @@ services:
 
   historical-processing:
     build:
-      context: ./historical/processing
+      context: ./services/historical/processing
       dockerfile: Dockerfile
     depends_on:
       - openf1
@@ -61,7 +77,7 @@ services:
     expose:
       - 5432
     volumes:
-      - ./data/historical-db:/var/lib/postgresql/data
+      - ./services/historical-db/data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: "${HISTORICAL_DB_ROOT_USERNAME}"
       POSTGRES_PASSWORD: "${HISTORICAL_DB_ROOT_PASSWORD}"

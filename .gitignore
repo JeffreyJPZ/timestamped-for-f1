@@ -132,8 +132,11 @@ dist
 # Config properties
 *.properties
 
-# Development specific files
-/data
+# Config for services
+services/**/config
+
+# Data for services
+services/**/data
 
 # Python bytecode
 __pycache__/
