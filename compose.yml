@@ -10,7 +10,9 @@ services:
       - 15672
 
   openf1-db:
-    image: mongo:8.0.11
+    build:
+      context: ./services/openf1-db
+      dockerfile: Dockerfile
     restart: unless-stopped
     expose:
       - 27017
