@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/routes"
-	"github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/server"
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache-api/internal/routes"
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/server"
 )
 
 func main() {

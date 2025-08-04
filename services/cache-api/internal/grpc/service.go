@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/redis"
-	cache_api "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api"
-	pb "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api/grpc/v1"
-	cache "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/cache"
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache-api/internal/redis"
+	cache_api "github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/api"
+	pb "github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/api/grpc/v1"
+	cache "github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/cache"
 )
 
 // CacheService implements the gRPC cache service.

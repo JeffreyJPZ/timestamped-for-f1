@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/cache"
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/cache"
 	"github.com/redis/go-redis/v9"
 )
 

@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"time"
 
-	grpc_cache_service "github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/grpc"
-	pb "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api/grpc/v1"
+	grpc_cache_service "github.com/JeffreyJPZ/timestamped-for-f1-cache-api/internal/grpc"
+	pb "github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/api/grpc/v1"
 	"google.golang.org/grpc"
 )
 

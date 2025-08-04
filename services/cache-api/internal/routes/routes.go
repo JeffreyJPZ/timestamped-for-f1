@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/jsonutils"
-	"github.com/JeffreyJPZ/timestamped-for-f1-cache/internal/redis"
-	cache_api "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api"
-	cache_api_http_v1 "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api/http/v1"
-	"github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/cache"
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache-api/internal/jsonutils"
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache-api/internal/redis"
+	cache_api "github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/api"
+	cache_api_http_v1 "github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/api/http/v1"
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/cache"
 )
 
 type Router struct{}
