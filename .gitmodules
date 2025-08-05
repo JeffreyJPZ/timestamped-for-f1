@@ -1,0 +1,3 @@
+[submodule "services/openf1"]
+	path = services/openf1
+	url = https://github.com/JeffreyJPZ/openf1.git
