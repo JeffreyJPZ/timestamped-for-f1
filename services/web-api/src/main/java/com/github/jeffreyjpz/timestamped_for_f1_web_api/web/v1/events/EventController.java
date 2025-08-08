@@ -3,6 +3,7 @@ package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.events;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +26,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping(path = "/events", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Slf4j
 public class EventController {
@@ -35,7 +36,7 @@ public class EventController {
 
     private final ObjectMapper objectMapper;
 
-    @GetMapping("")
+    @GetMapping(path = "")
     public Mono<List<OpenF1Response.Event>> getEvents(@RequestParam MultiValueMap<String, String> queryParams) {
         CacheResult cacheResult = null;
 
