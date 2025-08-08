@@ -16,12 +16,10 @@ public class F1MultiviewerService {
     private final WebClient webClient;
 
     public F1MultiviewerService(F1MultiviewerServiceConfigurationProperties properties, WebClient.Builder builder) {
-        this.properties = properties;
-
-        // Clone builder to avoid affecting other services using the same builder
+        // Clone builder to avoid affecting other services using the same builder.
         WebClient.Builder builderCopy = builder.clone();
         
-        // Initialize web client for OpenF1
+        this.properties = properties;
         this.webClient = builderCopy
             .baseUrl(this.properties.getBaseUrl())
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
