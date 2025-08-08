@@ -81,9 +81,18 @@ func (s *Server) ServeHTTPWithHandler(ctx context.Context, handler http.Handler)
 // When it is executed, it blocks when the server begins serving,
 // and shuts down gracefully when its context is closed. After it is closed, the server cannot be reused.
 func (s *Server) ServeGRPC(ctx context.Context) error {
-	sGRPC := grpc.NewServer()
 
-	// Start and register cache service
+	// Register unary interceptor with timeout of 5 seconds.
+	interceptor := grpc.UnaryInterceptor(func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
+		timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+
+		return handler(timeoutCtx, req)
+	})
+
+	sGRPC := grpc.NewServer(interceptor)
+
+	// Start and register cache service.
 	cache_service, err := grpc_cache_service.NewService()
 	if err != nil {
 		return fmt.Errorf("failed to serve on address %s. Error: %v", s.Address(), err)

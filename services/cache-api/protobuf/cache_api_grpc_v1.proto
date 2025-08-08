@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-option go_package = "github.com/JeffreyJPZ/timestamped-for-f1-cache/pkg/api/grpc/v1;cache_api_grpc_v1";
+option go_package = "github.com/JeffreyJPZ/timestamped-for-f1-cache/protobuf;cache_api_grpc_v1";
 option java_multiple_files = true;
-option java_package = "com.github.jeffreyjpz.timestamped_for_f1.cache_api_grpc_v1";
-option java_outer_classname = "TimestampedForF1CacheApiGrpcV1";
+option java_package = "com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1";
+option java_outer_classname = "CacheApiGrpcV1";
 
-package v1;
+package proto;
 
 // The main cache service.
 service Cache {

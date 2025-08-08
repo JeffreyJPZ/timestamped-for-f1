@@ -129,9 +129,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# Config properties
-*.properties
-
 # Config for services
 services/**/config
 

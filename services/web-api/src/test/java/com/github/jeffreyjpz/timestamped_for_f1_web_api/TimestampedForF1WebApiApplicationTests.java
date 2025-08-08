@@ -1,4 +1,4 @@
-package com.github.jeffreyjpz.timestamped_for_f1_api;
+package com.github.jeffreyjpz.timestamped_for_f1_web_api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Import;
 
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
-class TimestampedForF1ApiApplicationTests {
+class TimestampedForF1WebApiApplicationTests {
 
 	@Test
 	void contextLoads() {
