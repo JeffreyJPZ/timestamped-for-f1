@@ -22,7 +22,10 @@ public class CacheService {
     private final CacheGrpc.CacheFutureStub cacheStub;
 
     public CacheResult get(String key) throws CacheServiceException {
-        CacheKey cacheKey = CacheKey.newBuilder().setKey(key).build();
+        CacheKey cacheKey = CacheKey
+            .newBuilder()
+            .setKey(key)
+            .build();
         CacheResult cacheResult;
 
         try {
@@ -35,7 +38,12 @@ public class CacheService {
     }
 
     public CacheResult set(String key, String value, double expirationTime) throws CacheServiceException {
-        CacheItem cacheItem = CacheItem.newBuilder().setKey(key).setValue(value).setExpirationTime(expirationTime).build();
+        CacheItem cacheItem = CacheItem
+            .newBuilder()
+            .setKey(key)
+            .setValue(value)
+            .setExpirationTime(expirationTime)
+            .build();
         CacheResult cacheResult;
 
         try {
