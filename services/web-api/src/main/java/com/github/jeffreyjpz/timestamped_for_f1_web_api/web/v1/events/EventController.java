@@ -1,7 +1,6 @@
 package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.events;
 
 import java.time.Duration;
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.http.MediaType;
