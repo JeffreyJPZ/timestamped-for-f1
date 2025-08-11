@@ -9,7 +9,6 @@ import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheGrp
 import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheItem;
 import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheKey;
 import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheResult;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheServiceException;
 
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;

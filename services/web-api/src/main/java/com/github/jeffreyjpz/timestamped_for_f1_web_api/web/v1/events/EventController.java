@@ -1,5 +1,6 @@
 package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.events;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 
@@ -15,14 +16,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheResult;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheService;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Response;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Service;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheServiceException;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.OpenF1ServiceQueryParameterZipper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -32,7 +31,7 @@ import reactor.core.publisher.Mono;
 public class EventController {
 
     private final CacheService cacheService;
-    private final OpenF1Service openF1Service;
+    private final OpenF1Service openf1Service;
 
     private final ObjectMapper objectMapper;
 
@@ -44,7 +43,7 @@ public class EventController {
         try {
             cacheResult = cacheService.get("foo");
         } catch (CacheServiceException e) {
-            log.error("cache service call failed to complete", e);
+            log.error("cache lookup failed to complete", e);
         }
 
         // If value associated with key derived from query parameters is in cache, return cache result.
@@ -62,14 +61,21 @@ public class EventController {
             }
         }
 
-        // Otherwise, query OpenF1 with all combinations of query parameters (OpenF1 only accepts one value per param).
-        Collection<MultiValueMap<String, String>> zippedParams = OpenF1ServiceQueryParameterZipper.zip(queryParams);
+        // Otherwise, query OpenF1.
+        Mono<List<OpenF1Response.Event>> events = openf1Service.getEvents(queryParams).cache();
 
-        // Parallelize OpenF1 service calls.
-        return Flux
-            .fromIterable(zippedParams)
-            .flatMap(params -> openF1Service.getEvents(params))
-            .flatMapIterable(response -> response)
-            .collectList();
+        // Cache OpenF1 results.
+        events.subscribe(
+            (result) -> {
+                try {
+                    cacheService.set("foo", result.toString(), Duration.ofMinutes(5).toSeconds());
+                } catch (CacheServiceException e) {
+                    log.error("cache set failed to complete", e);
+                }
+                
+            }
+        );
+
+        return events;
     }
 }
