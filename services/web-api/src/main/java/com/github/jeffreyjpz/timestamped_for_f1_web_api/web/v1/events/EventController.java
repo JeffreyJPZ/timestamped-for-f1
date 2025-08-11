@@ -22,7 +22,6 @@ import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Se
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping(path = "/events", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -36,7 +35,7 @@ public class EventController {
     private final ObjectMapper objectMapper;
 
     @GetMapping(path = "")
-    public Mono<List<OpenF1Response.Event>> getEvents(@RequestParam MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Response.Event> getEvents(@RequestParam MultiValueMap<String, String> queryParams) {
         CacheResult cacheResult = null;
 
         // Perform a cache lookup.
@@ -55,26 +54,21 @@ public class EventController {
             List<OpenF1Response.Event> value;
             try {
                 value = objectMapper.readValue(cacheResult.getValue(), new TypeReference<List<OpenF1Response.Event>>(){});
-                return Mono.just(value);
+                return value;
             } catch (JsonProcessingException e) {
                 log.error("cache value coercion failed", e);
             }
         }
 
         // Otherwise, query OpenF1.
-        Mono<List<OpenF1Response.Event>> events = openf1Service.getEvents(queryParams).cache();
+        List<OpenF1Response.Event> events = openf1Service.getEvents(queryParams);;
 
-        // Cache OpenF1 results.
-        events.subscribe(
-            (result) -> {
-                try {
-                    cacheService.set("foo", result.toString(), Duration.ofMinutes(5).toSeconds());
-                } catch (CacheServiceException e) {
-                    log.error("cache set failed to complete", e);
-                }
-                
-            }
-        );
+        // Cache OpenF1 results with a TTL of 5 minutes.
+        try {
+            cacheService.set("foo", events.toString(), Duration.ofMinutes(5).toSeconds());
+        } catch (CacheServiceException e) {
+            log.error("cache set failed to complete", e);
+        }
 
         return events;
     }

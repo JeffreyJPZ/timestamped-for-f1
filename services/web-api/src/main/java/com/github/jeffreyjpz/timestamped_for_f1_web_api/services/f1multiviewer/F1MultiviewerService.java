@@ -5,35 +5,33 @@ import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 public class F1MultiviewerService {
 
     private final F1MultiviewerServiceConfigurationProperties properties;
 
-    private final WebClient webClient;
+    private final RestClient client;
 
-    public F1MultiviewerService(F1MultiviewerServiceConfigurationProperties properties, WebClient.Builder builder) {
+    public F1MultiviewerService(F1MultiviewerServiceConfigurationProperties properties, RestClient.Builder builder) {
         // Clone builder to avoid affecting other services using the same builder.
-        WebClient.Builder builderCopy = builder.clone();
+        RestClient.Builder builderCopy = builder.clone();
         
         this.properties = properties;
-        this.webClient = builderCopy
+        this.client = builderCopy
             .baseUrl(this.properties.getBaseUrl())
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
             .build();
     }
 
-    public Mono<List<F1MultiviewerResponse.Circuit>> getCircuits(final String circuitKey, final String year) {
-        return this.webClient
+    public List<F1MultiviewerResponse.Circuit> getCircuits(final String circuitKey, final String year) {
+        return this.client
             .get()
             .uri(uriBuilder ->
                 uriBuilder.path("/circuits/{circuitKey}/{year}").build(circuitKey, year)
             )
             .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<List<F1MultiviewerResponse.Circuit>>(){});
+            .body(new ParameterizedTypeReference<List<F1MultiviewerResponse.Circuit>>(){});
     }
 
 }

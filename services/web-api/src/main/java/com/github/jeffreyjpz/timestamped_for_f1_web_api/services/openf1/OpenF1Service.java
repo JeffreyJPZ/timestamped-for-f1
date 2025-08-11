@@ -11,9 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestClient;
 
 @Service
 public class OpenF1Service {
@@ -29,20 +27,20 @@ public class OpenF1Service {
     
     private final OpenF1ServiceConfigurationProperties properties;
 
-    private final WebClient webClient;
+    private final RestClient client;
 
-    public OpenF1Service(OpenF1ServiceConfigurationProperties properties, WebClient.Builder builder) {
+    public OpenF1Service(OpenF1ServiceConfigurationProperties properties, RestClient.Builder builder) {
         // Clone builder to avoid affecting other services using the same builder.
-        WebClient.Builder builderCopy = builder.clone();
+        RestClient.Builder builderCopy = builder.clone();
         
         this.properties = properties;
-        this.webClient = builderCopy
+        this.client = builderCopy
             .baseUrl(this.properties.getBaseUrl())
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString())
             .build();
     }
 
-    public Mono<List<OpenF1Response.Driver>> getDrivers(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Response.Driver> getDrivers(final MultiValueMap<String, String> queryParams) {
         return getResults(
             new ParameterizedTypeReference<List<OpenF1Response.Driver>>() {},
             "drivers",
@@ -50,7 +48,7 @@ public class OpenF1Service {
         );
     }
 
-    public Mono<List<OpenF1Response.Event>> getEvents(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Response.Event> getEvents(final MultiValueMap<String, String> queryParams) {
         return getResults(
             new ParameterizedTypeReference<List<OpenF1Response.Event>>() {},
             "events",
@@ -58,7 +56,7 @@ public class OpenF1Service {
         );
     }
 
-    public Mono<List<OpenF1Response.Meeting>> getMeetings(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Response.Meeting> getMeetings(final MultiValueMap<String, String> queryParams) {
         return getResults(
             new ParameterizedTypeReference<List<OpenF1Response.Meeting>>() {},
             "meetings",
@@ -66,7 +64,7 @@ public class OpenF1Service {
         );
     }
 
-    public Mono<List<OpenF1Response.Session>> getSessions(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Response.Session> getSessions(final MultiValueMap<String, String> queryParams) {
         return getResults(
             new ParameterizedTypeReference<List<OpenF1Response.Session>>() {},
             "sessions",
@@ -74,15 +72,15 @@ public class OpenF1Service {
         );
     }
 
-    private <T> Mono<T> getResults(final ParameterizedTypeReference<T> type, final String endpoint, final MultiValueMap<String, String> queryParams) {
-        return this.webClient
+    private <T> T getResults(final ParameterizedTypeReference<T> type, final String endpoint, final MultiValueMap<String, String> queryParams) {
+        return this.client
             .get()
             .uri((uriBuilder) ->
                 // Builds a URI in the form "/{endpoint}?{queryString}".
                 uriBuilder.pathSegment(endpoint).replaceQuery(makeQueryString(queryParams)).build()
             )
             .retrieve()
-            .bodyToMono(type);
+            .body(type);
     }
 
     private String makeQueryString(final MultiValueMap<String, String> queryParams) {
