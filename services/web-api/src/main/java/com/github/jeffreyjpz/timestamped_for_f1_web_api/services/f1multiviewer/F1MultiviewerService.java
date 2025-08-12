@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.dtos.F1MultiviewerCircuit;
+
 public class F1MultiviewerService {
 
     private final F1MultiviewerServiceConfigurationProperties properties;
@@ -24,14 +26,14 @@ public class F1MultiviewerService {
             .build();
     }
 
-    public List<F1MultiviewerResponse.Circuit> getCircuits(final String circuitKey, final String year) {
+    public List<F1MultiviewerCircuit> getCircuits(final String circuitKey, final String year) {
         return this.client
             .get()
             .uri(uriBuilder ->
                 uriBuilder.path("/circuits/{circuitKey}/{year}").build(circuitKey, year)
             )
             .retrieve()
-            .body(new ParameterizedTypeReference<List<F1MultiviewerResponse.Circuit>>(){});
+            .body(new ParameterizedTypeReference<List<F1MultiviewerCircuit>>(){});
     }
 
 }

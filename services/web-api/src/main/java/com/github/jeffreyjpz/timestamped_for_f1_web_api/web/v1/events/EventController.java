@@ -16,8 +16,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheResult;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheService;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Response;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Service;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos.OpenF1Event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class EventController {
     private final ObjectMapper objectMapper;
 
     @GetMapping(path = "")
-    public List<OpenF1Response.Event> getEvents(@RequestParam MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Event> getEvents(@RequestParam MultiValueMap<String, String> queryParams) {
         CacheResult cacheGetResult = null;
 
         // Perform a cache lookup.
@@ -50,10 +50,10 @@ public class EventController {
             cacheGetResult.hasField(cacheGetResult.getDescriptorForType().findFieldByNumber(CacheResult.KEY_FIELD_NUMBER)) &&
             cacheGetResult.hasField(cacheGetResult.getDescriptorForType().findFieldByNumber(CacheResult.VALUE_FIELD_NUMBER))
         ) {
-            List<OpenF1Response.Event> value;
+            List<OpenF1Event> value;
 
             try {
-                value = objectMapper.readValue(cacheGetResult.getValue(), new TypeReference<List<OpenF1Response.Event>>(){});
+                value = objectMapper.readValue(cacheGetResult.getValue(), new TypeReference<List<OpenF1Event>>(){});
                 return value;
             } catch (JsonProcessingException e) {
                 log.error("cache value object coercion failed", e);
@@ -74,7 +74,7 @@ public class EventController {
         }
 
         // Otherwise, query OpenF1.
-        List<OpenF1Response.Event> events = openf1Service.getEvents(queryParams);;
+        List<OpenF1Event> events = openf1Service.getEvents(queryParams);
         CacheResult cacheSetResult = null;
 
         // Cache OpenF1 results with a TTL of 5 minutes.

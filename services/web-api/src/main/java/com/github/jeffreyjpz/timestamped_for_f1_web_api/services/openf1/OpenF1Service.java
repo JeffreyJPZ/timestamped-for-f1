@@ -13,6 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos.OpenF1Driver;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos.OpenF1Event;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos.OpenF1Meeting;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos.OpenF1Session;
+
 @Service
 public class OpenF1Service {
 
@@ -40,33 +45,33 @@ public class OpenF1Service {
             .build();
     }
 
-    public List<OpenF1Response.Driver> getDrivers(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Driver> getDrivers(final MultiValueMap<String, String> queryParams) {
         return getResults(
-            new ParameterizedTypeReference<List<OpenF1Response.Driver>>() {},
+            new ParameterizedTypeReference<List<OpenF1Driver>>() {},
             "drivers",
             queryParams
         );
     }
 
-    public List<OpenF1Response.Event> getEvents(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Event> getEvents(final MultiValueMap<String, String> queryParams) {
         return getResults(
-            new ParameterizedTypeReference<List<OpenF1Response.Event>>() {},
+            new ParameterizedTypeReference<List<OpenF1Event>>() {},
             "events",
             queryParams
         );
     }
 
-    public List<OpenF1Response.Meeting> getMeetings(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Meeting> getMeetings(final MultiValueMap<String, String> queryParams) {
         return getResults(
-            new ParameterizedTypeReference<List<OpenF1Response.Meeting>>() {},
+            new ParameterizedTypeReference<List<OpenF1Meeting>>() {},
             "meetings",
             queryParams
         );
     }
 
-    public List<OpenF1Response.Session> getSessions(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Session> getSessions(final MultiValueMap<String, String> queryParams) {
         return getResults(
-            new ParameterizedTypeReference<List<OpenF1Response.Session>>() {},
+            new ParameterizedTypeReference<List<OpenF1Session>>() {},
             "sessions",
             queryParams
         );
