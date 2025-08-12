@@ -3,25 +3,30 @@ package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.
 import java.util.List;
 import java.util.Map;
 
-public record F1MultiviewerCircuit(
-    List<Map<String, Object>>       corners,
-    List<Map<String, Object>>       marshalLights,
-    List<Map<String, Object>>       marshalSectors,
-    Map<String, Object>             candidateLap,
-    String                          circuitKey,
-    String                          circuitName,
-    String                          countryIocCode,
-    Integer                         countryKey,
-    String                          countryName,
-    String                          location,
-    String                          meetingKey,
-    String                          meetingName,
-    String                          meetingOfficialName,
-    List<Integer>                   miniSectorsIndexes,
-    String                          raceDate,
-    Integer                         rotation,
-    Integer                         round,
-    List<Integer>                   x,
-    List<Integer>                   y,
-    Integer                         year
-) {}
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public class F1MultiviewerCircuit {
+    private final List<Map<String, Object>> corners;
+    private final List<Map<String, Object>> marshalLights;
+    private final List<Map<String, Object>> marshalSectors;
+    private final Map<String, Object> candidateLap;
+    private final String circuitKey;
+    private final String circuitName;
+    private final String countryIocCode;
+    private final Integer countryKey;
+    private final String countryName;
+    private final String location;
+    private final String meetingKey;
+    private final String meetingName;
+    private final String meetingOfficialName;
+    private final List<Integer> miniSectorsIndexes;
+    private final String raceDate;
+    private final Integer rotation;
+    private final Integer round;
+    private final List<Integer> x;
+    private final List<Integer> y;
+    private final Integer year;
+}
