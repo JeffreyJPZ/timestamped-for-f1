@@ -35,38 +35,69 @@ public class EventController {
 
     @GetMapping(path = "")
     public List<OpenF1Response.Event> getEvents(@RequestParam MultiValueMap<String, String> queryParams) {
-        CacheResult cacheResult = null;
+        CacheResult cacheGetResult = null;
 
         // Perform a cache lookup.
         try {
-            cacheResult = cacheService.get("foo");
+            cacheGetResult = cacheService.get("foo");
         } catch (CacheServiceException e) {
             log.error("cache lookup failed to complete", e);
         }
 
         // If value associated with key derived from query parameters is in cache, return cache result.
         if (
-            cacheResult != null &&
-            cacheResult.hasField(cacheResult.getDescriptorForType().findFieldByNumber(CacheResult.KEY_FIELD_NUMBER)) &&
-            cacheResult.hasField(cacheResult.getDescriptorForType().findFieldByNumber(CacheResult.VALUE_FIELD_NUMBER))
+            cacheGetResult != null &&
+            cacheGetResult.hasField(cacheGetResult.getDescriptorForType().findFieldByNumber(CacheResult.KEY_FIELD_NUMBER)) &&
+            cacheGetResult.hasField(cacheGetResult.getDescriptorForType().findFieldByNumber(CacheResult.VALUE_FIELD_NUMBER))
         ) {
             List<OpenF1Response.Event> value;
+
             try {
-                value = objectMapper.readValue(cacheResult.getValue(), new TypeReference<List<OpenF1Response.Event>>(){});
+                value = objectMapper.readValue(cacheGetResult.getValue(), new TypeReference<List<OpenF1Response.Event>>(){});
                 return value;
             } catch (JsonProcessingException e) {
-                log.error("cache value coercion failed", e);
+                log.error("cache value object coercion failed", e);
+            } finally {
+                if (cacheGetResult != null &&
+                    cacheGetResult.hasField(cacheGetResult.getDescriptorForType().findFieldByNumber(CacheResult.CODE_FIELD_NUMBER)) &&
+                    cacheGetResult.hasField(cacheGetResult.getDescriptorForType().findFieldByNumber(CacheResult.MESSAGE_FIELD_NUMBER))
+                ) {
+                    log.info(
+                        String.format(
+                            "cache get internal failure. code: %s message %s",
+                            cacheGetResult.getCode(),
+                            cacheGetResult.getMessage()
+                        )
+                    );
+                }
             }
         }
 
         // Otherwise, query OpenF1.
         List<OpenF1Response.Event> events = openf1Service.getEvents(queryParams);;
+        CacheResult cacheSetResult = null;
 
         // Cache OpenF1 results with a TTL of 5 minutes.
         try {
-            cacheService.set("foo", events.toString(), Duration.ofMinutes(5).toSeconds());
+            String value = objectMapper.writeValueAsString(events);
+            cacheService.set("foo", value, Duration.ofMinutes(5).toSeconds());
         } catch (CacheServiceException e) {
             log.error("cache set failed to complete", e);
+        } catch (JsonProcessingException e) {
+            log.error("cache value string coercion failed", e);
+        } finally {
+            if (cacheSetResult != null &&
+                cacheSetResult.hasField(cacheSetResult.getDescriptorForType().findFieldByNumber(CacheResult.CODE_FIELD_NUMBER)) &&
+                cacheSetResult.hasField(cacheSetResult.getDescriptorForType().findFieldByNumber(CacheResult.MESSAGE_FIELD_NUMBER))
+            ) {
+                log.info(
+                    String.format(
+                        "cache set internal failure. code: %s message %s",
+                        cacheSetResult.getCode(),
+                        cacheSetResult.getMessage()
+                    )
+                );
+            }
         }
 
         return events;
