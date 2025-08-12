@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class CircuitLocation {
-    private final double x;
-    private final double y;
+    private final double angle;
+    private final double length;
+    private final Integer number;
+    private final CircuitLocationCoordinates trackPosition;
 }
