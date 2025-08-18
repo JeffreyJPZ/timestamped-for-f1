@@ -1,4 +1,4 @@
-package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuit_locations.dtos;
+package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -18,6 +18,6 @@ public class CircuitLocation {
     @JsonProperty(value = "number", isRequired = OptBoolean.TRUE)
     private final Integer number;
 
-    @JsonProperty(value = "trackPosition", isRequired = OptBoolean.TRUE)
-    private final CircuitLocationCoordinates trackPosition;
+    @JsonProperty(value = "coordinates", isRequired = OptBoolean.TRUE)
+    private final CircuitLocationCoordinates coordinates;
 }

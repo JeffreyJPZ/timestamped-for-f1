@@ -13,13 +13,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class F1MultiviewerCircuit {
     @JsonProperty(value = "corners", isRequired = OptBoolean.TRUE)
-    private final List<Map<String, Object>> corners;
+    private final List<F1MultiviewerCircuitLocation> corners;
 
     @JsonProperty(value = "marshalLights", isRequired = OptBoolean.TRUE)
-    private final List<Map<String, Object>> marshalLights;
+    private final List<F1MultiviewerCircuitLocation> marshalLights;
 
     @JsonProperty(value = "marshalSectors", isRequired = OptBoolean.TRUE)
-    private final List<Map<String, Object>> marshalSectors;
+    private final List<F1MultiviewerCircuitLocation> marshalSectors;
 
     @JsonProperty(value = "candidateLap", isRequired = OptBoolean.TRUE)
     private final Map<String, Object> candidateLap;
