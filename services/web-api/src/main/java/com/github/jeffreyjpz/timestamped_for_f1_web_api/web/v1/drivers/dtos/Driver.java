@@ -1,4 +1,4 @@
-package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos;
+package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.drivers.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -8,40 +8,40 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class OpenF1Driver {
+public class Driver {
     @JsonProperty(value = "broadcastName", isRequired = OptBoolean.TRUE)
-    private final String broadcast_name;
+    private final String broadcastName;
 
     @JsonProperty(value = "countryCode", isRequired = OptBoolean.TRUE)
-    private final String country_code;
+    private final String countryCode;
 
     @JsonProperty(value = "driverNumber", isRequired = OptBoolean.TRUE)
-    private final Integer driver_number;
+    private final Integer driverNumber;
 
     @JsonProperty(value = "firstName", isRequired = OptBoolean.TRUE)
-    private final String first_name;
+    private final String firstName;
 
     @JsonProperty(value = "fullName", isRequired = OptBoolean.TRUE)
-    private final String full_name;
+    private final String fullName;
 
     @JsonProperty(value = "headshotUrl", isRequired = OptBoolean.TRUE)
-    private final String headshot_url;
+    private final String headshotUrl;
 
     @JsonProperty(value = "lastName", isRequired = OptBoolean.TRUE)
-    private final String last_name;
+    private final String lastName;
 
     @JsonProperty(value = "meetingKey", isRequired = OptBoolean.TRUE)
-    private final Integer meeting_key;
+    private final Integer meetingKey;
 
     @JsonProperty(value = "nameAcronym", isRequired = OptBoolean.TRUE)
-    private final String name_acronym;
+    private final String nameAcronym;
 
     @JsonProperty(value = "sessionKey", isRequired = OptBoolean.TRUE)
-    private final Integer session_key;
+    private final Integer sessionKey;
 
     @JsonProperty(value = "teamColour", isRequired = OptBoolean.TRUE)
-    private final String team_colour;
+    private final String teamColour;
 
     @JsonProperty(value = "teamName", isRequired = OptBoolean.TRUE)
-    private final String team_name;
+    private final String teamName;
 }

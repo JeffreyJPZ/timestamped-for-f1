@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,7 +34,7 @@ public class CircuitController {
     }
 
     @GetMapping(path = "/{id}")
-    public Circuit getCircuit() {
+    public Circuit getCircuit(@PathVariable("id") String id) {
         return null;
     }
 }
