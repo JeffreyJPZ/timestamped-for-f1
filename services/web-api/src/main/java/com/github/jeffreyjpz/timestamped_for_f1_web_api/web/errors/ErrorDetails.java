@@ -1,4 +1,4 @@
-package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.exceptions;
+package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.errors;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
