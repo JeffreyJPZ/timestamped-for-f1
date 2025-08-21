@@ -1,13 +1,16 @@
-package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits;
+package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.sessions;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,34 +19,45 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheResult;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheService;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.F1MultiviewerService;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.dtos.F1MultiviewerCircuit;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Service;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheUtils;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.Circuit;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.CircuitLocation;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.CircuitLocationCoordinates;
-import com.google.common.collect.Streams;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.sessions.dtos.Session;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping(path = "/circuits", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/sessions", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Slf4j
-public class CircuitController {
-    
+public class SessionController {
+
     private final CacheService cacheService;
-    private final F1MultiviewerService f1MultiviewerService;
+    private final OpenF1Service openf1Service;
 
     private final ObjectMapper objectMapper;
 
-    @GetMapping(path = "/{circuitKey}/{year}")
-    public Circuit getCircuit(@PathVariable Integer circuitKey, @PathVariable Integer year) {
+    @GetMapping(path = "")
+    public List<Session> getMeetings(@RequestParam MultiValueMap<String, String> queryParams) {
+        List<Session> sessions = null;
+
+        try {
+            sessions = objectMapper.readValue(
+                objectMapper.writeValueAsString(openf1Service.getSessions(queryParams)),
+                new TypeReference<List<Session>>(){}
+            );
+        } catch (JsonProcessingException e) {
+            log.error("data transformation failed", e);
+        }
+
+        return sessions;
+    }
+
+    @GetMapping(path = "/{sessionKey}")
+    public Session getSession(@PathVariable Integer sessionKey) {
         String cacheKey = CacheUtils.buildCacheKey(
-            "circuits",
-            String.valueOf(circuitKey),
-            String.valueOf(year)
+            "sessions",
+            String.valueOf(sessionKey)
         );
 
         // Perform a cache lookup.
@@ -61,7 +75,7 @@ public class CircuitController {
             cacheGetResult.hasField(cacheGetResult.getDescriptorForType().findFieldByNumber(CacheResult.VALUE_FIELD_NUMBER))
         ) {
             try {
-                return objectMapper.readValue(cacheGetResult.getValue(), new TypeReference<Circuit>(){});
+                return objectMapper.readValue(cacheGetResult.getValue(), new TypeReference<Session>(){});
             } catch (JsonProcessingException e) {
                 log.error("cache value object coercion failed", e);
             }
@@ -79,74 +93,40 @@ public class CircuitController {
             );
         }
 
-        // Otherwise, query F1Multiviewer and transform data.
-        F1MultiviewerCircuit f1MultiviewerCircuit = f1MultiviewerService.getCircuit(String.valueOf(circuitKey), String.valueOf(year));
+        // Otherwise, query OpenF1 and transform data.
+        List<Session> sessions = null;
+        MultiValueMap<String, String> queryParams = CollectionUtils.toMultiValueMap(
+            Map.ofEntries(
+                Map.entry("session_key", List.of(String.valueOf(sessionKey)))
+            )
+        );
+
+        try {
+            sessions = objectMapper.readValue(
+                objectMapper.writeValueAsString(openf1Service.getMeetings(queryParams)),
+                new TypeReference<List<Session>>(){}
+            );
+        } catch (JsonProcessingException e) {
+            log.error("data transformation failed", e);
+        }
         
-        if (f1MultiviewerCircuit == null) {
+        if (sessions == null) {
             // TODO: throw exception
             return null;
         }
 
-        List<CircuitLocationCoordinates> coordinates = Streams
-            .zip(
-                f1MultiviewerCircuit.getX().stream(),
-                f1MultiviewerCircuit.getY().stream(),
-                (x, y) -> new CircuitLocationCoordinates(
-                    x.doubleValue(),
-                    y.doubleValue()
-                )
-            )
-            .collect(Collectors.toList());
-
-        List<CircuitLocation> marshalSectors = f1MultiviewerCircuit.getMarshalSectors()
+        Session session = sessions
             .stream()
-            .map(s -> new CircuitLocation(
-                s.getAngle(),
-                s.getLength(),
-                s.getNumber(),
-                new CircuitLocationCoordinates(s.getTrackPosition().getX(), s.getTrackPosition().getY())
-            ))
-            .collect(Collectors.toList());
-
-        List<CircuitLocationCoordinates> miniSectors = f1MultiviewerCircuit.getMiniSectorsIndexes()
-            .stream()
-            .map(i -> new CircuitLocationCoordinates(
-                f1MultiviewerCircuit.getX().get(i).doubleValue(),
-                f1MultiviewerCircuit.getY().get(i).doubleValue()
-            ))
-            .collect(Collectors.toList());
-
-        List<CircuitLocation> turns = f1MultiviewerCircuit.getCorners()
-            .stream()
-            .map(t -> new CircuitLocation(
-                t.getAngle(),
-                t.getLength(),
-                t.getNumber(),
-                new CircuitLocationCoordinates(t.getTrackPosition().getX(), t.getTrackPosition().getY())
-            ))
-            .collect(Collectors.toList());
-        
-        Circuit circuit = new Circuit(
-            f1MultiviewerCircuit.getCircuitKey(),
-            f1MultiviewerCircuit.getCircuitName(), 
-            coordinates,
-            f1MultiviewerCircuit.getCountryIocCode(),
-            f1MultiviewerCircuit.getCountryKey(),
-            f1MultiviewerCircuit.getCountryName(),
-            f1MultiviewerCircuit.getLocation(),
-            marshalSectors,
-            miniSectors,
-            f1MultiviewerCircuit.getRotation(),
-            turns,
-            year // F1Multiviewer currently does not have updated circuits for every year
-        );
+            .filter(s -> s.getSessionKey().equals(sessionKey))
+            .findFirst()
+            .orElse(null);
 
         // Cache OpenF1 results with a TTL of 5 minutes.
         CacheResult cacheSetResult = null;
         try {
             cacheSetResult = cacheService.set(
                 cacheKey,
-                objectMapper.writeValueAsString(circuit),
+                objectMapper.writeValueAsString(session),
                 Duration.ofMinutes(5).toSeconds()
             );
         } catch (CacheServiceException e) {
@@ -169,6 +149,6 @@ public class CircuitController {
             );
         }
 
-        return circuit;
+        return session;
     }
 }

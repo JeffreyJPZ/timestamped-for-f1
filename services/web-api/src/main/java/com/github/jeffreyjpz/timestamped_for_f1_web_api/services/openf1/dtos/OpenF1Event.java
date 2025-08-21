@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class OpenF1Event {
+    
     @JsonProperty(value = "category", isRequired = OptBoolean.TRUE)
     private final String category;
 
@@ -23,9 +24,9 @@ public class OpenF1Event {
     @JsonProperty(value = "details", isRequired = OptBoolean.TRUE)
     private final Map<String, Object> details;
 
-    @JsonProperty(value = "meetingKey", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "meeting_key", isRequired = OptBoolean.TRUE)
     private final Integer meeting_key;
 
-    @JsonProperty(value = "sessionKey", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "session_key", isRequired = OptBoolean.TRUE)
     private final Integer session_key;
 }

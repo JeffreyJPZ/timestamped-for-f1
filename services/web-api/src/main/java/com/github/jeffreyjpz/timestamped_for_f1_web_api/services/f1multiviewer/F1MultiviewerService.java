@@ -26,14 +26,14 @@ public class F1MultiviewerService {
             .build();
     }
 
-    public List<F1MultiviewerCircuit> getCircuits(final String circuitKey, final String year) {
+    public F1MultiviewerCircuit getCircuit(final String circuitKey, final String year) {
         return this.client
             .get()
             .uri(uriBuilder ->
                 uriBuilder.path("/circuits/{circuitKey}/{year}").build(circuitKey, year)
             )
             .retrieve()
-            .body(new ParameterizedTypeReference<List<F1MultiviewerCircuit>>(){});
+            .body(new ParameterizedTypeReference<F1MultiviewerCircuit>(){});
     }
 
 }

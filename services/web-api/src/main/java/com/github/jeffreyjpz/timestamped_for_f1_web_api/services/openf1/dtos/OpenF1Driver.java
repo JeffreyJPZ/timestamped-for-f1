@@ -9,39 +9,40 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class OpenF1Driver {
-    @JsonProperty(value = "broadcastName", isRequired = OptBoolean.TRUE)
+    
+    @JsonProperty(value = "broadcast_name", isRequired = OptBoolean.TRUE)
     private final String broadcast_name;
 
-    @JsonProperty(value = "countryCode", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "country_code", isRequired = OptBoolean.TRUE)
     private final String country_code;
 
-    @JsonProperty(value = "driverNumber", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "driver_number", isRequired = OptBoolean.TRUE)
     private final Integer driver_number;
 
-    @JsonProperty(value = "firstName", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "first_name", isRequired = OptBoolean.TRUE)
     private final String first_name;
 
-    @JsonProperty(value = "fullName", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "full_name", isRequired = OptBoolean.TRUE)
     private final String full_name;
 
-    @JsonProperty(value = "headshotUrl", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "headshot_url", isRequired = OptBoolean.TRUE)
     private final String headshot_url;
 
-    @JsonProperty(value = "lastName", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "last_name", isRequired = OptBoolean.TRUE)
     private final String last_name;
 
-    @JsonProperty(value = "meetingKey", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "meeting_key", isRequired = OptBoolean.TRUE)
     private final Integer meeting_key;
 
-    @JsonProperty(value = "nameAcronym", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "name_acronym", isRequired = OptBoolean.TRUE)
     private final String name_acronym;
 
-    @JsonProperty(value = "sessionKey", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "session_key", isRequired = OptBoolean.TRUE)
     private final Integer session_key;
 
-    @JsonProperty(value = "teamColour", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "team_colour", isRequired = OptBoolean.TRUE)
     private final String team_colour;
 
-    @JsonProperty(value = "teamName", isRequired = OptBoolean.TRUE)
+    @JsonProperty(value = "team_name", isRequired = OptBoolean.TRUE)
     private final String team_name;
 }

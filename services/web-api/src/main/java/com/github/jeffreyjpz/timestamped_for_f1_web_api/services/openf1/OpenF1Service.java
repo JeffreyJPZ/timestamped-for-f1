@@ -1,5 +1,6 @@
 package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -45,7 +46,7 @@ public class OpenF1Service {
             .build();
     }
 
-    public List<OpenF1Driver> getDrivers(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Driver> getDrivers(MultiValueMap<String, String> queryParams) {
         return getResults(
             new ParameterizedTypeReference<List<OpenF1Driver>>() {},
             "drivers",
@@ -53,7 +54,7 @@ public class OpenF1Service {
         );
     }
 
-    public List<OpenF1Event> getEvents(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Event> getEvents(MultiValueMap<String, String> queryParams) {
         return getResults(
             new ParameterizedTypeReference<List<OpenF1Event>>() {},
             "events",
@@ -61,7 +62,7 @@ public class OpenF1Service {
         );
     }
 
-    public List<OpenF1Meeting> getMeetings(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Meeting> getMeetings(MultiValueMap<String, String> queryParams) {
         return getResults(
             new ParameterizedTypeReference<List<OpenF1Meeting>>() {},
             "meetings",
@@ -69,7 +70,7 @@ public class OpenF1Service {
         );
     }
 
-    public List<OpenF1Session> getSessions(final MultiValueMap<String, String> queryParams) {
+    public List<OpenF1Session> getSessions(MultiValueMap<String, String> queryParams) {
         return getResults(
             new ParameterizedTypeReference<List<OpenF1Session>>() {},
             "sessions",
@@ -77,21 +78,21 @@ public class OpenF1Service {
         );
     }
 
-    private <T> T getResults(final ParameterizedTypeReference<T> type, final String endpoint, final MultiValueMap<String, String> queryParams) {
+    private <T> T getResults(ParameterizedTypeReference<T> type, String endpoint, MultiValueMap<String, String> queryParams) {
         return this.client
             .get()
             .uri((uriBuilder) ->
                 // Builds a URI in the form "/{endpoint}?{queryString}".
-                uriBuilder.pathSegment(endpoint).replaceQuery(makeQueryString(queryParams)).build()
+                uriBuilder.pathSegment(endpoint).replaceQuery(buildQueryString(queryParams)).build()
             )
             .retrieve()
             .body(type);
     }
 
-    private String makeQueryString(final MultiValueMap<String, String> queryParams) {
+    private String buildQueryString(MultiValueMap<String, String> queryParams) {
         // Attempt to extract an operator "~eq~, ~gt~, ~gte~, ~lt~, ~lte~" and map it to the appropriate
         // OpenF1 operator "=, >, >=, <, <=" respectively. If no operator is found, "=" is used.
-        StringJoiner queryString = new StringJoiner("&");
+        List<String> stringParams = new ArrayList<String>();
 
         queryParams.forEach((key, values) -> {
             values.forEach((value) -> {
@@ -105,10 +106,10 @@ public class OpenF1Service {
                 }
 
                 // Build the query string in the form {key}{operator}{value} for each entry.
-                queryString.add(String.format("%s%s%s", key, operator, value));
+                stringParams.add(String.format("%s%s%s", key, operator, value));
             });
         });
  
-        return queryString.toString();
+        return String.join("&", stringParams);
     }
 }
