@@ -19,6 +19,7 @@ import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServ
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.F1MultiviewerService;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.dtos.F1MultiviewerCircuit;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheUtils;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.errors.exceptions.InvalidInstanceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.Circuit;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.CircuitLocation;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.CircuitLocationCoordinates;
@@ -38,7 +39,7 @@ public class CircuitController {
 
     private final ObjectMapper objectMapper;
 
-    @GetMapping(path = "/{circuitKey}/{year}")
+    @GetMapping("/{circuitKey}/{year}")
     public Circuit getCircuit(@PathVariable Integer circuitKey, @PathVariable Integer year) {
         String cacheKey = CacheUtils.buildCacheKey(
             "circuits",
@@ -82,10 +83,7 @@ public class CircuitController {
         // Otherwise, query F1Multiviewer and transform data.
         F1MultiviewerCircuit f1MultiviewerCircuit = f1MultiviewerService.getCircuit(String.valueOf(circuitKey), String.valueOf(year));
         
-        if (f1MultiviewerCircuit == null) {
-            // TODO: throw exception
-            return null;
-        }
+        if (f1MultiviewerCircuit == null) throw new InvalidInstanceException();
 
         List<CircuitLocationCoordinates> coordinates = Streams
             .zip(

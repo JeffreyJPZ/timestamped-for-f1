@@ -27,7 +27,7 @@ public class EventController {
 
     private final ObjectMapper objectMapper;
 
-    @GetMapping(path = "")
+    @GetMapping("")
     public List<Event> getEvents(@RequestParam MultiValueMap<String, String> queryParams) {
         List<Event> events = null;
 

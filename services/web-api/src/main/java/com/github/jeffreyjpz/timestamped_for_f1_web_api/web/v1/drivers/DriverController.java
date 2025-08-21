@@ -21,6 +21,7 @@ import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServ
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Service;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheUtils;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.errors.exceptions.InvalidInstanceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.drivers.dtos.Driver;
 
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class DriverController {
 
     private final ObjectMapper objectMapper;
 
-    @GetMapping(path = "")
+    @GetMapping("")
     public List<Driver> getDrivers(@RequestParam MultiValueMap<String, String> queryParams) {
         List<Driver> drivers = null;
 
@@ -53,7 +54,7 @@ public class DriverController {
         return drivers;
     }
 
-    @GetMapping(path = "/{meetingKey}/{sessionKey}/{driverNumber}")
+    @GetMapping("/{meetingKey}/{sessionKey}/{driverNumber}")
     public Driver getDriver(@PathVariable Integer meetingKey, @PathVariable Integer sessionKey, @PathVariable Integer driverNumber) {
         String cacheKey = CacheUtils.buildCacheKey(
             "drivers",
@@ -114,10 +115,7 @@ public class DriverController {
             log.error("data transformation failed", e);
         }
         
-        if (drivers == null) {
-            // TODO: throw exception
-            return null;
-        }
+        if (drivers == null) throw new InvalidInstanceException();
 
         Driver driver = drivers
             .stream()

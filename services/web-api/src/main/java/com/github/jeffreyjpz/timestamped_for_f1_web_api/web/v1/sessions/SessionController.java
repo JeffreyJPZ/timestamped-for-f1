@@ -21,6 +21,7 @@ import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServ
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Service;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheUtils;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.errors.exceptions.InvalidInstanceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.sessions.dtos.Session;
 
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class SessionController {
 
     private final ObjectMapper objectMapper;
 
-    @GetMapping(path = "")
+    @GetMapping("")
     public List<Session> getMeetings(@RequestParam MultiValueMap<String, String> queryParams) {
         List<Session> sessions = null;
 
@@ -53,7 +54,7 @@ public class SessionController {
         return sessions;
     }
 
-    @GetMapping(path = "/{sessionKey}")
+    @GetMapping("/{sessionKey}")
     public Session getSession(@PathVariable Integer sessionKey) {
         String cacheKey = CacheUtils.buildCacheKey(
             "sessions",
@@ -110,10 +111,7 @@ public class SessionController {
             log.error("data transformation failed", e);
         }
         
-        if (sessions == null) {
-            // TODO: throw exception
-            return null;
-        }
+        if (sessions == null) throw new InvalidInstanceException();
 
         Session session = sessions
             .stream()
