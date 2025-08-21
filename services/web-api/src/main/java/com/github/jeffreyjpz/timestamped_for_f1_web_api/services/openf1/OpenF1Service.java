@@ -3,7 +3,6 @@ package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
