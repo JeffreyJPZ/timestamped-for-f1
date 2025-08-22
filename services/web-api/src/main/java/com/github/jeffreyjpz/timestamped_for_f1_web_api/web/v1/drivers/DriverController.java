@@ -127,6 +127,8 @@ public class DriverController {
             .findFirst()
             .orElse(null);
 
+        if (driver == null) throw new InvalidInstanceException();
+
         // Cache OpenF1 results with a TTL of 5 minutes.
         CacheResult cacheSetResult = null;
         try {

@@ -9,8 +9,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class CircuitLocation {
+
     @JsonProperty(value = "angle", isRequired = OptBoolean.TRUE)
     private final double angle;
+
+    @JsonProperty(value = "coordinates", isRequired = OptBoolean.TRUE)
+    private final CircuitLocationCoordinates coordinates;
 
     @JsonProperty(value = "length", isRequired = OptBoolean.TRUE)
     private final double length;
@@ -18,6 +22,7 @@ public class CircuitLocation {
     @JsonProperty(value = "number", isRequired = OptBoolean.TRUE)
     private final Integer number;
 
-    @JsonProperty(value = "coordinates", isRequired = OptBoolean.TRUE)
-    private final CircuitLocationCoordinates coordinates;
+    @JsonProperty(value = "type", isRequired = OptBoolean.TRUE)
+    private final String type;
+
 }

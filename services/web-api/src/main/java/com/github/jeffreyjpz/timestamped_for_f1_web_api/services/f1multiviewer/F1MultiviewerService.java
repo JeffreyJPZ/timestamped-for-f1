@@ -24,7 +24,7 @@ public class F1MultiviewerService {
             .build();
     }
 
-    public F1MultiviewerCircuit getCircuit(final String circuitKey, final String year) {
+    public F1MultiviewerCircuit getCircuit(final String year, final String circuitKey) {
         return this.client
             .get()
             .uri(uriBuilder ->

@@ -119,6 +119,8 @@ public class MeetingController {
             .findFirst()
             .orElse(null);
 
+        if (meeting == null) throw new InvalidInstanceException();
+
         // Cache OpenF1 results with a TTL of 5 minutes.
         CacheResult cacheSetResult = null;
         try {

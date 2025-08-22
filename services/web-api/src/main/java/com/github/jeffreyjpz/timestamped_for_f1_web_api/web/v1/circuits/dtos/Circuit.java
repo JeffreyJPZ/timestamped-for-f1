@@ -37,7 +37,7 @@ public class Circuit {
     private final List<CircuitLocation> marshalSectors;
 
     @JsonProperty(value = "miniSectors", isRequired = OptBoolean.TRUE)
-    private final List<CircuitLocationCoordinates> miniSectors;
+    private final List<CircuitLocation> miniSectors;
 
     @JsonProperty(value = "rotation", isRequired = OptBoolean.TRUE)
     private final Integer rotation;
