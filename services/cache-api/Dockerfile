@@ -8,18 +8,18 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o cache-api .
+RUN CGO_ENABLED=0 GOOS=linux go build -o timestamped-for-f1-cache-api .
 
 # Copy binary to production image
 FROM alpine:3.22
 
 WORKDIR /app
 
-COPY --from=build /app/cache-api .
+COPY --from=build /app/timestamped-for-f1-cache-api .
 
 RUN apk --no-cache add ca-certificates tzdata
 
 USER nonroot:nonroot
 
-ENTRYPOINT ["/app/cache-api"]
+ENTRYPOINT ["/app/timestamped-for-f1-cache-api"]
 
