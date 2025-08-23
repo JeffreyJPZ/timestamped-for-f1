@@ -3,10 +3,12 @@ package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.dtos.F1MultiviewerCircuit;
 
+@Service
 public class F1MultiviewerService {
 
     private final F1MultiviewerServiceConfigurationProperties properties;

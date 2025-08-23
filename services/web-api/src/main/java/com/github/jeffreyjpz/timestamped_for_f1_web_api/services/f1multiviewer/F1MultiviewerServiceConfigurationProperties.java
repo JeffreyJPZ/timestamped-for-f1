@@ -6,11 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@ConfigurationProperties(prefix = "f1multiviewer.service.") 
+@ConfigurationProperties(prefix = "f1multiviewer.service") 
 @ConfigurationPropertiesScan
 @RequiredArgsConstructor
 @Getter
 public class F1MultiviewerServiceConfigurationProperties { 
 
     private final String baseUrl;
+    
 }

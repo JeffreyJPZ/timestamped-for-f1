@@ -6,11 +6,12 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@ConfigurationProperties(prefix = "openf1.service.") 
+@ConfigurationProperties(prefix = "openf1.service")
 @ConfigurationPropertiesScan
 @RequiredArgsConstructor
 @Getter
 public class OpenF1ServiceConfigurationProperties { 
 
     private final String baseUrl;
+    
 }
