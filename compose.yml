@@ -12,6 +12,14 @@ services:
       - ./services/cache/data:/data
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
 
+  cache-api:
+    build:
+      context: ./services/cache-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - 6666
+
   openf1-live-mq:
     build:
       context: ./services/openf1-live-mq
@@ -82,3 +90,11 @@ services:
       POSTGRES_USER: "${HISTORICAL_DB_ROOT_USERNAME}"
       POSTGRES_PASSWORD: "${HISTORICAL_DB_ROOT_PASSWORD}"
       POSTGRES_DB: "${HISTORICAL_DB_NAME}"
+
+  web-api:
+    build:
+      context: ./services/web-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - 8080:8080
