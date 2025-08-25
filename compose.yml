@@ -8,9 +8,7 @@ services:
     expose:
       - 6379
     volumes:
-      - ./services/cache/config/redis.conf:/usr/local/etc/redis/redis.conf
       - ./services/cache/data:/data
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
 
   cache-api:
     build:
@@ -28,10 +26,6 @@ services:
     expose:
       - 5672
       - 15672
-    volumes:
-      - ./services/openf1-live-mq/config/definitions.json:/etc/rabbitmq/definitions.json
-    environment:
-      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\""
 
   openf1-db:
     build:
