@@ -43,7 +43,7 @@ services:
   openf1:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1:latest
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
       - openf1-db
     environment:
@@ -55,7 +55,7 @@ services:
       context: ./historical/api
       dockerfile: Dockerfile
     ports:
-      - 8888:8888
+      - "8888:8888"
     depends_on:
       - historical-db
     environment:
@@ -91,4 +91,18 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - 8080:8080
+      - "8080:8080"
+
+  web:
+    build:
+      context: ./services/web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./services/web/data/data:/data
+      - ./services/web/data/config:/config

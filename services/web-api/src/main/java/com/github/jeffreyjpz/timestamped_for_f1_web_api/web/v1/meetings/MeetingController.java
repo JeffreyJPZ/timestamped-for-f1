@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping(path = "/meetings", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/v1/meetings", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Slf4j
 public class MeetingController {

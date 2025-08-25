@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping(path = "/drivers", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/v1/drivers", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Slf4j
 public class DriverController {

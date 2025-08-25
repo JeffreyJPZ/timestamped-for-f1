@@ -132,7 +132,7 @@ dist
 # Config for services
 services/**/config
 
-# Data for services
+# Data persistence for services
 services/**/data
 
 # Python bytecode
