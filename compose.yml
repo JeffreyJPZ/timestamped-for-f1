@@ -17,6 +17,14 @@ services:
     restart: unless-stopped
     expose:
       - 6666
+    environment:
+      CACHE_HOST: "${CACHE_HOST}"
+      CACHE_PORT: "${CACHE_PORT}"
+      CACHE_USERNAME: "${CACHE_USERNAME}"
+      CACHE_PASSWORD: "${CACHE_PASSWORD}"
+      CACHE_DB: "${CACHE_DB}"
+      CACHE_API_IP: "${CACHE_API_IP}"
+      CACHE_API_PORT: "${CACHE_API_PORT}"
 
   openf1-live-mq:
     build:
