@@ -93,9 +93,9 @@ services:
     ports:
       - "8080:8080"
 
-  web:
+  web-server:
     build:
-      context: ./services/web
+      context: ./services/web-server
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
@@ -104,5 +104,5 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
-      - ./services/web/data/data:/data
-      - ./services/web/data/config:/config
+      - ./services/web-server/data/data:/data
+      - ./services/web-server/data/config:/config
