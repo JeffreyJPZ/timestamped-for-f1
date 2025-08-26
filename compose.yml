@@ -17,6 +17,8 @@ services:
     restart: unless-stopped
     expose:
       - 6666
+    depends_on:
+      - cache
     environment:
       CACHE_HOST: "${CACHE_HOST}"
       CACHE_PORT: "${CACHE_PORT}"
@@ -100,6 +102,11 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
+    depends_on:
+      - cache
+      - cache-api
+      - openf1
+      - openf1-db
 
   web-server:
     build:
@@ -109,6 +116,12 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    depends_on:
+      - cache
+      - cache-api
+      - openf1
+      - openf1-db
+      - web-api
     cap_add:
       - NET_ADMIN
     volumes:
