@@ -1,7 +1,7 @@
 package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.dtos;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,9 +9,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class F1MultiviewerCircuitLocationCoordinates {
-    @JsonProperty(value = "x", isRequired = OptBoolean.TRUE)
+
+    @JsonAlias(value = "x")
+    @JsonProperty(value = "x")
     private final double x;
 
-    @JsonProperty(value = "y", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "y")
+    @JsonProperty(value = "y")
     private final double y;
 }

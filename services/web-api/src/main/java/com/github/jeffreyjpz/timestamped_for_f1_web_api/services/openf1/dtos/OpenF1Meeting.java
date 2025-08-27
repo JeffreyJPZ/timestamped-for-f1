@@ -1,7 +1,7 @@
 package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,39 +10,47 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OpenF1Meeting {
     
-    @JsonProperty(value = "circuit_key", isRequired = OptBoolean.TRUE)
-    private final Integer circuit_key;
+    @JsonAlias("circuit_short_name")
+    @JsonProperty("circuitShortName")
+    private final String circuitShortName;
 
-    @JsonProperty(value = "circuit_short_name", isRequired = OptBoolean.TRUE)
-    private final String circuit_short_name;
+    @JsonAlias("country_code")
+    @JsonProperty("countryCode")
+    private final String countryCode;
 
-    @JsonProperty(value = "country_code", isRequired = OptBoolean.TRUE)
-    private final String country_code;
+    @JsonAlias("country_key")
+    @JsonProperty("countryKey")
+    private final Integer countryKey;
 
-    @JsonProperty(value = "country_key", isRequired = OptBoolean.TRUE)
-    private final Integer country_key;
+    @JsonAlias("country_name")
+    @JsonProperty("countryName")
+    private final String countryName;
 
-    @JsonProperty(value = "countryName", isRequired = OptBoolean.TRUE)
-    private final String country_name;
+    @JsonAlias("date_start")
+    @JsonProperty("dateStart")
+    private final String dateStart;
 
-    @JsonProperty(value = "date_start", isRequired = OptBoolean.TRUE)
-    private final String date_start;
+    @JsonAlias("gmt_offset")
+    @JsonProperty("gmtOffset")
+    private final String gmtOffset;
 
-    @JsonProperty(value = "gmt_offset", isRequired = OptBoolean.TRUE)
-    private final String gmt_offset;
-
-    @JsonProperty(value = "location", isRequired = OptBoolean.TRUE)
+    @JsonAlias("location")
+    @JsonProperty("location")
     private final String location;
 
-    @JsonProperty(value = "meeting_key", isRequired = OptBoolean.TRUE)
-    private final Integer meeting_key;
+    @JsonAlias("meeting_key")
+    @JsonProperty("meetingKey")
+    private final Integer meetingKey;
 
-    @JsonProperty(value = "meeting_name", isRequired = OptBoolean.TRUE)
-    private final String meeting_name;
+    @JsonAlias("meeting_name")
+    @JsonProperty("meetingName")
+    private final String meetingName;
 
-    @JsonProperty(value = "meeting_official_name", isRequired = OptBoolean.TRUE)
-    private final String meeting_official_name;
+    @JsonAlias("meeting_official_name")
+    @JsonProperty("meetingOfficialName")
+    private final String meetingOfficialName;
 
-    @JsonProperty(value = "year", isRequired = OptBoolean.TRUE)
+    @JsonAlias("year")
+    @JsonProperty("year")
     private final Integer year;
 }

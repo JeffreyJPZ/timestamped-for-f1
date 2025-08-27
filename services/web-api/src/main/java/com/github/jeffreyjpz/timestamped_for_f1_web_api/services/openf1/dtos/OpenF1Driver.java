@@ -1,7 +1,7 @@
 package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,39 +10,51 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OpenF1Driver {
     
-    @JsonProperty(value = "broadcast_name", isRequired = OptBoolean.TRUE)
-    private final String broadcast_name;
+    @JsonAlias(value = "broadcast_name")
+    @JsonProperty(value = "broadcastName")
+    private final String broadcastName;
 
-    @JsonProperty(value = "country_code", isRequired = OptBoolean.TRUE)
-    private final String country_code;
+    @JsonAlias(value = "country_code")
+    @JsonProperty(value = "countryCode")
+    private final String countryCode;
 
-    @JsonProperty(value = "driver_number", isRequired = OptBoolean.TRUE)
-    private final Integer driver_number;
+    @JsonAlias(value = "driver_number")
+    @JsonProperty(value = "driverNumber")
+    private final Integer driverNumber;
 
-    @JsonProperty(value = "first_name", isRequired = OptBoolean.TRUE)
-    private final String first_name;
+    @JsonAlias(value = "first_name")
+    @JsonProperty(value = "firstName")
+    private final String firstName;
 
-    @JsonProperty(value = "full_name", isRequired = OptBoolean.TRUE)
-    private final String full_name;
+    @JsonAlias(value = "full_name")
+    @JsonProperty(value = "fullName")
+    private final String fullName;
 
-    @JsonProperty(value = "headshot_url", isRequired = OptBoolean.TRUE)
-    private final String headshot_url;
+    @JsonAlias(value = "headshot_url")
+    @JsonProperty(value = "headshotUrl")
+    private final String headshotUrl;
 
-    @JsonProperty(value = "last_name", isRequired = OptBoolean.TRUE)
-    private final String last_name;
+    @JsonAlias(value = "last_name")
+    @JsonProperty(value = "lastName")
+    private final String lastName;
 
-    @JsonProperty(value = "meeting_key", isRequired = OptBoolean.TRUE)
-    private final Integer meeting_key;
+    @JsonAlias("meeting_key")
+    @JsonProperty("meetingKey")
+    private final Integer meetingKey;
 
-    @JsonProperty(value = "name_acronym", isRequired = OptBoolean.TRUE)
-    private final String name_acronym;
+    @JsonAlias("name_acronym")
+    @JsonProperty("nameAcronym")
+    private final String nameAcronym;
 
-    @JsonProperty(value = "session_key", isRequired = OptBoolean.TRUE)
-    private final Integer session_key;
+    @JsonAlias("session_key")
+    @JsonProperty("sessionKey")
+    private final Integer sessionKey;
 
-    @JsonProperty(value = "team_colour", isRequired = OptBoolean.TRUE)
-    private final String team_colour;
+    @JsonAlias("team_colour")
+    @JsonProperty("teamColour")
+    private final String teamColour;
 
-    @JsonProperty(value = "team_name", isRequired = OptBoolean.TRUE)
-    private final String team_name;
+    @JsonAlias("team_name")
+    @JsonProperty("teamName")
+    private final String teamName;
 }

@@ -2,8 +2,8 @@ package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,21 +12,27 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OpenF1Event {
     
-    @JsonProperty(value = "category", isRequired = OptBoolean.TRUE)
+    @JsonAlias("category")
+    @JsonProperty("category")
     private final String category;
 
-    @JsonProperty(value = "cause", isRequired = OptBoolean.TRUE)
+    @JsonAlias("cause")
+    @JsonProperty("cause")
     private final String cause;
 
-    @JsonProperty(value = "date", isRequired = OptBoolean.TRUE)
+    @JsonAlias("date")
+    @JsonProperty("date")
     private final String date;
 
-    @JsonProperty(value = "details", isRequired = OptBoolean.TRUE)
+    @JsonAlias("details")
+    @JsonProperty("details")
     private final Map<String, Object> details;
 
-    @JsonProperty(value = "meeting_key", isRequired = OptBoolean.TRUE)
-    private final Integer meeting_key;
+    @JsonAlias("meeting_key")
+    @JsonProperty("meetingKey")
+    private final Integer meetingKey;
 
-    @JsonProperty(value = "session_key", isRequired = OptBoolean.TRUE)
-    private final Integer session_key;
+    @JsonAlias("session_key")
+    @JsonProperty("sessionKey")
+    private final Integer sessionKey;
 }

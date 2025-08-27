@@ -1,7 +1,7 @@
 package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.dtos;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,15 +9,20 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class F1MultiviewerCircuitLocation {
-    @JsonProperty(value = "angle", isRequired = OptBoolean.TRUE)
+
+    @JsonAlias(value = "angle")
+    @JsonProperty(value = "angle")
     private final double angle;
 
-    @JsonProperty(value = "length", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "length")
+    @JsonProperty(value = "length")
     private final double length;
 
-    @JsonProperty(value = "number", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "number")
+    @JsonProperty(value = "number")
     private final Integer number;
 
-    @JsonProperty(value = "trackPosition", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "trackPosition")
+    @JsonProperty(value = "trackPosition")
     private final F1MultiviewerCircuitLocationCoordinates trackPosition;
 }

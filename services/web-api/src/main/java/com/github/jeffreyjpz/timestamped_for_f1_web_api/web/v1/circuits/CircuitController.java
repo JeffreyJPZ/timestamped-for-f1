@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping(path = "/v1/circuits", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/v1/circuits", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Slf4j
 public class CircuitController {

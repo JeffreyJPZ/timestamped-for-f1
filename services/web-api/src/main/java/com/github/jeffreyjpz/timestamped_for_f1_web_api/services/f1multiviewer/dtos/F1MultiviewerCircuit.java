@@ -3,8 +3,8 @@ package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,63 +12,84 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class F1MultiviewerCircuit {
-    @JsonProperty(value = "corners", isRequired = OptBoolean.TRUE)
+
+    @JsonAlias(value = "corners")
+    @JsonProperty(value = "corners")
     private final List<F1MultiviewerCircuitLocation> corners;
 
-    @JsonProperty(value = "marshalLights", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "marshalLights")
+    @JsonProperty(value = "marshalLights")
     private final List<F1MultiviewerCircuitLocation> marshalLights;
 
-    @JsonProperty(value = "marshalSectors", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "marshalSectors")
+    @JsonProperty(value = "marshalSectors")
     private final List<F1MultiviewerCircuitLocation> marshalSectors;
 
-    @JsonProperty(value = "candidateLap", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "candidateLap")
+    @JsonProperty(value = "candidateLap")
     private final Map<String, Object> candidateLap;
 
-    @JsonProperty(value = "circuitKey", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "circuitKey")
+    @JsonProperty(value = "circuitKey")
     private final String circuitKey;
 
-    @JsonProperty(value = "circuitName", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "circuitName")
+    @JsonProperty(value = "circuitName")
     private final String circuitName;
 
-    @JsonProperty(value = "countryIocCode", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "countryIocCode")
+    @JsonProperty(value = "countryIocCode")
     private final String countryIocCode;
 
-    @JsonProperty(value = "countryKey", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "countryKey")
+    @JsonProperty(value = "countryKey")
     private final Integer countryKey;
 
-    @JsonProperty(value = "countryName", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "countryName")
+    @JsonProperty(value = "countryName")
     private final String countryName;
 
-    @JsonProperty(value = "location", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "location")
+    @JsonProperty(value = "location")
     private final String location;
 
-    @JsonProperty(value = "meetingKey", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "meetingKey")
+    @JsonProperty(value = "meetingKey")
     private final String meetingKey;
 
-    @JsonProperty(value = "meetingName", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "meetingName")
+    @JsonProperty(value = "meetingName")
     private final String meetingName;
 
-    @JsonProperty(value = "meetingOfficialName", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "meetingOfficialName")
+    @JsonProperty(value = "meetingOfficialName")
     private final String meetingOfficialName;
 
-    @JsonProperty(value = "miniSectorsIndexes", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "miniSectorsIndexes")
+    @JsonProperty(value = "miniSectorsIndexes")
     private final List<Integer> miniSectorsIndexes;
 
-    @JsonProperty(value = "raceDate", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "raceDate")
+    @JsonProperty(value = "raceDate")
     private final String raceDate;
 
-    @JsonProperty(value = "rotation", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "rotation")
+    @JsonProperty(value = "rotation")
     private final Integer rotation;
 
-    @JsonProperty(value = "round", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "round")
+    @JsonProperty(value = "round")
     private final Integer round;
 
-    @JsonProperty(value = "x", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "x")
+    @JsonProperty(value = "x")
     private final List<Integer> x;
 
-    @JsonProperty(value = "y", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "y")
+    @JsonProperty(value = "y")
     private final List<Integer> y;
 
-    @JsonProperty(value = "year", isRequired = OptBoolean.TRUE)
+    @JsonAlias(value = "year")
+    @JsonProperty(value = "year")
     private final Integer year;
 }
