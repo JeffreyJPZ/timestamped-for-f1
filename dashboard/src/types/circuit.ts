@@ -42,5 +42,26 @@ const circuitSchema = z
         year: z.number().int().nonnegative()
     });
 
+const marshalSectorSchema = z
+    .object({
+        ...circuitLocation.shape,
+        type: z.literal("marshal-sector")
+    });
+
+const miniSectorSchema = z
+    .object({
+        ...circuitLocation.shape,
+        type: z.literal("mini-sector")
+    });
+
+const turnSchema = z
+    .object({
+        ...circuitLocation.shape,
+        type: z.literal("turn")
+    });
+
 export type Circuit = z.infer<typeof circuitSchema>;
 export type CircuitLocationType = z.infer<typeof circuitLocationType>;
+export type MarshalSector = z.infer<typeof marshalSectorSchema>;
+export type MiniSector = z.infer<typeof miniSectorSchema>;
+export type Turn = z.infer<typeof turnSchema>;
