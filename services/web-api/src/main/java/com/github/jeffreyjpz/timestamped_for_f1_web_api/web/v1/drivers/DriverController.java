@@ -20,8 +20,8 @@ import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheRes
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheService;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Service;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheUtils;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.errors.exceptions.InvalidInstanceException;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.utils.CacheUtils;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.drivers.dtos.Driver;
 
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,9 @@ public class DriverController {
 
         try {
             drivers = objectMapper.readValue(
-                objectMapper.writeValueAsString(openf1Service.getDrivers(queryParams)),
+                objectMapper.writeValueAsString(
+                    openf1Service.getDrivers(queryParams)
+                ),
                 new TypeReference<List<Driver>>(){}
             );
         } catch (JsonProcessingException e) {
@@ -54,8 +56,12 @@ public class DriverController {
         return drivers;
     }
 
-    @GetMapping("/{meetingKey}/{sessionKey}/{driverNumber}")
-    public Driver getDriver(@PathVariable Integer meetingKey, @PathVariable Integer sessionKey, @PathVariable Integer driverNumber) {
+    @GetMapping("/{meeting_key}/{session_key}/{driver_number}")
+    public Driver getDriver(
+        @PathVariable("meeting_key") Integer meetingKey,
+        @PathVariable("session_key") Integer sessionKey,
+        @PathVariable("driver_number") Integer driverNumber
+    ) {
         String cacheKey = CacheUtils.buildCacheKey(
             "drivers",
             String.valueOf(meetingKey),

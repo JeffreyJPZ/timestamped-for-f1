@@ -1,7 +1,7 @@
-package com.github.jeffreyjpz.timestamped_for_f1_web_api.utils;
+package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.utils;
 
 /**
- * Utilities for the cache service.
+ * Utilities for interacting with the cache service.
  */
 public class CacheUtils {
 

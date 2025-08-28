@@ -10,51 +10,52 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OpenF1Driver {
     
-    @JsonAlias(value = "broadcast_name")
-    @JsonProperty(value = "broadcastName")
+    @JsonAlias("broadcast_name")
+    @JsonProperty("broadcast_name")
     private final String broadcastName;
 
-    @JsonAlias(value = "country_code")
-    @JsonProperty(value = "countryCode")
+    @JsonAlias("country_code")
+    @JsonProperty("country_code")
     private final String countryCode;
 
-    @JsonAlias(value = "driver_number")
-    @JsonProperty(value = "driverNumber")
+    @JsonAlias("driver_number")
+    @JsonProperty("driver_number")
     private final Integer driverNumber;
 
-    @JsonAlias(value = "first_name")
-    @JsonProperty(value = "firstName")
+    @JsonAlias("first_name")
+    @JsonProperty("first_name")
     private final String firstName;
 
-    @JsonAlias(value = "full_name")
-    @JsonProperty(value = "fullName")
+    @JsonAlias("full_name")
+    @JsonProperty("full_name")
     private final String fullName;
 
-    @JsonAlias(value = "headshot_url")
-    @JsonProperty(value = "headshotUrl")
+    @JsonAlias("headshot_url")
+    @JsonProperty("headshot_url")
     private final String headshotUrl;
 
-    @JsonAlias(value = "last_name")
-    @JsonProperty(value = "lastName")
+    @JsonAlias("last_name")
+    @JsonProperty("last_name")
     private final String lastName;
 
     @JsonAlias("meeting_key")
-    @JsonProperty("meetingKey")
+    @JsonProperty("meeting_key")
     private final Integer meetingKey;
 
     @JsonAlias("name_acronym")
-    @JsonProperty("nameAcronym")
+    @JsonProperty("name_acronym")
     private final String nameAcronym;
 
     @JsonAlias("session_key")
-    @JsonProperty("sessionKey")
+    @JsonProperty("session_key")
     private final Integer sessionKey;
 
     @JsonAlias("team_colour")
-    @JsonProperty("teamColour")
+    @JsonProperty("team_colour")
     private final String teamColour;
 
     @JsonAlias("team_name")
-    @JsonProperty("teamName")
+    @JsonProperty("team_name")
     private final String teamName;
+
 }

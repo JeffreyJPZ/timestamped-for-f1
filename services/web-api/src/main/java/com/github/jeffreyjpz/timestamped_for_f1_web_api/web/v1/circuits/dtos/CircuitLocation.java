@@ -1,7 +1,7 @@
 package com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,19 +10,24 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CircuitLocation {
 
-    @JsonProperty(value = "angle", isRequired = OptBoolean.TRUE)
+    @JsonAlias({"angle"})
+    @JsonProperty("angle")
     private final double angle;
 
-    @JsonProperty(value = "coordinates", isRequired = OptBoolean.TRUE)
+    @JsonAlias({"coordinates"})
+    @JsonProperty("coordinates")
     private final CircuitLocationCoordinates coordinates;
 
-    @JsonProperty(value = "length", isRequired = OptBoolean.TRUE)
+    @JsonAlias({"length"})
+    @JsonProperty("length")
     private final double length;
 
-    @JsonProperty(value = "number", isRequired = OptBoolean.TRUE)
+    @JsonAlias({"number"})
+    @JsonProperty("number")
     private final Integer number;
 
-    @JsonProperty(value = "type", isRequired = OptBoolean.TRUE)
+    @JsonAlias({"type"})
+    @JsonProperty("type")
     private final String type;
 
 }

@@ -29,10 +29,10 @@ public class OpenF1Event {
     private final Map<String, Object> details;
 
     @JsonAlias("meeting_key")
-    @JsonProperty("meetingKey")
+    @JsonProperty("meeting_key")
     private final Integer meetingKey;
 
     @JsonAlias("session_key")
-    @JsonProperty("sessionKey")
+    @JsonProperty("session_key")
     private final Integer sessionKey;
 }

@@ -11,27 +11,27 @@ import lombok.RequiredArgsConstructor;
 public class OpenF1Meeting {
     
     @JsonAlias("circuit_short_name")
-    @JsonProperty("circuitShortName")
+    @JsonProperty("circuit_short_name")
     private final String circuitShortName;
 
     @JsonAlias("country_code")
-    @JsonProperty("countryCode")
+    @JsonProperty("country_code")
     private final String countryCode;
 
     @JsonAlias("country_key")
-    @JsonProperty("countryKey")
+    @JsonProperty("country_key")
     private final Integer countryKey;
 
     @JsonAlias("country_name")
-    @JsonProperty("countryName")
+    @JsonProperty("country_name")
     private final String countryName;
 
     @JsonAlias("date_start")
-    @JsonProperty("dateStart")
+    @JsonProperty("date_start")
     private final String dateStart;
 
     @JsonAlias("gmt_offset")
-    @JsonProperty("gmtOffset")
+    @JsonProperty("gmt_offset")
     private final String gmtOffset;
 
     @JsonAlias("location")
@@ -39,18 +39,19 @@ public class OpenF1Meeting {
     private final String location;
 
     @JsonAlias("meeting_key")
-    @JsonProperty("meetingKey")
+    @JsonProperty("meeting_key")
     private final Integer meetingKey;
 
     @JsonAlias("meeting_name")
-    @JsonProperty("meetingName")
+    @JsonProperty("meeting_name")
     private final String meetingName;
 
     @JsonAlias("meeting_official_name")
-    @JsonProperty("meetingOfficialName")
+    @JsonProperty("meeting_official_name")
     private final String meetingOfficialName;
 
     @JsonAlias("year")
     @JsonProperty("year")
     private final Integer year;
+
 }

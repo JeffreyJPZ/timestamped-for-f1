@@ -19,8 +19,8 @@ import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServ
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.F1MultiviewerService;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.f1multiviewer.dtos.F1MultiviewerCircuit;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheUtils;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.errors.exceptions.InvalidInstanceException;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.utils.CacheUtils;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.Circuit;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.CircuitLocation;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.circuits.dtos.CircuitLocationCoordinates;
@@ -41,8 +41,11 @@ public class CircuitController {
 
     private final ObjectMapper objectMapper;
 
-    @GetMapping("/{year}/{circuitKey}")
-    public Circuit getCircuit(@PathVariable Integer year, @PathVariable Integer circuitKey) {
+    @GetMapping("/{year}/{circuit_key}")
+    public Circuit getCircuit(
+        @PathVariable("year") Integer year,
+        @PathVariable("circuit_key") Integer circuitKey
+    ) {
         String cacheKey = CacheUtils.buildCacheKey(
             "circuits",
             String.valueOf(year),
@@ -186,11 +189,11 @@ public class CircuitController {
         return circuit;
     }
 
-    @GetMapping("/{year}/{circuitKey}/turns/{number}")
+    @GetMapping("/{year}/{circuit_key}/turns/{number}")
     public CircuitLocation getTurn(
-        @PathVariable Integer year,
-        @PathVariable Integer circuitKey,
-        @PathVariable Integer number
+        @PathVariable("year") Integer year,
+        @PathVariable("circuit_key") Integer circuitKey,
+        @PathVariable("number") Integer number
     ) {
         String cacheKey = CacheUtils.buildCacheKey(
             "turns",
@@ -285,11 +288,11 @@ public class CircuitController {
         return turn;
     }
 
-    @GetMapping("/{year}/{circuitKey}/marshal-sectors/{number}")
+    @GetMapping("/{year}/{circuit_key}/marshal-sectors/{number}")
     public CircuitLocation getMarshalSector(
-        @PathVariable Integer year,
-        @PathVariable Integer circuitKey,
-        @PathVariable Integer number
+        @PathVariable("year") Integer year,
+        @PathVariable("circuit_key") Integer circuitKey,
+        @PathVariable("number") Integer number
     ) {
         String cacheKey = CacheUtils.buildCacheKey(
             "marshal-sectors",
@@ -384,11 +387,11 @@ public class CircuitController {
         return marshalSector;
     }
 
-    @GetMapping("/{year}/{circuitKey}/mini-sectors/{number}")
+    @GetMapping("/{year}/{circuit_key}/mini-sectors/{number}")
     public CircuitLocation getMiniSector(
-        @PathVariable Integer year,
-        @PathVariable Integer circuitKey,
-        @PathVariable Integer number
+        @PathVariable("year") Integer year,
+        @PathVariable("circuit_key") Integer circuitKey,
+        @PathVariable("number") Integer number
     ) {
         String cacheKey = CacheUtils.buildCacheKey(
             "mini-sectors",

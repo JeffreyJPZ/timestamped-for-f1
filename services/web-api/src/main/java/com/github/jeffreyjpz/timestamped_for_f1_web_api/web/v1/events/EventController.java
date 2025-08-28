@@ -33,7 +33,9 @@ public class EventController {
 
         try {
             events = objectMapper.readValue(
-                objectMapper.writeValueAsString(openf1Service.getEvents(queryParams)),
+                objectMapper.writeValueAsString(
+                    openf1Service.getEvents(queryParams)
+                ),
                 new TypeReference<List<Event>>(){}
             );
         } catch (JsonProcessingException e) {

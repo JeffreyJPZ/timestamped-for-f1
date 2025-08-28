@@ -20,8 +20,8 @@ import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheRes
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheService;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Service;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheUtils;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.errors.exceptions.InvalidInstanceException;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.utils.CacheUtils;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.sessions.dtos.Session;
 
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,9 @@ public class SessionController {
 
         try {
             sessions = objectMapper.readValue(
-                objectMapper.writeValueAsString(openf1Service.getSessions(queryParams)),
+                objectMapper.writeValueAsString(
+                    openf1Service.getSessions(queryParams)
+                ),
                 new TypeReference<List<Session>>(){}
             );
         } catch (JsonProcessingException e) {
@@ -54,8 +56,8 @@ public class SessionController {
         return sessions;
     }
 
-    @GetMapping("/{sessionKey}")
-    public Session getSession(@PathVariable Integer sessionKey) {
+    @GetMapping("/{session_key}")
+    public Session getSession(@PathVariable("session_key") Integer sessionKey) {
         String cacheKey = CacheUtils.buildCacheKey(
             "sessions",
             String.valueOf(sessionKey)

@@ -20,8 +20,8 @@ import com.github.jeffreyjpz.timestamped_for_f1_cache.cache_api_grpc_v1.CacheRes
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheService;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.cache.CacheServiceException;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.OpenF1Service;
-import com.github.jeffreyjpz.timestamped_for_f1_web_api.utils.CacheUtils;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.errors.exceptions.InvalidInstanceException;
+import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.utils.CacheUtils;
 import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.meetings.dtos.Meeting;
 
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,9 @@ public class MeetingController {
 
         try {
             meetings = objectMapper.readValue(
-                objectMapper.writeValueAsString(openf1Service.getMeetings(queryParams)),
+                objectMapper.writeValueAsString(
+                    openf1Service.getMeetings(queryParams)
+                ),
                 new TypeReference<List<Meeting>>(){}
             );
         } catch (JsonProcessingException e) {
@@ -54,8 +56,8 @@ public class MeetingController {
         return meetings;
     }
 
-    @GetMapping("/{meetingKey}")
-    public Meeting getMeeting(@PathVariable Integer meetingKey) {
+    @GetMapping("/{meeting_key}")
+    public Meeting getMeeting(@PathVariable("meeting_key") Integer meetingKey) {
         String cacheKey = CacheUtils.buildCacheKey(
             "meetings",
             String.valueOf(meetingKey)
