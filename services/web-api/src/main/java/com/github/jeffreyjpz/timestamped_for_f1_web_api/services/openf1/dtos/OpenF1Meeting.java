@@ -10,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OpenF1Meeting {
     
+    @JsonAlias("circuit_key")
+    @JsonProperty("circuit_key")
+    private final Integer circuitKey;
+    
     @JsonAlias("circuit_short_name")
     @JsonProperty("circuit_short_name")
     private final String circuitShortName;
