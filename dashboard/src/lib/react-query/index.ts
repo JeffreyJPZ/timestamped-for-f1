@@ -10,6 +10,8 @@ const queryClientConfig: QueryClientConfig = {
     },
 }
 
+export const queryClient = new QueryClient(queryClientConfig);
+
 export type ApiFnReturnType<FnType extends (...args: any) => Promise<any>> =
   Awaited<ReturnType<FnType>>;
 
@@ -25,5 +27,3 @@ export type MutationConfig<
   Error,
   Parameters<MutationFnType>[0]
 >;
-
-export const queryClient = new QueryClient(queryClientConfig);
