@@ -1,6 +1,6 @@
 import z from "zod";
 
-const eventCategory = z
+export const eventCategory = z
     .enum([
         "driver-action",
         "driver-notification",
@@ -10,7 +10,7 @@ const eventCategory = z
         "other"
     ]);
 
-const eventCause = z
+export const eventCause = z
     .enum([
         "personal-best-lap",
         "incident",
@@ -51,13 +51,13 @@ const eventCause = z
         "race-control-message"
     ]);
 
-const eventRole = z
+export const eventRole = z
     .enum([
         "initiator",
         "participant"
     ]);
 
-const tyreCompound = z
+export const tyreCompound = z
     .enum([
         "SOFT",
         "MEDIUM",
@@ -66,44 +66,61 @@ const tyreCompound = z
         "WET"
     ]);
 
-export const eventSchema = z
+const eventDetails = z
+    .object({
+        lap_number: z.number().int().positive().nullish(),
+        marker: z
+            .union([
+                z.string(),
+                z.object({
+                    x: z.number(),
+                    y: z.number(),
+                    z: z.number()
+                })
+            ])
+            .nullish(),
+        driver_roles: z.record(z.string(), eventRole).nullish(),
+        position: z.number().int().positive().nullish(),
+        lap_duration: z.number().nonnegative().nullish(),
+        verdict: z.string().nullish(),
+        reason: z.string().nullish(),
+        message: z.string().nullish(),
+        compound: tyreCompound.nullish(),
+        tyre_age_at_start: z.number().int().nonnegative().nullish(),
+        pit_lane_duration: z.number().nonnegative().nullish(),
+        pit_stop_duration: z.number().nonnegative().nullish(),
+        qualifying_stage_number: z.union([z.literal(1), z.literal(2)]).nullish(),
+        eliminated: z.boolean().nullish(),
+    });
+
+export const event = z
     .object({
         category: eventCategory,
         cause: eventCause,
         date: z.iso.datetime(),
-        details: z
-            .object({
-                lap_number: z.number().int().positive().nullish(),
-                marker: z
-                    .union([
-                        z.string(),
-                        z.object({
-                            x: z.number(),
-                            y: z.number(),
-                            z: z.number()
-                        })
-                    ])
-                    .nullish(),
-                driver_roles: z.record(z.string(), eventRole).nullish(),
-                position: z.number().int().positive().nullish(),
-                lap_duration: z.number().nonnegative().nullish(),
-                verdict: z.string().nullish(),
-                reason: z.string().nullish(),
-                message: z.string().nullish(),
-                compound: tyreCompound.nullish(),
-                tyre_age_at_start: z.number().int().nonnegative().nullish(),
-                pit_lane_duration: z.number().nonnegative().nullish(),
-                pit_stop_duration: z.number().nonnegative().nullish(),
-                qualifying_stage_number: z.union([z.literal(1), z.literal(2)]).nullish(),
-                eliminated: z.boolean().nullish(),
-            })
-            .nullish(),
+        details: eventDetails.nullish(),
         meeting_key: z.number().int().positive(),
         session_key: z.number().int().positive()
     });
 
-export type Event = z.infer<typeof eventSchema>;
+export const eventsRead = event
+    .omit({
+        // Not compatible with events API, use events query builder to filter by details attributes
+        details: true,
+    })
+    .extend({
+        category: z.array(eventCategory),
+        cause: z.array(eventCause),
+        date: z.array(z.iso.datetime()),
+        meeting_key: z.array(z.number().int().positive()),
+        session_key: z.array(z.number().int().positive())
+    })
+    .partial();
+
 export type EventCategory = z.infer<typeof eventCategory>;
 export type EventCause = z.infer<typeof eventCause>;
 export type EventRole = z.infer<typeof eventRole>;
 export type TyreCompound = z.infer<typeof tyreCompound>;
+
+export type Event = z.infer<typeof event>;
+export type EventsRead = z.infer<typeof eventsRead>;

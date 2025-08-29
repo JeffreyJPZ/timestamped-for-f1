@@ -1,6 +1,6 @@
 import z from "zod";
 
-const circuitLocationType = z
+export const circuitLocationType = z
     .enum([
         "marshal-sector",
         "mini-sector",
@@ -20,7 +20,7 @@ const circuitLocation = z
         type: circuitLocationType
     });
 
-const circuitSchema = z
+export const circuit = z
     .object({
         circuit_key: z.number().int().positive(),
         circuit_name: z.string(),
@@ -42,26 +42,76 @@ const circuitSchema = z
         year: z.number().int().nonnegative()
     });
 
-const marshalSectorSchema = z
+export const circuitRead = circuit
+    .pick({
+        circuit_key: true,
+        year: true
+    });
+
+export const marshalSector = z
     .object({
         ...circuitLocation.shape,
         type: z.literal("marshal-sector")
     });
 
-const miniSectorSchema = z
+export const marshalSectorRead = marshalSector
+    .pick({
+        number: true
+    })
+    .extend(
+        circuit.pick({
+            circuit_key: true,
+            year: true
+        })
+        .shape
+    );
+
+export const miniSector = z
     .object({
         ...circuitLocation.shape,
         type: z.literal("mini-sector")
     });
 
-const turnSchema = z
+export const miniSectorRead = miniSector
+    .pick({
+        number: true
+    })
+    .extend(
+        circuit.pick({
+            circuit_key: true,
+            year: true
+        })
+        .shape
+    );
+
+export const turn = z
     .object({
         ...circuitLocation.shape,
         type: z.literal("turn")
     });
 
-export type Circuit = z.infer<typeof circuitSchema>;
+export const turnRead = turn
+    .pick({
+        number: true
+    })
+    .extend(
+        circuit.pick({
+            circuit_key: true,
+            year: true
+        })
+        .shape
+    );
+
 export type CircuitLocationType = z.infer<typeof circuitLocationType>;
-export type MarshalSector = z.infer<typeof marshalSectorSchema>;
-export type MiniSector = z.infer<typeof miniSectorSchema>;
-export type Turn = z.infer<typeof turnSchema>;
+
+export type Circuit = z.infer<typeof circuit>;
+export type CircuitRead = z.infer<typeof circuitRead>;
+
+export type MarshalSector = z.infer<typeof marshalSector>;
+export type MarshalSectorRead = z.infer<typeof marshalSectorRead>;
+
+export type MiniSector = z.infer<typeof miniSector>;
+export type MiniSectorRead = z.infer<typeof miniSectorRead>;
+
+export type Turn = z.infer<typeof turn>;
+export type TurnRead = z.infer<typeof turnRead>;
