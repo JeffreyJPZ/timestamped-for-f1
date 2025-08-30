@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.drivers.dtos.Driv
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "api/v1/drivers", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor

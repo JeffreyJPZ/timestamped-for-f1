@@ -7,7 +7,7 @@ export const meeting = z
         country_code: z.string().length(3),
         country_key: z.number().int().positive(),
         country_name: z.string(),
-        date_start: z.iso.datetime(),
+        date_start: z.iso.datetime({ offset: true }),
         gmt_offset: z.string().regex(/^[-+]\d{2}:\d{2}:\d{2}$/),
         location: z.string(),
         meeting_key: z.number().int().positive(),
@@ -15,6 +15,8 @@ export const meeting = z
         meeting_official_name: z.string(),
         year: z.number().int().nonnegative(),
     });
+
+export const meetings = z.array(meeting);
 
 export const meetingRead = meeting
     .pick({
@@ -28,7 +30,7 @@ export const meetingsRead = meeting
         country_code: z.array(z.string().length(3)),
         country_key: z.array(z.number().int().positive()),
         country_name: z.array(z.string()),
-        date_start: z.array(z.iso.datetime()),
+        date_start: z.array(z.iso.datetime({ offset: true })),
         gmt_offset: z.array(z.string().regex(/^[-+]\d{2}:\d{2}:\d{2}$/)),
         location: z.array(z.string()),
         meeting_key: z.array(z.number().int().positive()),
@@ -39,5 +41,6 @@ export const meetingsRead = meeting
     .partial();
 
 export type Meeting = z.infer<typeof meeting>;
+export type Meetings = z.infer<typeof meetings>;
 export type MeetingRead = z.infer<typeof meetingRead>;
 export type MeetingsRead = z.infer<typeof meetingsRead>;

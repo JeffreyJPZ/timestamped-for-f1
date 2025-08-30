@@ -26,8 +26,8 @@ export const session = z
         country_code: z.string().length(3),
         country_key: z.number().int().positive(),
         country_name: z.string(),
-        date_start: z.iso.datetime(),
-        date_end: z.iso.datetime(),
+        date_start: z.iso.datetime({ offset: true }),
+        date_end: z.iso.datetime({ offset: true }),
         gmt_offset: z.string().regex(/^[-+]\d{2}:\d{2}:\d{2}$/),
         location: z.string(),
         meeting_key: z.number().int().positive(),
@@ -36,6 +36,8 @@ export const session = z
         session_type: sessionType,
         year: z.number().int().nonnegative(),
     });
+
+export const sessions = z.array(session);
 
 export const sessionRead = session
     .pick({
@@ -49,8 +51,8 @@ export const sessionsRead = session
         country_code: z.array(z.string().length(3)),
         country_key: z.array(z.number().int().positive()),
         country_name: z.array(z.string()),
-        date_start: z.array(z.iso.datetime()),
-        date_end: z.array(z.iso.datetime()),
+        date_start: z.array(z.iso.datetime({ offset: true })),
+        date_end: z.array(z.iso.datetime({ offset: true })),
         gmt_offset: z.array(z.string().regex(/^[-+]\d{2}:\d{2}:\d{2}$/)),
         location: z.array(z.string()),
         meeting_key: z.array(z.number().int().positive()),
@@ -65,5 +67,6 @@ export type SessionName = z.infer<typeof sessionName>;
 export type SessionType = z.infer<typeof sessionType>;
 
 export type Session = z.infer<typeof session>;
+export type Sessions = z.infer<typeof sessions>;
 export type SessionRead = z.infer<typeof sessionRead>;
 export type SessionsRead = z.infer<typeof sessionsRead>;

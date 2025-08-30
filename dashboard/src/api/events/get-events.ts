@@ -1,15 +1,32 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
-import { Event, EventsRead } from '@/types/event';
+import { Events, events, EventsRead } from '@/types/event';
 import { QueryConfig } from '@/lib/react-query';
+import { Endpoint, getQueryURL } from '@/lib/web-api';
 
-async function getEvents({ category, cause, date, meeting_key, session_key }: EventsRead): Promise<Event[]> {
-    return [];
+async function getEvents(params: EventsRead): Promise<Events> {
+    const endpoint: Endpoint = "events";
+    const url = getQueryURL(endpoint, params);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(`${endpoint} request failure`);
+    }
+    
+    const data = await response.json();
+    const parseResult = events.safeParse(data);
+    
+    if (!parseResult.success) {
+        console.error(parseResult.error);
+        throw parseResult.error;
+    }
+
+    return parseResult.data;
 }
 
-export function getEventsQueryOptions({ category, cause, date, meeting_key, session_key }: EventsRead) {
+export function getEventsQueryOptions(params: EventsRead) {
     return queryOptions({
-        queryKey: ["events", meeting_key, session_key, { category, cause, date }],
-        queryFn: () => getEvents({ category, cause, date, meeting_key, session_key })
+        queryKey: ["events", { ...params }],
+        queryFn: () => getEvents(params)
     });
 }
 
@@ -17,9 +34,9 @@ type UseGetEventsOptions = EventsRead & {
     queryConfig?: QueryConfig<typeof getEventsQueryOptions>;
 }
 
-export function useGetEvents({ queryConfig, category, cause, date, meeting_key, session_key }: UseGetEventsOptions) {
+export function useGetEvents({ queryConfig, ...params }: UseGetEventsOptions) {
     return useQuery({
-        ...getEventsQueryOptions({ category, cause, date, meeting_key, session_key }),
+        ...getEventsQueryOptions(params),
         ...queryConfig
     });
 }

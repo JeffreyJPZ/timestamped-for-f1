@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +19,7 @@ import com.github.jeffreyjpz.timestamped_for_f1_web_api.web.v1.events.dtos.Event
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping(path = "/api/v1/events", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor

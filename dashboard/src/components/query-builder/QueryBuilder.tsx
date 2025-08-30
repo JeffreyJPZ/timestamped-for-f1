@@ -1,3 +1,5 @@
+"use client"
+
 import { QueryBuilderShadcn as ReactQueryBuilderShadcn} from "react-querybuilder-shadcn";
 import { Field, OptionList, QueryBuilder as ReactQueryBuilder, RuleGroupType } from "react-querybuilder";
 

@@ -97,11 +97,13 @@ export const event = z
     .object({
         category: eventCategory,
         cause: eventCause,
-        date: z.iso.datetime(),
+        date: z.iso.datetime({ offset: true }).nullable(), // For some reason some dates are null
         details: eventDetails.nullish(),
         meeting_key: z.number().int().positive(),
         session_key: z.number().int().positive()
     });
+
+export const events = z.array(event);
 
 export const eventsRead = event
     .omit({
@@ -111,7 +113,7 @@ export const eventsRead = event
     .extend({
         category: z.array(eventCategory),
         cause: z.array(eventCause),
-        date: z.array(z.iso.datetime()),
+        date: z.array(z.iso.datetime({ offset: true })),
         meeting_key: z.array(z.number().int().positive()),
         session_key: z.array(z.number().int().positive())
     })
@@ -123,4 +125,5 @@ export type EventRole = z.infer<typeof eventRole>;
 export type TyreCompound = z.infer<typeof tyreCompound>;
 
 export type Event = z.infer<typeof event>;
+export type Events = z.infer<typeof events>;
 export type EventsRead = z.infer<typeof eventsRead>;

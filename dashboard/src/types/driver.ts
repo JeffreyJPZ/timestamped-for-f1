@@ -16,6 +16,8 @@ export const driver = z
         team_name: z.string(),
     });
 
+export const drivers = z.array(driver);
+
 export const driverRead = driver
     .pick({
         driver_number: true,
@@ -41,5 +43,6 @@ export const driversRead = driver
     .partial();
 
 export type Driver = z.infer<typeof driver>;
+export type Drivers = z.infer<typeof drivers>;
 export type DriverRead = z.infer<typeof driverRead>;
 export type DriversRead = z.infer<typeof driversRead>;
