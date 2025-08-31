@@ -24,6 +24,10 @@ public class Event {
     @JsonProperty("date")
     private final String date;
 
+    @JsonAlias({"elapsedTime", "elapsed_time"})
+    @JsonProperty("elapsed_time")
+    private final String elapsedTime;
+
     @JsonAlias("details")
     @JsonProperty("details")
     private final Map<String, Object> details;

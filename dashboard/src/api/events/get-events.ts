@@ -1,15 +1,14 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { Events, events, EventsRead } from '@/types/event';
 import { QueryConfig } from '@/lib/react-query';
-import { Endpoint, getQueryURL } from '@/lib/web-api';
+import { getQueryURL } from '@/lib/web-api';
 
 async function getEvents(params: EventsRead): Promise<Events> {
-    const endpoint: Endpoint = "events";
-    const url = getQueryURL(endpoint, params);
+    const url = getQueryURL("events", params);
     const response = await fetch(url);
 
     if (!response.ok) {
-        throw new Error(`${endpoint} request failure`);
+        throw new Error(`/events request failure`);
     }
     
     const data = await response.json();
