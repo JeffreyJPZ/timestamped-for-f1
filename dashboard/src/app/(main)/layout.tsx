@@ -1,4 +1,4 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
 export default function HomeLayout({ children }: {
@@ -6,8 +6,8 @@ export default function HomeLayout({ children }: {
 }) {
     return (
         <SidebarProvider>
-            <AppSidebar collapsible="icon"/>
-            <main>
+            <AppSidebar collapsible="icon" />
+            <main className="w-full overflow-hidden">
                 {children}
             </main>
         </SidebarProvider>

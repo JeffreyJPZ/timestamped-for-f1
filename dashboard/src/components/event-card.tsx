@@ -1,6 +1,5 @@
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -9,7 +8,6 @@ import {
 } from "@/components/ui/card";
 import { Event } from "@/types/event";
 import { Badge } from "./ui/badge";
-import { keepPreviousData } from "@tanstack/react-query";
 import { useGetDrivers } from "@/api/drivers/get-drivers";
 
 interface EventCardProps {
@@ -148,7 +146,7 @@ export function EventCard({ event }: EventCardProps) {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="max-w-sm w-full">
       <CardHeader>
         <CardTitle>
           {toTitle(event.cause)}
@@ -159,16 +157,32 @@ export function EventCard({ event }: EventCardProps) {
         <CardDescription>
           {trimFractionalSeconds(event.elapsed_time)}
         </CardDescription>
+        {event.details?.lap_number &&
+          <CardDescription>
+            Lap {event.details.lap_number}
+          </CardDescription>
+        }
       </CardHeader>
       <CardContent>
         <CardDescription>
           {toMessage(event)}
         </CardDescription>
       </CardContent>
-      <CardFooter className="flex gap-2">
+      <CardFooter className="flex flex-wrap gap-2">
         {event.details
-          ? Object.entries(event.details).map(([key, value]) => {
-            return <Badge key={key + JSON.stringify(value)}>{key}: {JSON.stringify(value)}</Badge>
+          ? Object.entries(event.details)
+              .filter(([_, value]) => {
+                return value !== null;
+              })
+              .map(([key, value]) => {
+                if (key == "message") {
+                  return null;
+                }
+                return (
+                  <Badge className="whitespace-normal" key={`${key}-${JSON.stringify(value)}`} variant="secondary">
+                    {key}: {JSON.stringify(value)}
+                  </Badge>
+                );
           })
           : null
         }

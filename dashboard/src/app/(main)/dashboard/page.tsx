@@ -14,13 +14,13 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Dashboard() {
   const events = useGetEvents({
-    session_key: [9627]
+    session_key: [9636]
   });
   
   return (
-    <div className="w-full">
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        <div className="flex">
+    <div className="flex flex-col items-center justify-items-center w-full">
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 w-full">
+        <div className="flex gap-4 items-center w-full self-center">
           <SidebarTrigger className="-ml-1" />
           <Select>
             <SelectTrigger className="w-[180px]">
@@ -53,7 +53,9 @@ export default function Dashboard() {
           <Button>Get Events</Button>
         </div>
       </header>
-      {events.isSuccess && events.data.map((event) => <EventCard event={event} />)}
+      <div className="flex flex-col gap-8 p-8 items-center w-full">
+        {events.isSuccess && events.data.map((event) => <EventCard key={JSON.stringify(event)} event={event} />)}
+      </div>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <div className="grid auto-rows-min gap-4 md:grid-cols-3">
           <div className="bg-muted/50 aspect-video rounded-xl" />
