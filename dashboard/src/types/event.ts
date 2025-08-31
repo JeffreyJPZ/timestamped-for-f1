@@ -63,7 +63,8 @@ export const tyreCompound = z
         "MEDIUM",
         "HARD",
         "INTERMEDIATE",
-        "WET"
+        "WET",
+        "UNKNOWN"
     ]);
 
 const eventDetails = z

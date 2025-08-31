@@ -7,7 +7,7 @@ export const driver = z
         driver_number: z.number().int().positive(),
         first_name: z.string(),
         full_name: z.string(),
-        headshot_url: z.url(),
+        headshot_url: z.url().nullable(),
         last_name: z.string(),
         meeting_key: z.number().int().positive(),
         name_acronym: z.string().max(3),

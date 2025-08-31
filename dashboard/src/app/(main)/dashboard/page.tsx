@@ -13,7 +13,9 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Dashboard() {
-  const events = useGetEvents({});
+  const events = useGetEvents({
+    session_key: [9627]
+  });
   
   return (
     <div className="w-full">
