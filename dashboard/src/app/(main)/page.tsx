@@ -13,8 +13,12 @@ export default function Home() {
             </header>
             <div className="flex flex-col items-center justify-center min-h-screen px-8 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
                 <main className="flex flex-col gap-4 items-center sm:items-start">
-                    <h1 className="font-bold self-center text-5xl text-center">Timestamped for F1</h1>
-                    <h2 className="max-w-xl self-center text-center">A play-by-play/events archive for Formula 1. View overtakes, qualifying laps, pit stops, incidents, and more as they happened. </h2>
+                    <h1 className="font-bold self-center text-5xl text-center">
+                        Timestamped for F1
+                    </h1>
+                    <h2 className="max-w-xl self-center text-center">
+                        A play-by-play/events archive for Formula 1. View overtakes, qualifying laps, pit stops, incidents, and more as they happened.
+                    </h2>
                     <div className="flex gap-4 items-center flex-col sm:flex-row self-center">
                         <Link
                         className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
