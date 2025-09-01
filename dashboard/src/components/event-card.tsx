@@ -113,7 +113,7 @@ export function EventCard({ event }: EventCardProps) {
           : `CAR ${initiatorDriver.driver_number} (${initiatorDriver.name_acronym}) ${event.details?.lap_duration ? formatLapDuration(event.details?.lap_duration) : ""} PERSONAL BEST TIME`;
       case "pit":
         return event.details?.pit_stop_duration
-          ? `CAR ${initiatorDriver.driver_number} (${initiatorDriver.name_acronym}) ${event.details?.pit_stop_duration} SECONDS PIT STOP FOR ${event.details?.tyre_age_at_start ? event.details?.tyre_age_at_start > 0 ? "USED " : "NEW " : " "}${event.details?.compound} TYRES`
+          ? `CAR ${initiatorDriver.driver_number} (${initiatorDriver.name_acronym}) ${event.details?.pit_stop_duration} SECONDS PIT STOP FOR ${(event.details?.tyre_age_at_start !== null && event.details?.tyre_age_at_start !== undefined) ? event.details?.tyre_age_at_start > 0 ? "USED " : "NEW " : " "}${event.details?.compound} TYRES`
           : `CAR ${initiatorDriver.driver_number} (${initiatorDriver.name_acronym}) PIT STOP FOR ${event.details?.compound} TYRES`;
       case "provisional-classification":
         return `CAR ${initiatorDriver.driver_number} (${initiatorDriver.name_acronym}) FINISHES THE SESSION IN P${event.details?.position}`;
