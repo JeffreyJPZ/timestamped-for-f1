@@ -7,9 +7,9 @@ export default function HomeLayout({ children }: {
     return (
         <SidebarProvider>
             <AppSidebar collapsible="icon" />
-            <main className="w-full overflow-hidden">
+            <div className="w-full overflow-hidden">
                 {children}
-            </main>
+            </div>
         </SidebarProvider>
     );
 }

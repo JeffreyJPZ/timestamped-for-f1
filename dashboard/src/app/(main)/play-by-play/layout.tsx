@@ -1,4 +1,4 @@
-export default function DashboardLayout({ children }: {
+export default function PlayByPlayLayout({ children }: {
     children: React.ReactNode;
 }) {
     return (

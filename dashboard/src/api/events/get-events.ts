@@ -1,7 +1,7 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
-import { Events, events, EventsRead } from '@/types/event';
-import { QueryConfig } from '@/lib/react-query';
-import { getQueryURL } from '@/lib/web-api';
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { type Events, events, type EventsRead } from "@/types/event";
+import { type QueryConfig } from "@/lib/react-query";
+import { getQueryURL } from "@/lib/web-api";
 
 async function getEvents(params: EventsRead): Promise<Events> {
     const url = getQueryURL("events", params);
@@ -12,14 +12,14 @@ async function getEvents(params: EventsRead): Promise<Events> {
     }
     
     const data = await response.json();
-    const parseResult = events.safeParse(data);
+    const eventsParseResult = events.safeParse(data);
     
-    if (!parseResult.success) {
-        console.error(parseResult.error);
-        throw parseResult.error;
+    if (!eventsParseResult.success) {
+        console.error(eventsParseResult.error);
+        throw eventsParseResult.error;
     }
 
-    return parseResult.data;
+    return eventsParseResult.data;
 }
 
 export function getEventsQueryOptions(params: EventsRead) {

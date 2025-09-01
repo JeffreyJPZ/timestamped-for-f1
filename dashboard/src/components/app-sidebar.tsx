@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Search, Settings } from "lucide-react";
+import { Home, SquareChartGantt } from "lucide-react";
  
 import {
   Sidebar,
@@ -20,19 +20,9 @@ const items = [
     icon: Home,
   },
   {
-    title: "Events Dashboard",
-    url: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Events Search",
-    url: "/search",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
+    title: "Play-by-Play",
+    url: "/play-by-play",
+    icon: SquareChartGantt,
   },
 ]
  

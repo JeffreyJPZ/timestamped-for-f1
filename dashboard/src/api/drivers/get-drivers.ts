@@ -1,7 +1,7 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
-import { Drivers, drivers, DriversRead } from '@/types/driver';
-import { QueryConfig } from '@/lib/react-query';
-import { getQueryURL } from '@/lib/web-api';
+import { queryOptions, useQuery } from "@tanstack/react-query";
+import { type Drivers, drivers, type DriversRead } from "@/types/driver";
+import { type QueryConfig } from "@/lib/react-query";
+import { getQueryURL } from "@/lib/web-api";
 
 async function getDrivers(params: DriversRead): Promise<Drivers> {
     const url = getQueryURL("drivers", params);
@@ -12,14 +12,14 @@ async function getDrivers(params: DriversRead): Promise<Drivers> {
     }
     
     const data = await response.json();
-    const parseResult = drivers.safeParse(data);
+    const driversParseResult = drivers.safeParse(data);
     
-    if (!parseResult.success) {
-        console.error(parseResult.error);
-        throw parseResult.error;
+    if (!driversParseResult.success) {
+        console.error(driversParseResult.error);
+        throw driversParseResult.error;
     }
 
-    return parseResult.data;
+    return driversParseResult.data;
 }
 
 export function getDriversQueryOptions(params: DriversRead) {

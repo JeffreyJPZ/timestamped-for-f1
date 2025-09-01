@@ -5,7 +5,7 @@ const queryClientConfig: QueryClientConfig = {
         queries: {
             refetchOnWindowFocus: false,
             retry: true,
-            staleTime: 0
+            staleTime: 10 * 60 * 1000 // Cache data for 10 minutes
         },
     },
 }

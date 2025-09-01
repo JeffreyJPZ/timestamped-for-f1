@@ -1,7 +1,7 @@
-import { queryOptions, skipToken, useQuery } from '@tanstack/react-query';
-import { Session, session, SessionRead } from '@/types/session';
-import { QueryConfig } from '@/lib/react-query';
-import { getQueryURL } from '@/lib/web-api';
+import { queryOptions, skipToken, useQuery } from "@tanstack/react-query";
+import { type Session, session, type SessionRead } from "@/types/session";
+import { type QueryConfig } from "@/lib/react-query";
+import { getQueryURL } from "@/lib/web-api";
 
 async function getSession(params: SessionRead): Promise<Session> {
     const url = getQueryURL(`/sessions/${params.session_key}`);
@@ -12,14 +12,14 @@ async function getSession(params: SessionRead): Promise<Session> {
     }
     
     const data = await response.json();
-    const parseResult = session.safeParse(data);
+    const sessionParseResult = session.safeParse(data);
     
-    if (!parseResult.success) {
-        console.error(parseResult.error);
-        throw parseResult.error;
+    if (!sessionParseResult.success) {
+        console.error(sessionParseResult.error);
+        throw sessionParseResult.error;
     }
 
-    return parseResult.data;
+    return sessionParseResult.data;
 }
 
 export function getSessionQueryOptions(params: SessionRead) {

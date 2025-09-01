@@ -34,9 +34,9 @@ export const driversRead = driver
         full_name: z.array(z.string()),
         headshot_url: z.array(z.url()),
         last_name: z.array(z.string()),
-        meeting_key: z.array(z.number().int().positive()),
+        meeting_key: z.array(z.number().int().nonnegative()),
         name_acronym: z.array(z.string().max(3)),
-        session_key: z.array(z.number().int().positive()),
+        session_key: z.array(z.number().int().nonnegative()),
         team_colour: z.array(z.string().regex(/^[A-Fa-f0-9]{6}$/)),
         team_name: z.array(z.string()),
     })

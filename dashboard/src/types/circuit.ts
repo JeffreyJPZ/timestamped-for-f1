@@ -22,7 +22,7 @@ const circuitLocation = z
 
 export const circuit = z
     .object({
-        circuit_key: z.number().int().positive(),
+        circuit_key: z.number().int().nonnegative(),
         circuit_name: z.string(),
         coordinates: z
             .array(
@@ -32,7 +32,7 @@ export const circuit = z
                 })
             ),
         country_code: z.string().length(3),
-        country_key: z.number().int().positive(),
+        country_key: z.number().int().nonnegative(),
         country_name: z.string(),
         location: z.string(),
         marshal_sectors: z.array(circuitLocation),
