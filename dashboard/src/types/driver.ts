@@ -3,7 +3,7 @@ import z from "zod";
 export const driver = z
     .object({
         broadcast_name: z.string(),
-        country_code: z.string().length(3),
+        country_code: z.string().length(3).nullable(), // Country code can be null
         driver_number: z.number().int().positive(),
         first_name: z.string(),
         full_name: z.string(),
@@ -28,7 +28,7 @@ export const driverRead = driver
 export const driversRead = driver
     .extend({
         broadcast_name: z.array(z.string()),
-        country_code: z.array(z.string().length(3)),
+        country_code: z.array(z.string().length(3)).nullable(),
         driver_number: z.array(z.number().int().positive()),
         first_name: z.array(z.string()),
         full_name: z.array(z.string()),
