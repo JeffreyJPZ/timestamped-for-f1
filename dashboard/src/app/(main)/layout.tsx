@@ -6,7 +6,7 @@ export default function HomeLayout({ children }: {
 }) {
     return (
         <SidebarProvider>
-            <AppSidebar collapsible="icon" />
+            <AppSidebar />
             <div className="w-full overflow-hidden">
                 {children}
             </div>

@@ -108,7 +108,7 @@ public class SessionController {
 
         try {
             sessions = objectMapper.readValue(
-                objectMapper.writeValueAsString(openf1Service.getMeetings(queryParams)),
+                objectMapper.writeValueAsString(openf1Service.getSessions(queryParams)),
                 new TypeReference<List<Session>>(){}
             );
         } catch (JsonProcessingException e) {

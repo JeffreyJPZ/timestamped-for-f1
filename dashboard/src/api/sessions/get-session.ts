@@ -4,7 +4,7 @@ import { type QueryConfig } from "@/lib/react-query";
 import { getQueryURL } from "@/lib/web-api";
 
 async function getSession(params: SessionRead): Promise<Session> {
-    const url = getQueryURL(`/sessions/${params.session_key}`);
+    const url = getQueryURL(`sessions/${params.session_key}`);
     const response = await fetch(url);
 
     if (!response.ok) {

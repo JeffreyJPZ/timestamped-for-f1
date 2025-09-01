@@ -5,7 +5,6 @@ import { useGetMeetings } from "@/api/meetings/get-meetings";
 import { useGetSeasons } from "@/api/seasons/get-seasons";
 import { useGetSessions } from "@/api/sessions/get-sessions";
 import { EventCard } from "@/components/event-card";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -40,72 +39,76 @@ export default function PlayByPlay() {
 
   return (
     <div className="flex flex-col items-center justify-items-center w-full">
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 w-full">
-        <div className="flex gap-4 items-center w-full self-center">
-          <SidebarTrigger className="-ml-1" />
-          <Select onValueChange={(value) => setSelectedSeason(parseInt(value))}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Season" />
-            </SelectTrigger>
-            {(seasonsQuery.isSuccess && seasonsQuery.data?.length > 0) &&
-              <SelectContent>
-                {seasonsQuery.data.map(
-                  (season) => {
-                    return (
-                      <SelectItem
-                      key={JSON.stringify(season.year)}
-                      value={JSON.stringify(season.year)}
-                      >
-                        {season.year}
-                      </SelectItem>
-                    );
-                  })
-                }
-              </SelectContent>
-            }
-          </Select>
-          <Select onValueChange={(value) => setSelectedMeetingKey(parseInt(value))}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Meeting" />
-            </SelectTrigger>
-            {(meetingsQuery.isSuccess && meetingsQuery.data?.length > 0) &&
-              <SelectContent>
-                {meetingsQuery.data.map(
-                  (meeting) => {
-                    return (
-                      <SelectItem
-                      key={JSON.stringify(meeting.meeting_key)}
-                      value={JSON.stringify(meeting.meeting_key)}
-                      >
-                        {meeting.meeting_name}
-                      </SelectItem>
-                    );
-                  })
-                }
-              </SelectContent>
-            }
-          </Select>
-          <Select onValueChange={(value) => setSelectedSessionKey(parseInt(value))}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Session" />
-            </SelectTrigger>
-            {(sessionsQuery.isSuccess && sessionsQuery.data?.length > 0) &&
-              <SelectContent>
-                {sessionsQuery.data?.map(
-                  (session) => {
-                    return (
-                      <SelectItem
-                      key={JSON.stringify(session.session_key)}
-                      value={JSON.stringify(session.session_key)}
-                      >
-                        {session.session_name}
-                      </SelectItem>
-                    );
-                  })
-                }
-              </SelectContent>
-            }
-          </Select>
+      <header className="flex max-h-xl shrink-0 items-center gap-2 border-b p-4 w-full">
+        <div className="flex gap-4 items-center w-full">
+          <div className="-ml-1">
+            <SidebarTrigger />
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <Select onValueChange={(value) => setSelectedSeason(parseInt(value))}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Season" />
+              </SelectTrigger>
+              {(seasonsQuery.isSuccess && seasonsQuery.data?.length > 0) &&
+                <SelectContent>
+                  {seasonsQuery.data.map(
+                    (season) => {
+                      return (
+                        <SelectItem
+                        key={JSON.stringify(season.year)}
+                        value={JSON.stringify(season.year)}
+                        >
+                          {season.year}
+                        </SelectItem>
+                      );
+                    })
+                  }
+                </SelectContent>
+              }
+            </Select>
+            <Select onValueChange={(value) => setSelectedMeetingKey(parseInt(value))}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Meeting" />
+              </SelectTrigger>
+              {(meetingsQuery.isSuccess && meetingsQuery.data?.length > 0) &&
+                <SelectContent>
+                  {meetingsQuery.data.map(
+                    (meeting) => {
+                      return (
+                        <SelectItem
+                        key={JSON.stringify(meeting.meeting_key)}
+                        value={JSON.stringify(meeting.meeting_key)}
+                        >
+                          {meeting.meeting_name}
+                        </SelectItem>
+                      );
+                    })
+                  }
+                </SelectContent>
+              }
+            </Select>
+            <Select onValueChange={(value) => setSelectedSessionKey(parseInt(value))}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Session" />
+              </SelectTrigger>
+              {(sessionsQuery.isSuccess && sessionsQuery.data?.length > 0) &&
+                <SelectContent>
+                  {sessionsQuery.data?.map(
+                    (session) => {
+                      return (
+                        <SelectItem
+                        key={JSON.stringify(session.session_key)}
+                        value={JSON.stringify(session.session_key)}
+                        >
+                          {session.session_name}
+                        </SelectItem>
+                      );
+                    })
+                  }
+                </SelectContent>
+              }
+            </Select>
+          </div>
         </div>
       </header>
       <main className="flex flex-col gap-8 p-8 items-center w-full">

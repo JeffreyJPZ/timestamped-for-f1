@@ -9,6 +9,7 @@ import {
 import { Event } from "@/types/event";
 import { Badge } from "./ui/badge";
 import { useGetDrivers } from "@/api/drivers/get-drivers";
+import { useGetSession } from "@/api/sessions/get-session";
 
 interface EventCardProps {
   event: Event;
@@ -19,12 +20,6 @@ function toTitle(input: string): string {
     .toLocaleLowerCase()
     .replace(/-/g, ' ')                   // Replace hyphens with spaces
     .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize first letter of each word
-}
-
-function toUppercase(input: string): string {
-  return input
-    .toLocaleUpperCase()
-    .replace(/-/g, ' ');
 }
 
 function toLocaleDate(date: string): string {
@@ -57,8 +52,10 @@ function formatLapDuration(time: number): string {
 
 export function EventCard({ event }: EventCardProps) {
   const drivers = useGetDrivers({
-    meeting_key: [event.meeting_key],
     session_key: [event.session_key]
+  });
+  const session = useGetSession({
+    session_key: event.session_key
   });
 
   // if incident/incident verdict, use message, otherwise format message as {initiator} {event cause}
@@ -67,7 +64,7 @@ export function EventCard({ event }: EventCardProps) {
     const initiatorDriverRole = event.details?.driver_roles
     ? Object.entries(event.details?.driver_roles)
       .find(([_, role]) => {
-        return role == "initiator"
+        return role === "initiator";
       })
     : null;
 
@@ -79,7 +76,7 @@ export function EventCard({ event }: EventCardProps) {
     const participantDriverRoles = event.details?.driver_roles
     ? Object.entries(event.details?.driver_roles)
       .filter(([_, role]) => {
-        return role == "participant"
+        return role === "participant";
       })
     : null;
     
@@ -146,7 +143,7 @@ export function EventCard({ event }: EventCardProps) {
   }
 
   return (
-    <Card className="max-w-sm w-full">
+    <Card className="max-w-xl w-full">
       <CardHeader>
         <CardTitle>
           {toTitle(event.cause)}
@@ -157,7 +154,8 @@ export function EventCard({ event }: EventCardProps) {
         <CardDescription>
           {trimFractionalSeconds(event.elapsed_time)}
         </CardDescription>
-        {event.details?.lap_number &&
+        {/* Skip displaying lap number for non-race sessions since they are associated with drivers */}
+        {(session.data?.session_type === "Race" && event.details?.lap_number) &&
           <CardDescription>
             Lap {event.details.lap_number}
           </CardDescription>
@@ -175,9 +173,6 @@ export function EventCard({ event }: EventCardProps) {
                 return value !== null;
               })
               .map(([key, value]) => {
-                if (key == "message") {
-                  return null;
-                }
                 return (
                   <Badge className="whitespace-normal" key={`${key}-${JSON.stringify(value)}`} variant="secondary">
                     {key}: {JSON.stringify(value)}
