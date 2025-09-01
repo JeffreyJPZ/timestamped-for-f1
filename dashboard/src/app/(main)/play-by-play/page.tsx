@@ -16,15 +16,15 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useState } from "react";
 
 export default function PlayByPlay() {
-  const [selectedSeason, setSelectedSeason] = useState<number>();
-  const [selectedMeetingKey, setSelectedMeetingKey] = useState<number>();
-  const [selectedSessionKey, setSelectedSessionKey] = useState<number>();
+  const [selectedSeason, setSelectedSeason] = useState<number>(0);
+  const [selectedMeetingKey, setSelectedMeetingKey] = useState<number>(0);
+  const [selectedSessionKey, setSelectedSessionKey] = useState<number>(0);
 
   const seasonsQuery = useGetSeasons({});
   const meetingsQuery = useGetMeetings(
     selectedSeason
     ? { year: [selectedSeason] }
-    : { year: [0] } // Should return empty list 
+    : { year: [0] } // Should return empty list
   );
   const sessionsQuery = useGetSessions(
     selectedSeason && selectedMeetingKey
@@ -45,7 +45,16 @@ export default function PlayByPlay() {
             <SidebarTrigger />
           </div>
           <div className="flex flex-wrap gap-4">
-            <Select onValueChange={(value) => setSelectedSeason(parseInt(value))}>
+            <Select onValueChange={(value) => {
+              // "Clear" the dependent select values
+              const season = parseInt(value);
+              if (season !== selectedSeason) {
+                setSelectedMeetingKey(0);
+                setSelectedSessionKey(0);
+              }
+
+              setSelectedSeason(season);
+            }}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Season" />
               </SelectTrigger>
@@ -66,7 +75,15 @@ export default function PlayByPlay() {
                 </SelectContent>
               }
             </Select>
-            <Select onValueChange={(value) => setSelectedMeetingKey(parseInt(value))}>
+            <Select onValueChange={(value) => {
+              // "Clear" the dependent select values
+              const meetingKey = parseInt(value);
+              if (meetingKey !== selectedMeetingKey) {
+                setSelectedSessionKey(0);
+              }
+
+              setSelectedMeetingKey(meetingKey);
+            }}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Meeting" />
               </SelectTrigger>
