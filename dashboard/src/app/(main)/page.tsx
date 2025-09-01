@@ -48,6 +48,9 @@ export default function Home() {
                     </p>
                 </a>
                 <p className="text-sm">
+                    Version 0.1.0
+                </p>
+                <p className="text-sm">
                     Timestamped for F1 is unofficial and is not associated in any way with the Formula 1 companies.
                     F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX
                     and related marks are trade marks of Formula One Licensing B.V.
