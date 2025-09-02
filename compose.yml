@@ -1,6 +1,7 @@
 services:
   
   cache:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-cache:latest
     build:
       context: ./services/cache
       dockerfile: Dockerfile
@@ -11,6 +12,7 @@ services:
       - ./services/cache/data:/data
 
   cache-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-cache-api:latest
     build:
       context: ./services/cache-api
       dockerfile: Dockerfile
@@ -29,6 +31,7 @@ services:
       CACHE_API_PORT: "${CACHE_API_PORT}"
 
   openf1-live-mq:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-live-mq:latest
     build:
       context: ./services/openf1-live-mq
       dockerfile: Dockerfile
@@ -38,6 +41,7 @@ services:
       - "15672"
 
   openf1-db:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-db:latest
     build:
       context: ./services/openf1-db
       dockerfile: Dockerfile
@@ -50,8 +54,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: "${OPENF1_DB_ROOT_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${OPENF1_DB_ROOT_PASSWORD}"
 
-  openf1:
-    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1:latest
+  openf1-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-api:latest
     expose:
       - "8000"
     depends_on:
@@ -60,7 +64,16 @@ services:
       MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
       OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
 
+  openf1-historical:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-historical:latest
+    depends_on:
+      - openf1-db
+    environment:
+      MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
+      OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
+
   historical-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-historical-api:latest
     build:
       context: ./historical/api
       dockerfile: Dockerfile
@@ -72,6 +85,7 @@ services:
       SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
 
   historical-processing:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-historical-processing:latest
     build:
       context: ./services/historical/processing
       dockerfile: Dockerfile
@@ -96,6 +110,7 @@ services:
       POSTGRES_DB: "${HISTORICAL_DB_NAME}"
 
   web-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-web-api:latest
     build:
       context: ./services/web-api
       dockerfile: Dockerfile
@@ -109,6 +124,7 @@ services:
       - openf1-db
 
   web-server:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-web-server:latest
     build:
       context: ./services/web-server
       dockerfile: Dockerfile
