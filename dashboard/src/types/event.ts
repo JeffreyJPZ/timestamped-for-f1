@@ -109,7 +109,7 @@ export const events = z.array(event);
 
 export const eventsRead = event
     .omit({
-        // Not compatible with events API, use events query builder to filter by details attributes
+        // Not compatible with events API, need to implement some other way
         details: true,
     })
     .extend({

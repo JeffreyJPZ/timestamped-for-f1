@@ -13,7 +13,8 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useState } from "react";
+import { Events } from "@/types/event";
+import { useCallback, useState } from "react";
 
 export default function PlayByPlay() {
   const [selectedSeason, setSelectedSeason] = useState<number>(0);
@@ -31,12 +32,25 @@ export default function PlayByPlay() {
     ? { meeting_key: [selectedMeetingKey] }
     : { meeting_key: [0] }
   );
+
+  // Returns events in chronological order
+  const sortEventsByDate = useCallback((events: Events) => {
+    return events.sort((a, b) => {
+      return new Date(a.date).getTime() - new Date(b.date).getTime()
+    });
+  }, []);
+
   const eventsQuery = useGetEvents(
     selectedSeason && selectedMeetingKey && selectedSessionKey
-    ? { session_key: [selectedSessionKey] }
+    ? {
+      queryConfig: {
+        select: sortEventsByDate
+      },
+      session_key: [selectedSessionKey]
+    }
     : { session_key: [0] }
   );
-
+  
   return (
     <div className="flex flex-col items-center justify-items-center w-full">
       <header className="flex max-h-xl shrink-0 items-center gap-2 border-b p-4 w-full">
