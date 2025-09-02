@@ -56,6 +56,9 @@ services:
 
   openf1-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-api:latest
+    build:
+      context: ./services/openf1
+      dockerfile: Dockerfile
     expose:
       - "8000"
     depends_on:
@@ -66,6 +69,9 @@ services:
 
   openf1-historical:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-historical:latest
+    build:
+      context: ./services/openf1
+      dockerfile: Dockerfile
     depends_on:
       - openf1-db
     environment:
