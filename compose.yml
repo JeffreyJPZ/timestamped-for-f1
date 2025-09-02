@@ -30,15 +30,18 @@ services:
       CACHE_API_IP: "${CACHE_API_IP}"
       CACHE_API_PORT: "${CACHE_API_PORT}"
 
-  openf1-live-mq:
-    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-live-mq:latest
+  openf1-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-api:latest
     build:
-      context: ./services/openf1-live-mq
+      context: ./services/openf1
       dockerfile: Dockerfile
-    restart: unless-stopped
     expose:
-      - "5672"
-      - "15672"
+      - "8000"
+    depends_on:
+      - openf1-db
+    environment:
+      MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
+      OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
 
   openf1-db:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-db:latest
@@ -54,21 +57,8 @@ services:
       MONGO_INITDB_ROOT_USERNAME: "${OPENF1_DB_ROOT_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${OPENF1_DB_ROOT_PASSWORD}"
 
-  openf1-api:
-    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-api:latest
-    build:
-      context: ./services/openf1
-      dockerfile: Dockerfile
-    expose:
-      - "8000"
-    depends_on:
-      - openf1-db
-    environment:
-      MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
-      OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
-
-  openf1-historical:
-    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-historical:latest
+  openf1-historical-processing:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-historical-processing:latest
     build:
       context: ./services/openf1
       dockerfile: Dockerfile
@@ -78,42 +68,52 @@ services:
       MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
       OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
 
-  historical-api:
-    image: ghcr.io/jeffreyjpz/timestamped-for-f1-historical-api:latest
-    build:
-      context: ./historical/api
-      dockerfile: Dockerfile
-    ports:
-      - "8888:8888"
-    depends_on:
-      - historical-db
-    environment:
-      SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
+  # openf1-live-mq:
+  #   image: ghcr.io/jeffreyjpz/timestamped-for-f1-openf1-live-mq:latest
+  #   build:
+  #     context: ./services/openf1-live-mq
+  #     dockerfile: Dockerfile
+  #   restart: unless-stopped
+  #   expose:
+  #     - "5672"
+  #     - "15672"
 
-  historical-processing:
-    image: ghcr.io/jeffreyjpz/timestamped-for-f1-historical-processing:latest
-    build:
-      context: ./services/historical/processing
-      dockerfile: Dockerfile
-    depends_on:
-      - openf1
-      - openf1-db
-      - historical-db
-    environment:
-      OPENF1_ADDRESS: "openf1:8000"
-      SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
+  # historical-api:
+  #   image: ghcr.io/jeffreyjpz/timestamped-for-f1-historical-api:latest
+  #   build:
+  #     context: ./historical/api
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8888:8888"
+  #   depends_on:
+  #     - historical-db
+  #   environment:
+  #     SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
 
-  historical-db:
-    image: postgres:17.5
-    restart: unless-stopped
-    expose:
-      - "5432"
-    volumes:
-      - ./services/historical-db/data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: "${HISTORICAL_DB_ROOT_USERNAME}"
-      POSTGRES_PASSWORD: "${HISTORICAL_DB_ROOT_PASSWORD}"
-      POSTGRES_DB: "${HISTORICAL_DB_NAME}"
+  # historical-db:
+  #   image: postgres:17.5
+  #   restart: unless-stopped
+  #   expose:
+  #     - "5432"
+  #   volumes:
+  #     - ./services/historical-db/data:/var/lib/postgresql/data
+  #   environment:
+  #     POSTGRES_USER: "${HISTORICAL_DB_ROOT_USERNAME}"
+  #     POSTGRES_PASSWORD: "${HISTORICAL_DB_ROOT_PASSWORD}"
+  #     POSTGRES_DB: "${HISTORICAL_DB_NAME}"
+
+  # historical-processing:
+  #   image: ghcr.io/jeffreyjpz/timestamped-for-f1-historical-processing:latest
+  #   build:
+  #     context: ./services/historical/processing
+  #     dockerfile: Dockerfile
+  #   depends_on:
+  #     - openf1
+  #     - openf1-db
+  #     - historical-db
+  #   environment:
+  #     OPENF1_ADDRESS: "openf1:8000"
+  #     SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
 
   web-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1-web-api:latest
