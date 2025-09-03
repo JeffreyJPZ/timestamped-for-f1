@@ -129,7 +129,7 @@ services:
     depends_on:
       - cache
       - cache-api
-      - openf1
+      - openf1-api
       - openf1-db
 
   web-server:
@@ -145,7 +145,7 @@ services:
     depends_on:
       - cache
       - cache-api
-      - openf1
+      - openf1-api
       - openf1-db
       - web-api
     cap_add:
