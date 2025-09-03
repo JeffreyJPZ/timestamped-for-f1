@@ -10,31 +10,19 @@ on:
       - main
     tags:
       - 'v*'
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  generate-image-tags:
-    name: Generate tag names for Docker images
-    runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.make-tag.outputs.tag }}
-    steps:
-      - name: Get current date as a timestamp
-        id: get-timestamp
-        run: echo "now=$(date "+%Y%m%dT%H%M%S")" >> $GITHUB_OUTPUT
-      
-      - name: Generate tag name
-        id: make-tag
-        run: echo "tag=${{ steps.get-timestamp.outputs.now }}" >> $GITHUB_OUTPUT
-
   build-and-push:
     name: Build and push service images to container registry
-    needs: generate-image-tags
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        namespace: jeffreyjpz/timestamped-for-f1 # The namespace for all images
+        namespace: jeffreyjpz/timestamped-for-f1 # The container registry namespace
         parent-path: ./services # Relative path to parent directory containing all services
         service: [
           cache,
@@ -50,25 +38,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get metadata from the event that triggered this workflow
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ matrix.namespace }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.service }}
+            org.opencontainers.image.description=${{ matrix.service }}
+
+      - name: Log in to GitHub Container Registry for push events
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_WRITE_PAT }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build service images and push to GitHub Container Registry
+      - name: Build service image and push to GitHub Container Registry for push events, otherwise builds locally
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.parent-path }}/${{ matrix.service }}
-          push: true
-          tags: ghcr.io/${{ matrix.namespace }}/${{ matrix.service }}:latest
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: myimage
-          path: ${{ runner.temp }}/myimage.tar
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
