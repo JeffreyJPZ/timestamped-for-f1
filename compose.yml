@@ -23,13 +23,13 @@ services:
     depends_on:
       - cache
     environment:
-      CACHE_HOST: "${CACHE_HOST}"
-      CACHE_PORT: "${CACHE_PORT}"
-      CACHE_USERNAME: "${CACHE_USERNAME}"
-      CACHE_PASSWORD: "${CACHE_PASSWORD}"
-      CACHE_DB: "${CACHE_DB}"
-      CACHE_API_IP: "${CACHE_API_IP}"
-      CACHE_API_PORT: "${CACHE_API_PORT}"
+      TIMESTAMPED_FOR_F1_CACHE_HOST: "${TIMESTAMPED_FOR_F1_CACHE_HOST}"
+      TIMESTAMPED_FOR_F1_CACHE_PORT: "${TIMESTAMPED_FOR_F1_CACHE_PORT}"
+      TIMESTAMPED_FOR_F1_CACHE_USERNAME: "${TIMESTAMPED_FOR_F1_CACHE_USERNAME}"
+      TIMESTAMPED_FOR_F1_CACHE_PASSWORD: "${TIMESTAMPED_FOR_F1_CACHE_PASSWORD}"
+      TIMESTAMPED_FOR_F1_CACHE_DB: "${TIMESTAMPED_FOR_F1_CACHE_DB}"
+      TIMESTAMPED_FOR_F1_CACHE_API_IP: "${TIMESTAMPED_FOR_F1_CACHE_API_IP}"
+      TIMESTAMPED_FOR_F1_CACHE_API_PORT: "${TIMESTAMPED_FOR_F1_CACHE_API_PORT}"
 
   openf1-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-api:latest
@@ -41,8 +41,9 @@ services:
     depends_on:
       - openf1-db
     environment:
-      MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
-      OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
+      MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
+      OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME}"
+    command: ["uvicorn", "openf1.services.query_api.app:app", "--host 0.0.0.0", "--port 8000"]
 
   openf1-db:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-db:latest
@@ -55,8 +56,8 @@ services:
     volumes:
       - ./services/openf1-db/data:/data/db
     environment:
-      MONGO_INITDB_ROOT_USERNAME: "${OPENF1_DB_ROOT_USERNAME}"
-      MONGO_INITDB_ROOT_PASSWORD: "${OPENF1_DB_ROOT_PASSWORD}"
+      MONGO_INITDB_ROOT_USERNAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}"
 
   openf1-historical-processing:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-historical-processing:latest
@@ -66,8 +67,8 @@ services:
     depends_on:
       - openf1-db
     environment:
-      MONGO_CONNECTION_STRING: "mongodb://${OPENF1_DB_ROOT_USERNAME}:${OPENF1_DB_ROOT_PASSWORD}@openf1-db:${OPENF1_DB_PORT}"
-      OPENF1_DB_NAME: "${OPENF1_DB_NAME}"
+      MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
+      OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME}"
 
   # openf1-live-mq:
   #   image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-live-mq:latest
@@ -91,7 +92,7 @@ services:
   #   depends_on:
   #     - historical-db
   #   environment:
-  #     SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
+  #     SQLALCHEMY_URL: "postgresql://${TIMESTAMPED_FOR_F1_HISTORICAL_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${TIMESTAMPED_FOR_F1_HISTORICAL_DB_PORT}/${TIMESTAMPED_FOR_F1_HISTORICAL_DB_NAME}"
 
   # historical-db:
   #   image: postgres:17.5
@@ -101,9 +102,9 @@ services:
   #   volumes:
   #     - ./services/historical-db/data:/var/lib/postgresql/data
   #   environment:
-  #     POSTGRES_USER: "${HISTORICAL_DB_ROOT_USERNAME}"
-  #     POSTGRES_PASSWORD: "${HISTORICAL_DB_ROOT_PASSWORD}"
-  #     POSTGRES_DB: "${HISTORICAL_DB_NAME}"
+  #     POSTGRES_USER: "${TIMESTAMPED_FOR_F1_HISTORICAL_DB_ROOT_USERNAME}"
+  #     POSTGRES_PASSWORD: "${TIMESTAMPED_FOR_F1_HISTORICAL_DB_ROOT_PASSWORD}"
+  #     POSTGRES_DB: "${TIMESTAMPED_FOR_F1_HISTORICAL_DB_NAME}"
 
   # historical-processing:
   #   image: ghcr.io/jeffreyjpz/timestamped-for-f1/historical-processing:latest
@@ -116,7 +117,7 @@ services:
   #     - historical-db
   #   environment:
   #     OPENF1_ADDRESS: "openf1:8000"
-  #     SQLALCHEMY_URL: "postgresql://${HISTORICAL_DB_ROOT_USERNAME}:${HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${HISTORICAL_DB_PORT}/${HISTORICAL_DB_NAME}"
+  #     SQLALCHEMY_URL: "postgresql://${TIMESTAMPED_FOR_F1_HISTORICAL_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_HISTORICAL_DB_ROOT_PASSWORD}@historical-db:${TIMESTAMPED_FOR_F1_HISTORICAL_DB_PORT}/${TIMESTAMPED_FOR_F1_HISTORICAL_DB_NAME}"
 
   web-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-api:latest

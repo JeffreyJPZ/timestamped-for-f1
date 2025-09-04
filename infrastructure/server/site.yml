@@ -1,0 +1,12 @@
+# Configure a production server for deployment
+---
+
+- hosts: production
+  roles:
+    - role: common
+
+- hosts: production
+  roles:
+    - role: users
+    - role: security
+    - role: services

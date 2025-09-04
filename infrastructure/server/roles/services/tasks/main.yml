@@ -1,0 +1,31 @@
+# Installs configuration for services on a server
+---
+
+- name: Copy over docker compose file
+  ansible.builtin.copy:
+    content: "{{ lookup('file', docker_compose_file_path) }}"
+    dest: "{{ server_root_dir }}/compose.yml"
+    owner: server
+    group: server
+    mode: "0644"
+
+- name: Copy over environment variables from vault
+  ansible.builtin.template:
+    src: services_env.sh.j2
+    dest: /etc/profile.d/timestamped_for_f1_services_env.sh
+    owner: server
+    group: server
+    mode: "0644"
+  
+- name: Configure docker daemon to start on boot
+  ansible.builtin.shell:
+    cmd: "sudo systemctl enable docker"
+
+# This should run every day
+- name: Schedule docker cleanup job
+  ansible.builtin.cron:
+    name: "Docker cleanup"
+    minute: "0"
+    hour: "0"
+    day: "*"
+    job: "docker system prune"

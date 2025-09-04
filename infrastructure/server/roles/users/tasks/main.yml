@@ -1,0 +1,28 @@
+# Configure admin and day-to-day server users
+---
+
+- name: Create admin user
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    shell: /bin/bash
+
+- name: Ensure admin user can log in with their key
+  ansible.posix.authorized_key:
+    user: "{{ admin_user }}"
+    state: present
+    key: "{{ admin_ssh_public_key }}"
+  tags: update_admin_keys
+
+- name: Ensure admin user is a passwordless sudoer
+  ansible.builtin.lineinfile:
+    dest: /etc/sudoers
+    regexp: "^{{ admin_user }}"
+    line: "{{ admin_user }} ALL=(ALL) NOPASSWD: ALL"
+    state: present
+    validate: "visudo -cf %s"
+
+- name: Create server user
+  ansible.builtin.user:
+    name: "{{ server_user }}"
+    create_home: true
+    system: true

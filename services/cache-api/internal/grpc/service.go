@@ -21,11 +21,11 @@ type CacheService struct {
 func NewService() (*CacheService, error) {
 	// Initialize Redis service.
 	config := &redis.Config{
-		Host:     os.Getenv("CACHE_HOST"),
-		Port:     os.Getenv("CACHE_PORT"),
-		User:     os.Getenv("CACHE_USERNAME"),
-		Password: os.Getenv("CACHE_PASSWORD"),
-		DB:       os.Getenv("CACHE_DB"),
+		Host:     os.Getenv("TIMESTAMPED_FOR_F1_CACHE_HOST"),
+		Port:     os.Getenv("TIMESTAMPED_FOR_F1_CACHE_PORT"),
+		User:     os.Getenv("TIMESTAMPED_FOR_F1_CACHE_USERNAME"),
+		Password: os.Getenv("TIMESTAMPED_FOR_F1_CACHE_PASSWORD"),
+		DB:       os.Getenv("TIMESTAMPED_FOR_F1_CACHE_DB"),
 	}
 	cache, err := redis.NewClient(config.ConnectionURL())
 

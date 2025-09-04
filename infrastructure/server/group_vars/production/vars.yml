@@ -1,0 +1,18 @@
+timestamped_for_f1_openf1_db_root_password: "{{ vault_timestamped_for_f1_openf1_db_root_password }}"
+timestamped_for_f1_openf1_db_port: "{{ vault_timestamped_for_f1_openf1_db_port }}"
+timestamped_for_f1_openf1_db_name: "{{ vault_timestamped_for_f1_openf1_db_name }}"
+
+timestamped_for_f1_historical_db_root_username: "{{ vault_timestamped_for_f1_historical_db_root_username }}"
+timestamped_for_f1_historical_db_root_password: "{{ vault_timestamped_for_f1_historical_db_root_password }}"
+timestamped_for_f1_historical_db_port: "{{ vault_timestamped_for_f1_historical_db_port }}"
+timestamped_for_f1_historical_db_name: "{{ vault_timestamped_for_f1_historical_db_name }}"
+
+timestamped_for_f1_cache_host: "{{ vault_timestamped_for_f1_cache_host }}"
+timestamped_for_f1_cache_port: "{{ vault_timestamped_for_f1_cache_port }}"
+timestamped_for_f1_cache_username: "{{ vault_timestamped_for_f1_cache_username }}"
+timestamped_for_f1_cache_password: "{{ vault_timestamped_for_f1_cache_password }}"
+timestamped_for_f1_cache_db: "{{ vault_timestamped_for_f1_cache_db }}"
+timestamped_for_f1_cache_api_ip: "{{ vault_timestamped_for_f1_cache_api_ip }}"
+timestamped_for_f1_cache_api_port: "{{ vault_timestamped_for_f1_cache_api_port }}"
+
+timestamped_for_f1_web_api_base_url: "https://localhost/api/v1"
