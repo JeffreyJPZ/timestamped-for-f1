@@ -135,6 +135,9 @@ services/**/config
 # Data persistence for services
 services/**/data
 
+# Sensitive data for infrastructure
+infrastructure/**/vault.yml
+
 # Python bytecode
 __pycache__/
 
