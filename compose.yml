@@ -69,6 +69,7 @@ services:
     environment:
       MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
       OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME}"
+    command: ["tail", "-f", "/dev/null"]
 
   # openf1-live-mq:
   #   image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-live-mq:latest
