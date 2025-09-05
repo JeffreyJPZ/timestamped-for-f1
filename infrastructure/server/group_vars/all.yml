@@ -1,6 +1,6 @@
 # User config
 admin_user: jeffreyjpz
-admin_ssh_public_key: ""
+admin_ssh_public_key: "" # TODO: generate
 server_user: server
 
 # Server config
