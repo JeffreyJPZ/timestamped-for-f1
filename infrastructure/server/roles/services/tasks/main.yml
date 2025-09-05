@@ -1,10 +1,10 @@
-# Installs configuration for services on a server
+# Installs configuration for services on a server and starts services
 ---
 
 - name: Copy over docker compose file
   ansible.builtin.copy:
     content: "{{ lookup('file', docker_compose_file_path) }}"
-    dest: "{{ server_root_dir }}/compose.yml"
+    dest: "{{ server_dir_path }}/compose.yml"
     owner: server
     group: server
     mode: "0644"
@@ -20,6 +20,11 @@
 - name: Configure docker daemon to start on boot
   ansible.builtin.shell:
     cmd: "sudo systemctl enable docker"
+
+- name: Start web server and dependent services
+  ansible.builtin.shell:
+    cmd: "docker compose up web-server -d"
+    chdir: "{{ server_dir_path }}"
 
 # This should run every day
 - name: Schedule docker cleanup job

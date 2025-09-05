@@ -5,4 +5,4 @@ server_user: server
 
 # Server config
 docker_compose_file_path: "../../compose.yml" # Relative path to docker compose file for project
-server_root_dir: "srv/timestamped-for-f1" # Directory for all server files
+server_dir_path: "srv/timestamped-for-f1" # Absolute path to directory for all server files
