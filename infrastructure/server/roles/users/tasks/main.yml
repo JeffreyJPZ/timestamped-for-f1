@@ -1,4 +1,5 @@
 # Configure admin and day-to-day server users
+# Credit to chesterbr at https://github.com/chesterbr/chester-ansible-configs/blob/1027ab684d353ee1208c8bed86321c54195ff5bf/roles/chesterbr.user_setup/tasks/main.yml
 ---
 
 - name: Create admin user

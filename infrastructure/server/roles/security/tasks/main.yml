@@ -1,4 +1,5 @@
 # Improve server security from defaults
+# Credit to chesterbr https://github.com/chesterbr/chester-ansible-configs/blob/1027ab684d353ee1208c8bed86321c54195ff5bf/roles/chesterbr.security/tasks/main.yml
 ---
 
 - name: Disable password and root login for SSH
