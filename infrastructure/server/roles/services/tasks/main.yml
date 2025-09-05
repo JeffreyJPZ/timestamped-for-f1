@@ -26,6 +26,14 @@
     cmd: "docker compose up web-server -d"
     chdir: "{{ server_dir_path }}"
 
+# This should run every hour
+- name: Schedule docker image updates
+  ansible.builtin.cron:
+    name: "Docker image updates"
+    minute: "0"
+    hour: "0"
+    job: "cd {{ server_dir_path }} && docker compose pull && docker compose up web-server -d --force-recreate"
+
 # This should run every day
 - name: Schedule docker cleanup job
   ansible.builtin.cron:
@@ -33,4 +41,4 @@
     minute: "0"
     hour: "0"
     day: "*"
-    job: "docker system prune"
+    job: "cd {{ server_dir_path }} && docker system prune"
