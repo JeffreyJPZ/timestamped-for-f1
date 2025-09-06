@@ -27,7 +27,7 @@ func main() {
 
 func serve(ctx context.Context) error {
 	s, err := server.NewServer(
-		os.Getenv("TIMESTAMPED_FOR_F1_CACHE_API_IP"),
+		os.Getenv("TIMESTAMPED_FOR_F1_CACHE_API_HOST"),
 		os.Getenv("TIMESTAMPED_FOR_F1_CACHE_API_PORT"),
 	)
 
