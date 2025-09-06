@@ -36,8 +36,8 @@ services:
     build:
       context: ./services/openf1
       dockerfile: Dockerfile
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
     depends_on:
       - openf1-db
     environment:
