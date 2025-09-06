@@ -9,13 +9,15 @@
     group: "{{ server_user }}"
     mode: "0644"
 
-- name: Copy over environment variables from vault
-  ansible.builtin.template:
-    src: services_env.sh.j2
-    dest: /etc/profile.d/timestamped_for_f1_services_env.sh
-    owner: "{{ server_user }}"
-    group: "{{ server_user }}"
-    mode: "0644"
+- name: Copy over environment variables for services as system level variables
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/environment
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+    create: yes
+    state: present
+  loop: "{{ timestamped_for_f1_env_vars | dict2items }}"
 
 - name: Copy over web server config
   ansible.builtin.template:

@@ -22,3 +22,16 @@ timestamped_for_f1_cache_api_port: "9090"
 timestamped_for_f1_web_api_base_url: "https://timestampedforf1.jeffreyjpz.com/api/v1"
 
 timestamped_for_f1_host: "timestampedforf1.jeffreyjpz.com"
+
+timestamped_for_f1_env_vars:
+  TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD: "{{ timestamped_for_f1_openf1_db_root_password }}"
+  TIMESTAMPED_FOR_F1_OPENF1_DB_PORT: "{{ timestamped_for_f1_openf1_db_port }}"
+  TIMESTAMPED_FOR_F1_OPENF1_DB_NAME: "{{ timestamped_for_f1_openf1_db_name }}"
+  TIMESTAMPED_FOR_F1_CACHE_HOST: "{{ timestamped_for_f1_cache_host }}"
+  TIMESTAMPED_FOR_F1_CACHE_PORT: "{{ timestamped_for_f1_cache_port }}"
+  TIMESTAMPED_FOR_F1_CACHE_USERNAME: "{{ timestamped_for_f1_cache_username }}"
+  TIMESTAMPED_FOR_F1_CACHE_PASSWORD: "{{ timestamped_for_f1_cache_password }}"
+  TIMESTAMPED_FOR_F1_CACHE_DB: "{{ timestamped_for_f1_cache_db }}"
+  TIMESTAMPED_FOR_F1_CACHE_API_IP: "{{ timestamped_for_f1_cache_api_ip }}"
+  TIMESTAMPED_FOR_F1_CACHE_API_PORT: "{{ timestamped_for_f1_cache_api_port }}"
+  NEXT_PUBLIC_TIMESTAMPED_FOR_F1_WEB_API_BASE_URL: "{{ timestamped_for_f1_web_api_base_url }}"

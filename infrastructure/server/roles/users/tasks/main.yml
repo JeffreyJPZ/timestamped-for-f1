@@ -19,6 +19,7 @@
     dest: /etc/sudoers
     regexp: "^{{ admin_user }}"
     line: "{{ admin_user }} ALL=(ALL) NOPASSWD: ALL"
+    create: yes
     state: present
     validate: "visudo -cf %s"
 

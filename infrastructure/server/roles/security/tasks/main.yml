@@ -23,6 +23,7 @@
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
+    create: yes
     state: present
   loop:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
