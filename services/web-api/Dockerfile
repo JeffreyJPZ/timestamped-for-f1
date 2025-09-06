@@ -17,8 +17,6 @@ FROM eclipse-temurin:21-alpine
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
-WORKDIR /app
-
-COPY --from=build /app/target/*.jar ./
+COPY --from=build /app/target/*.jar /app/timestamped-for-f1-web-api.jar
 
 ENTRYPOINT ["java","-jar","/app/timestamped-for-f1-web-api.jar"]
