@@ -39,11 +39,6 @@
     state: started
     enabled: true
 
-- name: Start web server and dependent services
-  ansible.builtin.shell:
-    cmd: "docker compose up web-server -d"
-    chdir: "{{ timestamped_for_f1_root_path }}"
-
 - name: Schedule docker image updates
   ansible.builtin.cron:
     name: "Docker image updates"
