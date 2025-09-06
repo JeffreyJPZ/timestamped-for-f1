@@ -63,7 +63,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_WRITE_PAT }}
+          password: ${{ secrets.GH_WRITE_PAT }}
 
       - name: Build service image and push to GitHub Container Registry for push events, otherwise builds locally
         uses: docker/build-push-action@v6
