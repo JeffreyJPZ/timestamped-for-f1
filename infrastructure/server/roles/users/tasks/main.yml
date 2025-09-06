@@ -10,9 +10,8 @@
 - name: Ensure admin user can log in with their key
   ansible.posix.authorized_key:
     user: "{{ admin_user }}"
-    state: present
     key: "{{ admin_ssh_public_key }}"
-  tags: update_admin_keys
+    state: present
 
 - name: Ensure admin user is a passwordless sudoer
   ansible.builtin.lineinfile:
