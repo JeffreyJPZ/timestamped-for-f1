@@ -13,6 +13,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Events } from "@/types/event";
 import { useCallback, useState } from "react";
 
@@ -22,16 +23,14 @@ export default function PlayByPlay() {
   const [selectedSessionKey, setSelectedSessionKey] = useState<number>(0);
 
   const seasonsQuery = useGetSeasons({});
-  const meetingsQuery = useGetMeetings(
-    selectedSeason
-    ? { year: [selectedSeason] }
-    : { year: [0] } // Should return empty list
-  );
-  const sessionsQuery = useGetSessions(
-    selectedSeason && selectedMeetingKey
-    ? { meeting_key: [selectedMeetingKey] }
-    : { meeting_key: [0] }
-  );
+  const meetingsQuery = useGetMeetings({
+    queryConfig: { enabled: !!selectedSeason },
+    year: [selectedSeason]
+  });
+  const sessionsQuery = useGetSessions({
+    queryConfig: { enabled: !!selectedMeetingKey },
+    meeting_key: [selectedMeetingKey]
+  });
 
   // Returns events in chronological order
   const sortEventsByDate = useCallback((events: Events) => {
@@ -40,16 +39,13 @@ export default function PlayByPlay() {
     });
   }, []);
 
-  const eventsQuery = useGetEvents(
-    selectedSeason && selectedMeetingKey && selectedSessionKey
-    ? {
-      queryConfig: {
-        select: sortEventsByDate
-      },
-      session_key: [selectedSessionKey]
-    }
-    : { session_key: [0] }
-  );
+  const eventsQuery = useGetEvents({
+    queryConfig: {
+      enabled: !!(selectedSeason && selectedMeetingKey && selectedSessionKey),
+      select: sortEventsByDate
+    },
+    session_key: [selectedSessionKey]
+  });
   
   return (
     <div className="flex flex-col items-center justify-items-center w-full">
@@ -69,7 +65,7 @@ export default function PlayByPlay() {
 
               setSelectedSeason(season);
             }}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-32">
                 <SelectValue placeholder="Season" />
               </SelectTrigger>
               {(seasonsQuery.isSuccess && seasonsQuery.data?.length > 0) &&
@@ -98,7 +94,7 @@ export default function PlayByPlay() {
 
               setSelectedMeetingKey(meetingKey);
             }}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-64">
                 <SelectValue placeholder="Meeting" />
               </SelectTrigger>
               {(meetingsQuery.isSuccess && meetingsQuery.data?.length > 0) &&
@@ -119,7 +115,7 @@ export default function PlayByPlay() {
               }
             </Select>
             <Select onValueChange={(value) => setSelectedSessionKey(parseInt(value))}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-64">
                 <SelectValue placeholder="Session" />
               </SelectTrigger>
               {(sessionsQuery.isSuccess && sessionsQuery.data?.length > 0) &&
@@ -143,16 +139,17 @@ export default function PlayByPlay() {
         </div>
       </header>
       <main className="flex flex-col gap-8 p-8 items-center w-full">
-        {eventsQuery.data?.map((event) => <EventCard key={JSON.stringify(event)} event={event} />)}
+        {eventsQuery.isFetching
+          ? <>
+              <Skeleton className="h-60 w-xl rounded-xl" />
+              <Skeleton className="h-60 w-xl rounded-xl" />
+              <Skeleton className="h-60 w-xl rounded-xl" />
+              <Skeleton className="h-60 w-xl rounded-xl" />
+              <Skeleton className="h-60 w-xl rounded-xl" />
+            </>
+          : eventsQuery.data?.map((event) => <EventCard key={JSON.stringify(event)} event={event} />)
+        }
       </main>
-      <div className="flex flex-1 flex-col gap-4 p-4">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          <div className="bg-muted/50 aspect-video rounded-xl" />
-          <div className="bg-muted/50 aspect-video rounded-xl" />
-          <div className="bg-muted/50 aspect-video rounded-xl" />
-        </div>
-        <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
-      </div>
     </div>
   )
 }
