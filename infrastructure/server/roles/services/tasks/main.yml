@@ -10,7 +10,7 @@
     mode: "0644"
 
 - name: Copy over environment variables for services as system level variables
-  become: true
+  become: "{{ admin_user }}"
   ansible.builtin.lineinfile:
     path: /etc/environment
     regexp: "^{{ item.key }}="
@@ -41,13 +41,18 @@
     state: started
     enabled: true
 
+- name: Start services
+  ansible.builtin.shell:
+    cmd: "docker compose up dashboard -d"
+    chdir: "{{ timestamped_for_f1_root_path }}"
+
 - name: Schedule docker image updates
   ansible.builtin.cron:
     name: "Docker image updates"
     minute: "0"
     hour: "0"
     day: "*"
-    job: "cd {{ timestamped_for_f1_root_path }} && docker compose pull && docker compose up web-server -d --force-recreate"
+    job: "cd {{ timestamped_for_f1_root_path }} && docker compose pull && docker compose up dashboard -d --force-recreate"
 
 - name: Schedule docker cleanup job
   ansible.builtin.cron:
