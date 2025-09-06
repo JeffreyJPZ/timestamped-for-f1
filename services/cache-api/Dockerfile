@@ -1,5 +1,5 @@
 # Build binary
-FROM golang:1.25-alpine AS build
+FROM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -17,8 +17,8 @@ FROM alpine:3.22
 
 WORKDIR /app
 
-COPY --from=build /app/timestamped-for-f1-cache-api-grpc ./
-COPY --from=build /app/timestamped-for-f1-cache-api-http ./
+COPY --from=builder /app/timestamped-for-f1-cache-api-grpc ./
+COPY --from=builder /app/timestamped-for-f1-cache-api-http ./
 RUN chmod +x ./timestamped-for-f1-cache-api-grpc
 RUN chmod +x ./timestamped-for-f1-cache-api-http
 
