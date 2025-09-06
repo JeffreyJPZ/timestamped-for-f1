@@ -43,7 +43,7 @@ services:
     environment:
       MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
       OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME}"
-    command: ["uvicorn", "openf1.services.query_api.app:app", "--host 0.0.0.0", "--port 8000"]
+    command: ["uvicorn", "openf1.services.query_api.app:app", "--host", "0.0.0.0", "--port", "8000"]
 
   openf1-db:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-db:latest
@@ -133,6 +133,7 @@ services:
       - cache-api
       - openf1-api
       - openf1-db
+      - openf1-historical-processing
 
   web-server:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-server:latest
@@ -149,6 +150,7 @@ services:
       - cache-api
       - openf1-api
       - openf1-db
+      - openf1-historical-processing
       - web-api
     cap_add:
       - NET_ADMIN
