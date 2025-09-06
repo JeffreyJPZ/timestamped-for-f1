@@ -2,19 +2,35 @@
 ---
 
 - name: Copy over docker compose file
-  ansible.builtin.copy:
-    content: "{{ lookup('file', docker_compose_file_path) }}"
+  ansible.builtin.template:
+    content: compose.yml.j2
     dest: "{{ server_dir_path }}/compose.yml"
-    owner: server
-    group: server
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
     mode: "0644"
 
 - name: Copy over environment variables from vault
   ansible.builtin.template:
     src: services_env.sh.j2
     dest: /etc/profile.d/timestamped_for_f1_services_env.sh
-    owner: server
-    group: server
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0644"
+
+- name: Copy over web server config
+  ansible.builtin.template:
+    src: caddyfile.conf.j2
+    dest: "{{ timestamped_for_f1_root_path }}/services/web-server/config/Caddyfile"
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0644"
+
+- name: Copy over cache config
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: "{{ timestamped_for_f1_root_path }}/services/cache/config/redis.conf"
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
     mode: "0644"
   
 - name: Configure docker daemon to start on boot
@@ -24,21 +40,20 @@
 - name: Start web server and dependent services
   ansible.builtin.shell:
     cmd: "docker compose up web-server -d"
-    chdir: "{{ server_dir_path }}"
+    chdir: "{{ timestamped_for_f1_root_path }}"
 
-# This should run every hour
 - name: Schedule docker image updates
   ansible.builtin.cron:
     name: "Docker image updates"
     minute: "0"
     hour: "0"
-    job: "cd {{ server_dir_path }} && docker compose pull && docker compose up web-server -d --force-recreate"
+    day: "*"
+    job: "cd {{ timestamped_for_f1_root_path }} && docker compose pull && docker compose up web-server -d --force-recreate"
 
-# This should run every day
 - name: Schedule docker cleanup job
   ansible.builtin.cron:
     name: "Docker cleanup"
     minute: "0"
     hour: "0"
     day: "*"
-    job: "cd {{ server_dir_path }} && docker system prune"
+    job: "cd {{ timestamped_for_f1_root_path }} && docker system prune"

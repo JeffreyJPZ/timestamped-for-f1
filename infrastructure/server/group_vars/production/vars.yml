@@ -10,11 +10,6 @@ timestamped_for_f1_openf1_db_root_password: "{{ vault_timestamped_for_f1_openf1_
 timestamped_for_f1_openf1_db_port: "27017"
 timestamped_for_f1_openf1_db_name: "{{ vault_timestamped_for_f1_openf1_db_name }}"
 
-timestamped_for_f1_historical_db_root_username: "{{ vault_timestamped_for_f1_historical_db_root_username }}"
-timestamped_for_f1_historical_db_root_password: "{{ vault_timestamped_for_f1_historical_db_root_password }}"
-timestamped_for_f1_historical_db_port: "5432"
-timestamped_for_f1_historical_db_name: "{{ vault_timestamped_for_f1_historical_db_name }}"
-
 timestamped_for_f1_cache_host: "cache"
 timestamped_for_f1_cache_port: "6379"
 timestamped_for_f1_cache_username: "{{ vault_timestamped_for_f1_cache_username }}"
@@ -24,4 +19,6 @@ timestamped_for_f1_cache_db: "{{ vault_timestamped_for_f1_cache_db }}"
 timestamped_for_f1_cache_api_ip: "0.0.0.0"
 timestamped_for_f1_cache_api_port: "9090"
 
-timestamped_for_f1_web_api_base_url: "https://localhost/api/v1"
+timestamped_for_f1_web_api_base_url: "https://timestampedforf1.jeffreyjpz.com/api/v1"
+
+timestamped_for_f1_host: "timestampedforf1.jeffreyjpz.com"

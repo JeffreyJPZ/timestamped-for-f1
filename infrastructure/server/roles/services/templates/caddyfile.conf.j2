@@ -1,0 +1,10 @@
+{{ timestamped_for_f1_host }} {
+
+    @web-api {
+        method GET
+        path /api/*
+    }
+
+    reverse_proxy @web-api web-api:8080
+    
+}

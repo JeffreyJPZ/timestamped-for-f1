@@ -1,3 +1,2 @@
 # Server config
-docker_compose_file_path: "../../compose.yml" # Relative path to docker compose file for project
-server_dir_path: "srv/timestamped-for-f1" # Absolute path to directory for all server files
+timestamped_for_f1_root_path: "srv/timestamped-for-f1" # Absolute path to directory for the app
