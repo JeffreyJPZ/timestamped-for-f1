@@ -34,8 +34,10 @@
     mode: "0644"
   
 - name: Configure docker daemon to start on boot
-  ansible.builtin.shell:
-    cmd: "sudo systemctl enable docker"
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
 
 - name: Start web server and dependent services
   ansible.builtin.shell:
