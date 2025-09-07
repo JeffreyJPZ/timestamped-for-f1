@@ -5,6 +5,8 @@ admin_ssh_public_key: "{{ vault_admin_ssh_public_key }}"
 server_user: "{{ vault_server_user }}"
 
 # Services config
+timestamped_for_f1_host: "timestampedforf1.jeffreyjpz.com"
+
 timestamped_for_f1_openf1_db_root_username: "{{ vault_timestamped_for_f1_openf1_db_root_username }}"
 timestamped_for_f1_openf1_db_root_password: "{{ vault_timestamped_for_f1_openf1_db_root_password }}"
 timestamped_for_f1_openf1_db_port: "{{ vault_timestamped_for_f1_openf1_db_port }}"
@@ -23,7 +25,7 @@ timestamped_for_f1_cache_api_host: "{{ vault_timestamped_for_f1_cache_api_host }
 timestamped_for_f1_cache_api_port: "{{ vault_timestamped_for_f1_cache_api_port }}"
 
 timestamped_for_f1_web_api_port: "{{ vault_timestamped_for_f1_web_api_port }}"
-timestamped_for_f1_web_api_base_url: "https://timestampedforf1.jeffreyjpz.com/api/v1"
+timestamped_for_f1_web_api_base_url: "https://{{ timestamped_for_f1_host }}/api/v1"
 
 timestamped_for_f1_dashboard_node_env: "production"
 timestamped_for_f1_dashboard_host: "{{ vault_timestamped_for_f1_dashboard_host }}"
@@ -48,5 +50,3 @@ timestamped_for_f1_env_vars:
   TIMESTAMPED_FOR_F1_DASHBOARD_NODE_ENV: "{{ timestamped_for_f1_dashboard_node_env }}"
   TIMESTAMPED_FOR_F1_DASHBOARD_HOST: "{{ timestamped_for_f1_dashboard_host }}"
   TIMESTAMPED_FOR_F1_DASHBOARD_PORT: "{{ timestamped_for_f1_dashboard_port }}"
-
-timestamped_for_f1_host: "timestampedforf1.jeffreyjpz.com"
