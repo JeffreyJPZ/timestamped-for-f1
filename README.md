@@ -1,5 +1,5 @@
 # [Timestamped for F1](https://timestampedforf1.jeffreyjpz.com)
-A play-by-play/events archive for Formula 1. View overtakes, pit stops, incidents, and more as they happened.
+A play-by-play/events archive for Formula 1. View overtakes, qualifying laps, pit stops, incidents, and more as they happened.
 
 This project uses a fork of [OpenF1](https://github.com/br-g/openf1) with custom event processing logic, as well as [MultiViewer](https://multiviewer.app/) for circuit data.
 
