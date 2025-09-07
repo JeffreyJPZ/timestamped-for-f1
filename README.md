@@ -6,6 +6,7 @@ This project uses a fork of [OpenF1](https://github.com/br-g/openf1) with custom
 ## Roadmap
 - Implement event filtering by tags (driver, pit stop time, incident verdict, etc.)
 - Implement event querying over all seasons
+- Attach circuit view to events with location data
 - Improve UI (add icons for event types, team colours for drivers)
 
 ## Developing locally
