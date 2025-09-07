@@ -7,6 +7,14 @@
     name: aptitude
     state: latest
     update_cache: yes
+
+# Cron
+- name: Install cron
+  become: yes
+  ansible.builtin.apt:
+    name: cron
+    state: latest
+    update_cache: yes
       
 # Docker
 - name: Update apt cache

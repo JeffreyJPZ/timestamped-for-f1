@@ -1,103 +1,135 @@
 services:
   
-    cache:
-        image: ghcr.io/jeffreyjpz/timestamped-for-f1/cache:latest
-        restart: unless-stopped
-        expose:
-            - "${TIMESTAMPED_FOR_F1_CACHE_PORT}"
-        volumes:
-            - ./services/cache/config/redis.conf:/usr/local/etc/redis/redis.conf
-            - ./services/cache/data:/data
+  cache:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/cache:latest
+    build:
+      context: ./services/cache
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "${TIMESTAMPED_FOR_F1_CACHE_PORT:-6379}"
+    volumes:
+      - ./services/cache/config/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./services/cache/data:/data
 
-    cache-api:
-        image: ghcr.io/jeffreyjpz/timestamped-for-f1/cache-api:latest
-        restart: unless-stopped
-        expose:
-            - "${TIMESTAMPED_FOR_F1_CACHE_API_PORT}"
-        depends_on:
-            - cache
-        environment:
-            TIMESTAMPED_FOR_F1_CACHE_HOST: "${TIMESTAMPED_FOR_F1_CACHE_HOST}"
-            TIMESTAMPED_FOR_F1_CACHE_PORT: "${TIMESTAMPED_FOR_F1_CACHE_PORT}"
-            TIMESTAMPED_FOR_F1_CACHE_USERNAME: "${TIMESTAMPED_FOR_F1_CACHE_USERNAME}"
-            TIMESTAMPED_FOR_F1_CACHE_PASSWORD: "${TIMESTAMPED_FOR_F1_CACHE_PASSWORD}"
-            TIMESTAMPED_FOR_F1_CACHE_DB_NAME: "${TIMESTAMPED_FOR_F1_CACHE_DB_NAME}"
-            TIMESTAMPED_FOR_F1_CACHE_API_HOST: "${TIMESTAMPED_FOR_F1_CACHE_API_HOST}"
-            TIMESTAMPED_FOR_F1_CACHE_API_PORT: "${TIMESTAMPED_FOR_F1_CACHE_API_PORT}"
+  cache-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/cache-api:latest
+    build:
+      context: ./services/cache-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "${TIMESTAMPED_FOR_F1_CACHE_API_PORT:-9090}"
+    depends_on:
+      - cache
+    environment:
+      TIMESTAMPED_FOR_F1_CACHE_HOST: "${TIMESTAMPED_FOR_F1_CACHE_HOST:-cache}"
+      TIMESTAMPED_FOR_F1_CACHE_PORT: "${TIMESTAMPED_FOR_F1_CACHE_PORT:-6379}"
+      TIMESTAMPED_FOR_F1_CACHE_USERNAME: "${TIMESTAMPED_FOR_F1_CACHE_USERNAME:-timestamped-for-f1}"
+      TIMESTAMPED_FOR_F1_CACHE_PASSWORD: "${TIMESTAMPED_FOR_F1_CACHE_PASSWORD:-pass}"
+      TIMESTAMPED_FOR_F1_CACHE_DB_NAME: "${TIMESTAMPED_FOR_F1_CACHE_DB_NAME:-web-api}"
+      TIMESTAMPED_FOR_F1_CACHE_API_HOST: "${TIMESTAMPED_FOR_F1_CACHE_API_HOST:-0.0.0.0}"
+      TIMESTAMPED_FOR_F1_CACHE_API_PORT: "${TIMESTAMPED_FOR_F1_CACHE_API_PORT:-9090}"
+  
+  dashboard:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/dashboard:latest
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    expose:
+      - "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT:-3000}"
+    depends_on:
+      - cache
+      - cache-api
+      - openf1-api
+      - openf1-db
+      - openf1-historical-processing
+      - web-api
+      - web-server
+    environment:
+      NODE_ENV: "${TIMESTAMPED_FOR_F1_NODE_ENV:-production}"
+      HOSTNAME: "${TIMESTAMPED_FOR_F1_DASHBOARD_HOST:-0.0.0.0}"
+      PORT: "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT:-3000}"
+      NEXT_PUBLIC_TIMESTAMPED_FOR_F1_WEB_API_BASE_URL: "${NEXT_PUBLIC_TIMESTAMPED_FOR_F1_WEB_API_BASE_URL:-http://timestampedforf1.jeffreyjpz.com/api/v1}"
 
-    dashboard:
-        image: ghcr.io/jeffreyjpz/timestamped-for-f1/dashboard:latest
-        expose:
-            - "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT}"
-        depends_on:
-            - cache
-            - cache-api
-            - openf1-api
-            - openf1-db
-            - openf1-historical-processing
-            - web-api
-            - web-server
-        environment:
-            HOSTNAME: "${TIMESTAMPED_FOR_F1_DASHBOARD_HOST}"
-            PORT: "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT}"
+  openf1-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-api:latest
+    build:
+      context: ./services/openf1
+      dockerfile: Dockerfile
+    expose:
+      - "${TIMESTAMPED_FOR_F1_OPENF1_API_PORT:-8000}"
+    depends_on:
+      - openf1-db
+    environment:
+      MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME:-timestamped-for-f1}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD:-pass}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT:-27017}"
+      OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME:-openf1}"
+    command: ["uvicorn", "openf1.services.query_api.app:app", "--host", "${TIMESTAMPED_FOR_F1_OPENF1_API_HOST:-0.0.0.0}", "--port", "${TIMESTAMPED_FOR_F1_OPENF1_API_PORT:-8000}"]
 
-    openf1-api:
-        image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-api:latest
-        expose:
-            - "${TIMESTAMPED_FOR_F1_OPENF1_API_PORT}"
-        depends_on:
-            - openf1-db
-        environment:
-            MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
-            OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME}"
-        command: ["uvicorn", "openf1.services.query_api.app:app", "--host", "${TIMESTAMPED_FOR_F1_OPENF1_API_HOST}", "--port", "${TIMESTAMPED_FOR_F1_OPENF1_API_PORT}"]
+  openf1-db:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-db:latest
+    build:
+      context: ./services/openf1-db
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT:-27017}"
+    volumes:
+      - ./services/openf1-db/data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME:-timestamped-for-f1}"
+      MONGO_INITDB_ROOT_PASSWORD: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD:-pass}"
 
-    openf1-db:
-        image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-db:latest
-        restart: unless-stopped
-        expose:
-            - "${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
-        volumes:
-            - ./services/openf1-db/data:/data/db
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}"
-            MONGO_INITDB_ROOT_PASSWORD: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}"
+  openf1-historical-processing:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-historical-processing:latest
+    build:
+      context: ./services/openf1
+      dockerfile: Dockerfile
+    depends_on:
+      - openf1-db
+    environment:
+      MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME:-timestamped-for-f1}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD:-pass}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT:-27017}"
+      OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME:-openf1}"
+    command: ["tail", "-f", "/dev/null"]
 
-    openf1-historical-processing:
-        image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-historical-processing:latest
-        depends_on:
-            - openf1-db
-        environment:
-            MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
-            OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME}"
-        command: ["tail", "-f", "/dev/null"]
+  web-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-api:latest
+    build:
+      context: ./services/web-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "${TIMESTAMPED_FOR_F1_WEB_API_PORT:8080}"
+    depends_on:
+      - cache
+      - cache-api
+      - openf1-api
+      - openf1-db
+      - openf1-historical-processing
+    environment:
+      TIMESTAMPED_FOR_F1_WEB_API_CACHE_API_GRPC_ADDRESS="${TIMESTAMPED_FOR_F1_WEB_API_CACHE_API_GRPC_ADDRESS:-dns://cache-api:9090}"
+      TIMESTAMPED_FOR_F1_WEB_API_F1MULTIVIEWER_BASE_URL="${TIMESTAMPED_FOR_F1_WEB_API_F1MULTIVIEWER_BASE_URL:-http://api.multiviewer.app/api/v1}"
+      TIMESTAMPED_FOR_F1_WEB_API_OPENF1_BASE_URL="${TIMESTAMPED_FOR_F1_WEB_API_OPENF1_BASE_URL:-http://openf1-api:8000/v1}"
 
-    web-api:
-        image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-api:latest
-        restart: unless-stopped
-        expose:
-            - "${TIMESTAMPED_FOR_F1_WEB_API_PORT}"
-        depends_on:
-            - cache
-            - cache-api
-            - openf1-api
-            - openf1-db
-
-    web-server:
-        image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-server:latest
-        restart: unless-stopped
-        ports:
-            - "80:80"
-            - "443:443"
-            - "443:443/udp"
-        depends_on:
-            - cache
-            - cache-api
-            - openf1-api
-            - openf1-db
-            - web-api
-        cap_add:
-            - NET_ADMIN
-        volumes:
-            - ./services/web-server/data/data:/data
-            - ./services/web-server/data/config:/config
+  web-server:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-server:latest
+    build:
+      context: ./services/web-server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    depends_on:
+      - cache
+      - cache-api
+      - openf1-api
+      - openf1-db
+      - openf1-historical-processing
+      - web-api
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./services/web-server/data/data:/data
+      - ./services/web-server/data/config:/config

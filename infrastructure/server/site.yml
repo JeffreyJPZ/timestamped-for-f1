@@ -3,7 +3,7 @@
 
 - hosts: production
   roles:
-    - role: users
     - role: common
+    - role: users
     - role: security
     - role: services

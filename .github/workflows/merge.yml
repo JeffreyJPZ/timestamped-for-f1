@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         namespace: [jeffreyjpz/timestamped-for-f1]  # The container registry namespace
-        parent-path: [./services]                 # Relative path to parent directory containing all services
+        parent-path: [./services]                   # Relative path to parent directory containing all services
         service: [
           cache,
           cache-api,
@@ -36,8 +36,15 @@ jobs:
           web-server
         ]
         include:
+          # Dashboard is in a different directory
           - service: dashboard
-          - parent-path: ./dashboard
+            parent-path: ./dashboard
+          # OpenF1 API and processing use the same OpenF1 image
+          - service: openf1-api
+            base-service: openf1
+          - service: openf1-historical-processing
+            base-service: openf1
+          
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -57,6 +64,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}
             type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ github.event_name == 'push' }}
           labels: |
             org.opencontainers.image.title=${{ matrix.service }}
             org.opencontainers.image.description=${{ matrix.service }}
@@ -72,7 +80,7 @@ jobs:
       - name: Build service image and push to GitHub Container Registry for push events, otherwise builds locally
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.parent-path }}/${{ matrix.service }}
+          context: ${{ matrix.parent-path }}/${{ matrix.base-service != '' && matrix.base-service || matrix.service }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -1,2 +1,5 @@
 # Server config
-timestamped_for_f1_root_path: "srv/timestamped-for-f1" # Absolute path to directory for the app
+timestamped_for_f1_root_path: "/srv/timestamped-for-f1" # Absolute path to directory for the app
+timestamped_for_f1_docker_compose_file_path: "{{ timestamped_for_f1_root_path }}/compose.yml"
+timestamped_for_f1_web_server_config_path: "{{ timestamped_for_f1_root_path }}/services/web-server/config/Caddyfile"
+timestamped_for_f1_cache_config_path: "{{ timestamped_for_f1_root_path }}/services/cache/config/redis.conf"

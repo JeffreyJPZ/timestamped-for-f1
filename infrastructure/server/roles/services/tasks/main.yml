@@ -12,7 +12,7 @@
   become: yes
   ansible.builtin.template:
     src: compose.yml.j2
-    dest: "{{ timestamped_for_f1_root_path }}/compose.yml"
+    dest: "{{ timestamped_for_f1_docker_compose_file_path }}"
     owner: "{{ server_user }}"
     group: "{{ server_user }}"
     mode: "0644"
@@ -31,7 +31,7 @@
   become: yes
   ansible.builtin.template:
     src: caddyfile.conf.j2
-    dest: "{{ timestamped_for_f1_root_path }}/services/web-server/config/Caddyfile"
+    dest: "{{ timestamped_for_f1_web_server_config_path }}"
     owner: "{{ server_user }}"
     group: "{{ server_user }}"
     mode: "0644"
@@ -40,7 +40,7 @@
   become: yes
   ansible.builtin.template:
     src: redis.conf.j2
-    dest: "{{ timestamped_for_f1_root_path }}/services/cache/config/redis.conf"
+    dest: "{{ timestamped_for_f1_cache_config_path }}"
     owner: "{{ server_user }}"
     group: "{{ server_user }}"
     mode: "0644"
@@ -52,9 +52,10 @@
     enabled: yes
 
 - name: Start services
-  ansible.builtin.shell:
-    cmd: "docker compose pull && docker compose up dashboard -d"
-    chdir: "{{ timestamped_for_f1_root_path }}"
+  become: yes
+  ansible.builtin.shell: |
+    "docker compose -f {{ timestamped_for_f1_docker_compose_file_path }} pull"
+    "docker compose -f {{ timestamped_for_f1_docker_compose_file_path }} up dashboard -d"
 
 - name: Schedule docker image updates
   ansible.builtin.cron:
@@ -62,7 +63,7 @@
     minute: "0"
     hour: "0"
     day: "*"
-    job: "cd {{ timestamped_for_f1_root_path }} && docker compose pull && docker compose up dashboard -d --force-recreate"
+    job: "docker compose -f {{ timestamped_for_f1_docker_compose_file_path }} pull && docker compose -f {{ timestamped_for_f1_docker_compose_file_path }} up dashboard -d --force-recreate"
     state: present
 
 - name: Schedule docker cleanup job
@@ -71,5 +72,5 @@
     minute: "0"
     hour: "0"
     day: "*"
-    job: "cd {{ timestamped_for_f1_root_path }} && docker system prune"
+    job: "docker system prune"
     state: present

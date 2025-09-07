@@ -10,7 +10,7 @@
 - name: Ensure admin user can log in with their key
   ansible.posix.authorized_key:
     user: "{{ admin_user }}"
-    key: "{{ admin_ssh_public_key }}"
+    key: "{{ admin_user_ssh_public_key }}"
     state: present
     path: "/home/{{ admin_user }}/.ssh/authorized_keys"
 
