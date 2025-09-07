@@ -1,0 +1,65 @@
+# Install necessary dependencies
+---
+
+- name: Install aptitude
+  become: yes
+  ansible.builtin.apt:
+    name: aptitude
+    state: latest
+    update_cache: yes
+      
+# Docker
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Create gpg directory
+  become: yes
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Add docker gpg apt key
+  become: yes
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+
+- name: Add docker repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+    filename: docker
+    state: present
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install docker packages
+  become: yes
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: yes
+
+# Python
+- name: Install python
+  become: yes
+  ansible.builtin.apt:
+    name: python3
+    state: latest
+    update_cache: yes
+
+- name: Install pip
+  become: yes
+  ansible.builtin.apt:
+    name: python3-pip
+    state: latest
+    update_cache: yes

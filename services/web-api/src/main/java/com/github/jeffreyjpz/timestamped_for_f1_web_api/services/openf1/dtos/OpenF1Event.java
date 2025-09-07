@@ -1,0 +1,42 @@
+package com.github.jeffreyjpz.timestamped_for_f1_web_api.services.openf1.dtos;
+
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public class OpenF1Event {
+    
+    @JsonAlias("category")
+    @JsonProperty("category")
+    private final String category;
+
+    @JsonAlias("cause")
+    @JsonProperty("cause")
+    private final String cause;
+
+    @JsonAlias("date")
+    @JsonProperty("date")
+    private final String date;
+
+    @JsonAlias("elapsed_time")
+    @JsonProperty("elapsed_time")
+    private final String elapsedTime;
+
+    @JsonAlias("details")
+    @JsonProperty("details")
+    private final Map<String, Object> details;
+
+    @JsonAlias("meeting_key")
+    @JsonProperty("meeting_key")
+    private final Integer meetingKey;
+
+    @JsonAlias("session_key")
+    @JsonProperty("session_key")
+    private final Integer sessionKey;
+}

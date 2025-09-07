@@ -1,0 +1,75 @@
+# Installs configuration for services on a server and starts services
+---
+
+- name: Create project root path
+  become: yes
+  ansible.builtin.file:
+    path: "{{ timestamped_for_f1_root_path }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy over docker compose file
+  become: yes
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ timestamped_for_f1_root_path }}/compose.yml"
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0644"
+
+- name: Copy over environment variables for services as system level variables
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/environment
+    regexp: "^{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+    create: yes
+    state: present
+  loop: "{{ timestamped_for_f1_env_vars | dict2items }}"
+
+- name: Copy over web server config
+  become: yes
+  ansible.builtin.template:
+    src: caddyfile.conf.j2
+    dest: "{{ timestamped_for_f1_root_path }}/services/web-server/config/Caddyfile"
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0644"
+
+- name: Copy over cache config
+  become: yes
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: "{{ timestamped_for_f1_root_path }}/services/cache/config/redis.conf"
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0644"
+  
+- name: Configure docker daemon to start on boot
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Start services
+  ansible.builtin.shell:
+    cmd: "docker compose pull && docker compose up dashboard -d"
+    chdir: "{{ timestamped_for_f1_root_path }}"
+
+- name: Schedule docker image updates
+  ansible.builtin.cron:
+    name: "Docker image updates"
+    minute: "0"
+    hour: "0"
+    day: "*"
+    job: "cd {{ timestamped_for_f1_root_path }} && docker compose pull && docker compose up dashboard -d --force-recreate"
+    state: present
+
+- name: Schedule docker cleanup job
+  ansible.builtin.cron:
+    name: "Docker cleanup"
+    minute: "0"
+    hour: "0"
+    day: "*"
+    job: "cd {{ timestamped_for_f1_root_path }} && docker system prune"
+    state: present

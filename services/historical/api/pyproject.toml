@@ -1,0 +1,22 @@
+[project]
+name = "timestamped-for-f1-historical-api"
+version = "0.1.1"
+requires-python = ">=3.13"
+authors = [
+    {name = "Jeffrey Zhang", email = "jeffreyjpizhang@gmail.com"},
+]
+dependencies = [
+    "alembic>=1.16.2",
+    "asyncio>=3.4.3",
+    "asyncpg>=0.30.0",
+    "datetime>=5.5",
+    "fastapi[standard]>=0.116.0",
+    "pydantic-settings>=2.10.1",
+    "sqlalchemy>=2.0.41",
+    "sqlalchemy-helpers>=2.0.1",
+    "uvicorn>=0.34.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.7.19,<0.8.0"]
+build-backend = "uv_build"

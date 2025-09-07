@@ -1,0 +1,60 @@
+package redis
+
+import (
+	"context"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/JeffreyJPZ/timestamped-for-f1-cache-api/pkg/cache"
+	"github.com/redis/go-redis/v9"
+)
+
+type RedisClient struct {
+	cache.Cache
+	config Config
+	client *redis.Client
+}
+
+// NewClient initializes a new Redis client with the given URL and configuration given in the URL.
+func NewClient(url string) (*RedisClient, error) {
+	opt, err := redis.ParseURL(url)
+	if err != nil {
+		return nil, err
+	}
+
+	r := redis.NewClient(opt)
+
+	return &RedisClient{
+		config: Config{
+			Host:     strings.Split(r.Options().Addr, ":")[0],
+			Port:     strings.Split(r.Options().Addr, ":")[1],
+			User:     r.Options().Username,
+			Password: r.Options().Password,
+			DB:       strconv.Itoa(r.Options().DB),
+		},
+		client: r,
+	}, nil
+}
+
+// Get gets a string value from Redis associated with the given key, returning nil if the key was not found,
+// or an error if the value is not a string.
+func (r *RedisClient) Get(ctx context.Context, key string) (any, error) {
+	value, err := r.client.Get(ctx, key).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	return value, nil
+}
+
+// Set assigns a value to the given key in Redis, returning nil if the key was successfully set,
+// otherwise returning an error.
+func (r *RedisClient) Set(ctx context.Context, key string, value any, expirationTime float64) error {
+	err := r.client.Set(ctx, key, value, time.Duration(expirationTime)).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

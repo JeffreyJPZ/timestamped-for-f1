@@ -1,0 +1,131 @@
+services:
+  
+  cache:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/cache:latest
+    build:
+      context: ./services/cache
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "${TIMESTAMPED_FOR_F1_CACHE_PORT}"
+    volumes:
+      - ./services/cache/config/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./services/cache/data:/data
+
+  cache-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/cache-api:latest
+    build:
+      context: ./services/cache-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "${TIMESTAMPED_FOR_F1_CACHE_API_PORT}"
+    depends_on:
+      - cache
+    environment:
+      TIMESTAMPED_FOR_F1_CACHE_HOST: "${TIMESTAMPED_FOR_F1_CACHE_HOST}"
+      TIMESTAMPED_FOR_F1_CACHE_PORT: "${TIMESTAMPED_FOR_F1_CACHE_PORT}"
+      TIMESTAMPED_FOR_F1_CACHE_USERNAME: "${TIMESTAMPED_FOR_F1_CACHE_USERNAME}"
+      TIMESTAMPED_FOR_F1_CACHE_PASSWORD: "${TIMESTAMPED_FOR_F1_CACHE_PASSWORD}"
+      TIMESTAMPED_FOR_F1_CACHE_DB_NAME: "${TIMESTAMPED_FOR_F1_CACHE_DB_NAME}"
+      TIMESTAMPED_FOR_F1_CACHE_API_HOST: "${TIMESTAMPED_FOR_F1_CACHE_API_HOST}"
+      TIMESTAMPED_FOR_F1_CACHE_API_PORT: "${TIMESTAMPED_FOR_F1_CACHE_API_PORT}"
+  
+  dashboard:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/dashboard:latest
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    expose:
+      - "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT}"
+    depends_on:
+      - cache
+      - cache-api
+      - openf1-api
+      - openf1-db
+      - openf1-historical-processing
+      - web-api
+      - web-server
+    environment:
+      NODE_ENV: "development"
+      HOSTNAME: "${TIMESTAMPED_FOR_F1_DASHBOARD_HOST}"
+      PORT: "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT}"
+    
+
+  openf1-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-api:latest
+    build:
+      context: ./services/openf1
+      dockerfile: Dockerfile
+    expose:
+      - "${TIMESTAMPED_FOR_F1_OPENF1_API_PORT}"
+    depends_on:
+      - openf1-db
+    environment:
+      MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
+      OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME}"
+    command: ["uvicorn", "openf1.services.query_api.app:app", "--host", "${TIMESTAMPED_FOR_F1_OPENF1_API_HOST}", "--port", "${TIMESTAMPED_FOR_F1_OPENF1_API_PORT}"]
+
+  openf1-db:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-db:latest
+    build:
+      context: ./services/openf1-db
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
+    volumes:
+      - ./services/openf1-db/data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}"
+
+  openf1-historical-processing:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-historical-processing:latest
+    build:
+      context: ./services/openf1
+      dockerfile: Dockerfile
+    depends_on:
+      - openf1-db
+    environment:
+      MONGO_CONNECTION_STRING: "mongodb://${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME}:${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD}@openf1-db:${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT}"
+      OPENF1_DB_NAME: "${TIMESTAMPED_FOR_F1_OPENF1_DB_NAME}"
+    command: ["tail", "-f", "/dev/null"]
+
+  web-api:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-api:latest
+    build:
+      context: ./services/web-api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    expose:
+      - "${TIMESTAMPED_FOR_F1_WEB_API_PORT}"
+    depends_on:
+      - cache
+      - cache-api
+      - openf1-api
+      - openf1-db
+      - openf1-historical-processing
+
+  web-server:
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-server:latest
+    build:
+      context: ./services/web-server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    depends_on:
+      - cache
+      - cache-api
+      - openf1-api
+      - openf1-db
+      - openf1-historical-processing
+      - web-api
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./services/web-server/data/data:/data
+      - ./services/web-server/data/config:/config

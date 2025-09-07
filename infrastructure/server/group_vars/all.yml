@@ -1,0 +1,2 @@
+# Server config
+timestamped_for_f1_root_path: "srv/timestamped-for-f1" # Absolute path to directory for the app
