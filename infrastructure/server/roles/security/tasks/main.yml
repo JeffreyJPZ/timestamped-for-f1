@@ -2,7 +2,14 @@
 # Credit to chesterbr https://github.com/chesterbr/chester-ansible-configs/blob/1027ab684d353ee1208c8bed86321c54195ff5bf/roles/chesterbr.security/tasks/main.yml
 ---
 
-- name: Configure ufw (firewall) to allow specific ports
+- name: Install ufw (firewall)
+  become: yes
+  ansible.builtin.apt:
+    name: ufw
+    state: latest
+    update_cache: yes
+
+- name: Configure ufw to allow specific ports
   become: yes
   community.general.ufw:
     rule: allow
@@ -30,12 +37,15 @@
     - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
 
 - name: Install fail2ban
+  become: yes
   ansible.builtin.apt:
     name: fail2ban
-    state: present
+    state: latest
+    update_cache: yes
 
 - name: Ensure fail2ban is running and enabled on boot
   ansible.builtin.service:
     name: fail2ban
     state: started
-    enabled: true
+    enabled: yes
+  ignore_errors: yes

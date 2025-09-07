@@ -12,8 +12,10 @@
     user: "{{ admin_user }}"
     key: "{{ admin_ssh_public_key }}"
     state: present
+    path: "/home/{{ admin_user }}/.ssh/authorized_keys"
 
 - name: Ensure admin user is a passwordless sudoer
+  become: yes
   ansible.builtin.lineinfile:
     dest: /etc/sudoers
     regexp: "^{{ admin_user }}"
@@ -25,5 +27,4 @@
 - name: Create server user
   ansible.builtin.user:
     name: "{{ server_user }}"
-    create_home: true
-    system: true
+    system: yes
