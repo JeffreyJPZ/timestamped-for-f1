@@ -1,6 +1,13 @@
 # Installs configuration for services on a server and starts services
 ---
 
+- name: Create project root path
+  become: yes
+  ansible.builtin.file:
+    path: "{{ timestamped_for_f1_root_path }}"
+    state: directory
+    mode: "0755"
+
 - name: Copy over docker compose file
   become: yes
   ansible.builtin.template:
