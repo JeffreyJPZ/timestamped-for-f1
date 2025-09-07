@@ -38,11 +38,16 @@ jobs:
         include:
           # Dashboard is in a different directory
           - service: dashboard
+            namespace: jeffreyjpz/timestamped-for-f1
             parent-path: ./dashboard
           # OpenF1 API and processing use the same OpenF1 image
           - service: openf1-api
+            namespace: jeffreyjpz/timestamped-for-f1
+            parent-path: ./services
             base-service: openf1
           - service: openf1-historical-processing
+            namespace: jeffreyjpz/timestamped-for-f1
+            parent-path: ./services
             base-service: openf1
           
     steps:

@@ -131,5 +131,6 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
+      - ./services/web-server/config/Caddyfile:/etc/caddy/Caddyfile
       - ./services/web-server/data/data:/data
       - ./services/web-server/data/config:/config
