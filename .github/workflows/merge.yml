@@ -27,6 +27,7 @@ jobs:
         service: [
           cache,
           cache-api,
+          dashboard,
           openf1-live-mq,
           openf1-api,
           openf1-db,
@@ -34,6 +35,9 @@ jobs:
           web-api,
           web-server
         ]
+        include:
+          - service: dashboard
+          - parent-path: ./dashboard
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
