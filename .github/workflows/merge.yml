@@ -22,8 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        namespace: jeffreyjpz/timestamped-for-f1  # The container registry namespace
-        parent-path: ./services                   # Relative path to parent directory containing all services
+        namespace: [jeffreyjpz/timestamped-for-f1]  # The container registry namespace
+        parent-path: [./services]                 # Relative path to parent directory containing all services
         service: [
           cache,
           cache-api,
