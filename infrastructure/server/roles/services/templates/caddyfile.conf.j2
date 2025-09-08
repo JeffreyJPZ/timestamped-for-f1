@@ -1,7 +1,7 @@
 {{ timestamped_for_f1_host }} {
 
     @dashboard {
-        path /
+        not path /api/*
     }
     
     @web-api {
@@ -9,7 +9,7 @@
         path /api/*
     }
 
-    reverse_proxy @dashboard dashboard:3000
-    reverse_proxy @web-api web-api:8080
+    reverse_proxy @dashboard dashboard:{{ timestamped_for_f1_dashboard_port }}
+    reverse_proxy @web-api web-api:{{ timestamped_for_f1_web_api_port }}
 
 }

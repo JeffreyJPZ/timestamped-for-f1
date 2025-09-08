@@ -156,6 +156,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.1
+      '@next/eslint-plugin-next':
+        specifier: ^15.5.2
+        version: 15.5.2
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.11
@@ -174,6 +177,9 @@ importers:
       eslint-config-next:
         specifier: 15.3.3
         version: 15.3.3(eslint@9.30.1(jiti@2.4.2))(typescript@5.8.3)
+      eslint-plugin-react-hooks:
+        specifier: ^5.2.0
+        version: 5.2.0(eslint@9.30.1(jiti@2.4.2))
       tailwindcss:
         specifier: ^4
         version: 4.1.11
@@ -439,6 +445,9 @@ packages:
 
   '@next/eslint-plugin-next@15.3.3':
     resolution: {integrity: sha512-VKZJEiEdpKkfBmcokGjHu0vGDG+8CehGs90tBEy/IDoDDKGngeyIStt2MmE5FYNyU9BhgR7tybNWTAJY/30u+Q==}
+
+  '@next/eslint-plugin-next@15.5.2':
+    resolution: {integrity: sha512-lkLrRVxcftuOsJNhWatf1P2hNVfh98k/omQHrCEPPriUypR6RcS13IvLdIrEvkm9AH2Nu2YpR5vLqBuy6twH3Q==}
 
   '@next/swc-darwin-arm64@15.3.3':
     resolution: {integrity: sha512-WRJERLuH+O3oYB4yZNVahSVFmtxRNjNF1I1c34tYMoJb0Pve+7/RaLAJJizyYiFhjYNGHRAE1Ri2Fd23zgDqhg==}
@@ -3270,6 +3279,10 @@ snapshots:
   '@next/env@15.3.3': {}
 
   '@next/eslint-plugin-next@15.3.3':
+    dependencies:
+      fast-glob: 3.3.1
+
+  '@next/eslint-plugin-next@15.5.2':
     dependencies:
       fast-glob: 3.3.1
 
