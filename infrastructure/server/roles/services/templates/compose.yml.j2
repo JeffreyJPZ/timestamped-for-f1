@@ -61,7 +61,7 @@ services:
         MONGO_INITDB_ROOT_PASSWORD: "${TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD:-pass}"
 
   openf1-historical-processing:
-    image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-historical-processing:latest
+    image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-historical-processing:0
     depends_on:
         - openf1-db
     environment:
