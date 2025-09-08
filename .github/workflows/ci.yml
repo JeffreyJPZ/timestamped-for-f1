@@ -1,0 +1,87 @@
+name: ci
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build and test images
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        namespace: [jeffreyjpz/timestamped-for-f1]  # The container registry namespace
+        parent-path: [./services]                   # Relative path to parent directory containing all services
+        service: [
+          cache,
+          cache-api,
+          dashboard,
+          openf1-live-mq,
+          openf1-api,
+          openf1-db,
+          openf1-historical-processing,
+          web-api,
+          web-server
+        ]
+        exclude:
+          # Dashboard is in a different directory
+          - service: dashboard
+            namespace: jeffreyjpz/timestamped-for-f1
+            parent-path: ./services
+        include:
+          - service: dashboard
+            namespace: jeffreyjpz/timestamped-for-f1
+            parent-path: .
+          # OpenF1 API and processing use the same OpenF1 image
+          - service: openf1-api
+            namespace: jeffreyjpz/timestamped-for-f1
+            parent-path: ./services
+            base-service: openf1
+          - service: openf1-historical-processing
+            namespace: jeffreyjpz/timestamped-for-f1
+            parent-path: ./services
+            base-service: openf1
+          
+    steps:
+      - name: Checkout repository and update submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get metadata from the event that triggered this workflow
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ matrix.namespace }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.title=${{ matrix.service }}
+            org.opencontainers.image.description=${{ matrix.service }}
+
+      - name: Build service image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.parent-path }}/${{ matrix.base-service != '' && matrix.base-service || matrix.service }}
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
