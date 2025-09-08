@@ -6,10 +6,7 @@ COPY src /app/src/
 
 WORKDIR /app
 
-RUN mvn clean compile -DskipTests && mvn clean package -DskipTests
-
-ARG JAR_FILE=./target/*.jar
-COPY ${JAR_FILE} timestamped-for-f1-web-api.jar
+RUN mvn clean package -DskipTests
 
 # Copy jar file to production image
 FROM eclipse-temurin:21-alpine
