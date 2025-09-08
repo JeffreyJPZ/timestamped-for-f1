@@ -3,7 +3,7 @@
  * Assumes queryParams is an object with single or array values.
  */  
 export function getQueryURL(endpoint: string, queryParams?: object): string {
-    const baseURL = process.env.NEXT_PUBLIC_TIMESTAMPED_FOR_F1_WEB_API_BASE_URL || "https://localhost/api/v1";
+    const baseURL = process.env.TIMESTAMPED_FOR_F1_DASHBOARD_WEB_API_BASE_URL || "https://localhost/api/v1";
 
     // Build query string manually so that spaces are properly percent-encoded.
     const queryString = queryParams

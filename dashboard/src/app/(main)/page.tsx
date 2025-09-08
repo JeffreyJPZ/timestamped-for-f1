@@ -52,7 +52,7 @@ export default function Home() {
                     </p>
                 </a>
                 <p className="text-sm">
-                    Version 0.1.1
+                    Version 0.1.2
                 </p>
                 <p className="text-sm">
                     Timestamped for F1 is unofficial and is not associated in any way with the Formula 1 companies.

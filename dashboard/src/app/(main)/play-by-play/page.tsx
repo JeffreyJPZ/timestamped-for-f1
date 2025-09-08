@@ -5,6 +5,7 @@ import { useGetMeetings } from "@/api/meetings/get-meetings";
 import { useGetSeasons } from "@/api/seasons/get-seasons";
 import { useGetSessions } from "@/api/sessions/get-sessions";
 import { EventCard } from "@/components/event-card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -98,20 +99,22 @@ export default function PlayByPlay() {
                 <SelectValue placeholder="Meeting" />
               </SelectTrigger>
               {(meetingsQuery.isSuccess && meetingsQuery.data?.length > 0) &&
-                <SelectContent>
-                  {meetingsQuery.data.map(
-                    (meeting) => {
-                      return (
-                        <SelectItem
-                        key={JSON.stringify(meeting.meeting_key)}
-                        value={JSON.stringify(meeting.meeting_key)}
-                        >
-                          {meeting.meeting_name}
-                        </SelectItem>
-                      );
-                    })
-                  }
-                </SelectContent>
+                  <SelectContent>
+                    <ScrollArea className="h-64 w-full">
+                      {meetingsQuery.data.map(
+                        (meeting) => {
+                          return (
+                            <SelectItem
+                            key={JSON.stringify(meeting.meeting_key)}
+                            value={JSON.stringify(meeting.meeting_key)}
+                            >
+                              {meeting.meeting_name}
+                            </SelectItem>
+                          );
+                        })
+                      }
+                    </ScrollArea>
+                  </SelectContent>
               }
             </Select>
             <Select onValueChange={(value) => setSelectedSessionKey(parseInt(value))}>

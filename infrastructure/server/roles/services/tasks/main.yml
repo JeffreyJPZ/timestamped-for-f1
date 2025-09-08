@@ -27,18 +27,20 @@
     state: present
   loop: "{{ timestamped_for_f1_env_vars | dict2items }}"
 
-- name: Ensure web server config directory exists
+- name: Ensure dashboard config directory exists
   become: yes
   ansible.builtin.file:
-    path: "{{ timestamped_for_f1_web_server_config_path | dirname }}"
+    path: "{{ timestamped_for_f1_dashboard_config_path | dirname }}"
     state: directory
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
     mode: "0755"
 
-- name: Copy over web server config
+- name: Copy over dashboard config
   become: yes
   ansible.builtin.template:
-    src: caddyfile.conf.j2
-    dest: "{{ timestamped_for_f1_web_server_config_path }}"
+    src: dashboard.env.j2
+    dest: "{{ timestamped_for_f1_dashboard_config_path }}"
     owner: "{{ server_user }}"
     group: "{{ server_user }}"
     mode: "0644"
@@ -48,6 +50,8 @@
   ansible.builtin.file:
     path: "{{ timestamped_for_f1_cache_config_path | dirname }}"
     state: directory
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
     mode: "0755"
 
 - name: Copy over cache config
@@ -55,6 +59,24 @@
   ansible.builtin.template:
     src: redis.conf.j2
     dest: "{{ timestamped_for_f1_cache_config_path }}"
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0644"
+
+- name: Ensure web server config directory exists
+  become: yes
+  ansible.builtin.file:
+    path: "{{ timestamped_for_f1_web_server_config_path | dirname }}"
+    state: directory
+    owner: "{{ server_user }}"
+    group: "{{ server_user }}"
+    mode: "0755"
+
+- name: Copy over web server config
+  become: yes
+  ansible.builtin.template:
+    src: caddyfile.conf.j2
+    dest: "{{ timestamped_for_f1_web_server_config_path }}"
     owner: "{{ server_user }}"
     group: "{{ server_user }}"
     mode: "0644"
