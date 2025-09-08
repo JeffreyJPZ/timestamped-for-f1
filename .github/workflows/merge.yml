@@ -16,7 +16,7 @@ on:
 
 jobs:
   build-and-push:
-    name: Build and push service images to container registry
+    name: Build and push images to container registry
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -41,7 +41,6 @@ jobs:
             namespace: jeffreyjpz/timestamped-for-f1
             parent-path: ./services
         include:
-          # Dashboard is in a different directory
           - service: dashboard
             namespace: jeffreyjpz/timestamped-for-f1
             parent-path: .

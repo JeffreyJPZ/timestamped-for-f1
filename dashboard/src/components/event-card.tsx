@@ -63,8 +63,8 @@ export function EventCard({ event }: EventCardProps) {
     // Maximum of one initiator
     const initiatorDriverRole = event.details?.driver_roles
     ? Object.entries(event.details?.driver_roles)
-      .find(([_, role]) => {
-        return role === "initiator";
+      .find((driver) => {
+        return driver[1] === "initiator"; // Get driver role
       })
     : null;
 
@@ -75,13 +75,13 @@ export function EventCard({ event }: EventCardProps) {
     // Multiple participants allowed
     const participantDriverRoles = event.details?.driver_roles
     ? Object.entries(event.details?.driver_roles)
-      .filter(([_, role]) => {
-        return role === "participant";
+      .filter((driver) => {
+        return driver[1] === "participant";
       })
     : null;
     
     const participantDriverNumbers = participantDriverRoles
-      ? participantDriverRoles.map(([driverNumber, _]) => driverNumber)
+      ? participantDriverRoles.map((driver) => driver[0]) // Get driver number
       : null;
     
     const participantDrivers = participantDriverNumbers
@@ -169,8 +169,8 @@ export function EventCard({ event }: EventCardProps) {
       <CardFooter className="flex flex-wrap gap-2">
         {event.details
           ? Object.entries(event.details)
-              .filter(([_, value]) => {
-                return value !== null;
+              .filter((details) => {
+                return details[1] !== null; // Filter out null values
               })
               .map(([key, value]) => {
                 return (

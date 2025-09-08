@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { meetings } from "@/types/meeting";
-import { season, seasons, type Seasons } from "@/types/season";
+import { type Seasons } from "@/types/season";
 import { type QueryConfig } from "@/lib/react-query";
 import { getQueryURL } from "@/lib/web-api";
 
@@ -26,8 +26,8 @@ async function getSeasons(): Promise<Seasons> {
     meetingsParseResult.data.forEach((meeting) => uniqueSeasons.add(meeting.year));
 
     const seasons: Seasons = [];
-    uniqueSeasons.entries().forEach(([season, _]) => {
-        seasons.push({year: season});
+    uniqueSeasons.entries().forEach((season) => {
+        seasons.push({year: season[0]}); // Both elements in the pair are the same
     });
 
     return seasons;
