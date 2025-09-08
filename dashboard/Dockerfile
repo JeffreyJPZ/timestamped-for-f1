@@ -56,6 +56,18 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
+# Unfortunately Next.js doesn't work well with runtime environment variables so we have to pass them in at build time
+# This is fine as they are not sensitive
+ARG TIMESTAMPED_FOR_F1_DASHBOARD_NODE_ENV
+ARG TIMESTAMPED_FOR_F1_DASHBOARD_HOST
+ARG TIMESTAMPED_FOR_F1_DASHBOARD_PORT
+ARG TIMESTAMPED_FOR_F1_DASHBOARD_WEB_API_BASE_URL
+
+ENV NODE_ENV=${TIMESTAMPED_FOR_F1_DASHBOARD_NODE_ENV}
+ENV HOST=${TIMESTAMPED_FOR_F1_DASHBOARD_HOST}
+ENV PORT=${TIMESTAMPED_FOR_F1_DASHBOARD_PORT}
+ENV TIMESTAMPED_FOR_F1_DASHBOARD_WEB_API_BASE_URL=${TIMESTAMPED_FOR_F1_DASHBOARD_WEB_API_BASE_URL}
+
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
 CMD ["node", "server.js"]

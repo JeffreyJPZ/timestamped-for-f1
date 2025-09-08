@@ -12,6 +12,7 @@ on:
 jobs:
   build-and-push:
     name: Build and push images to container registry
+    environment: production
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -75,6 +76,20 @@ jobs:
             org.opencontainers.image.title=${{ matrix.service }}
             org.opencontainers.image.description=${{ matrix.service }}
 
+      - name: Set required build args for the dashboard service, else set build args as an empty string
+        id: build_args
+        run: |
+          if [ "${{ matrix.service }}" = "dashboard" ]; then
+            echo "build_args<<EOF" >> $GITHUB_OUTPUT
+            echo "TIMESTAMPED_FOR_F1_DASHBOARD_NODE_ENV=${{ vars.TIMESTAMPED_FOR_F1_DASHBOARD_NODE_ENV }}" >> $GITHUB_OUTPUT
+            echo "TIMESTAMPED_FOR_F1_DASHBOARD_HOST=${{ vars.TIMESTAMPED_FOR_F1_DASHBOARD_HOST }}" >> $GITHUB_OUTPUT
+            echo "TIMESTAMPED_FOR_F1_DASHBOARD_PORT=${{ vars.TIMESTAMPED_FOR_F1_DASHBOARD_PORT }}" >> $GITHUB_OUTPUT
+            echo "TIMESTAMPED_FOR_F1_DASHBOARD_WEB_API_BASE_URL=${{ vars.TIMESTAMPED_FOR_F1_DASHBOARD_WEB_API_BASE_URL }}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "build_args=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -89,3 +104,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: ${{ steps.build_args.outputs.build_args }}

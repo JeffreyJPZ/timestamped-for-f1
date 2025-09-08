@@ -37,8 +37,6 @@ services:
         - openf1-historical-processing
         - web-api
         - web-server
-    volumes:
-      - ./dashboard/.env:/app/.env
 
   openf1-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-api:0

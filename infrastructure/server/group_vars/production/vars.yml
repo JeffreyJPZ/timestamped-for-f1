@@ -34,11 +34,6 @@ timestamped_for_f1_web_api_openf1_base_url: "{{ vault_timestamped_for_f1_web_api
 
 timestamped_for_f1_dashboard_port: "{{ vault_timestamped_for_f1_dashboard_port }}"
 
-# Dashboard variables except for port are mounted in an .env file separately
-timestamped_for_f1_dashboard_web_api_base_url: "https://{{ timestamped_for_f1_host }}/api/v1"
-timestamped_for_f1_dashboard_node_env: "production"
-timestamped_for_f1_dashboard_host: "{{ vault_timestamped_for_f1_dashboard_host }}"
-
 timestamped_for_f1_env_vars:
   TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_USERNAME: "{{ timestamped_for_f1_openf1_db_root_username }}"
   TIMESTAMPED_FOR_F1_OPENF1_DB_ROOT_PASSWORD: "{{ timestamped_for_f1_openf1_db_root_password }}"

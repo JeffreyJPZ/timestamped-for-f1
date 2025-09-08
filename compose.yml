@@ -36,6 +36,11 @@ services:
     build:
       context: ./dashboard
       dockerfile: Dockerfile
+      args:
+        TIMESTAMPED_FOR_F1_DASHBOARD_NODE_ENV: "${TIMESTAMPED_FOR_F1_DASHBOARD_NODE_ENV:-development}"
+        TIMESTAMPED_FOR_F1_DASHBOARD_HOST: "${TIMESTAMPED_FOR_F1_DASHBOARD_HOST:-0.0.0.0}"
+        TIMESTAMPED_FOR_F1_DASHBOARD_PORT: "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT:-3000}"
+        TIMESTAMPED_FOR_F1_DASHBOARD_WEB_API_BASE_URL: "${TIMESTAMPED_FOR_F1_DASHBOARD_WEB_API_BASE_URL:-http://localhost/api/v1}"
     expose:
       - "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT:-3000}"
     depends_on:
@@ -46,8 +51,6 @@ services:
       - openf1-historical-processing
       - web-api
       - web-server
-    volumes:
-      - ./dashboard/.env:/app/.env
 
   openf1-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-api:latest
