@@ -18,6 +18,7 @@
       
 # Docker
 - name: Update apt cache
+  become: yes
   ansible.builtin.apt:
     update_cache: yes
 
@@ -42,6 +43,7 @@
     state: present
 
 - name: Update apt cache
+  become: yes
   ansible.builtin.apt:
     update_cache: yes
 
