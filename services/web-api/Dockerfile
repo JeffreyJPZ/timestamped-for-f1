@@ -8,7 +8,7 @@ WORKDIR /app
 
 RUN mvn clean compile -DskipTests && mvn clean package -DskipTests
 
-ARG JAR_FILE=target/*.jar
+ARG JAR_FILE=/app/target/*.jar
 COPY ${JAR_FILE} timestamped-for-f1-web-api.jar
 
 # Copy jar file to production image
