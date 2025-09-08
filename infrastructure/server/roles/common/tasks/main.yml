@@ -1,4 +1,4 @@
-# Install necessary dependencies
+# Install base dependencies
 ---
 
 - name: Install aptitude
@@ -8,7 +8,6 @@
     state: latest
     update_cache: yes
 
-# Cron
 - name: Install cron
   become: yes
   ansible.builtin.apt:
@@ -37,6 +36,7 @@
     mode: "0644"
 
 - name: Add docker repository
+  become: yes
   ansible.builtin.apt_repository:
     repo: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
     filename: docker

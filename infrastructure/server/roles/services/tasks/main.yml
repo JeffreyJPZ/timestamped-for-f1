@@ -1,18 +1,18 @@
 # Installs configuration for services on a server and starts services
 ---
 
-- name: Create project root path
+- name: Ensure project root directory exists
   become: yes
   ansible.builtin.file:
-    path: "{{ timestamped_for_f1_root_path }}"
+    path: "{{ timestamped_for_f1_docker_compose_path | dirname }}"
     state: directory
     mode: "0755"
 
-- name: Copy over docker compose file
+- name: Copy over docker compose file to project root
   become: yes
   ansible.builtin.template:
     src: compose.yml.j2
-    dest: "{{ timestamped_for_f1_docker_compose_file_path }}"
+    dest: "{{ timestamped_for_f1_docker_compose_path }}"
     owner: "{{ server_user }}"
     group: "{{ server_user }}"
     mode: "0644"
@@ -27,6 +27,13 @@
     state: present
   loop: "{{ timestamped_for_f1_env_vars | dict2items }}"
 
+- name: Ensure web server config directory exists
+  become: yes
+  ansible.builtin.file:
+    path: "{{ timestamped_for_f1_web_server_config_path | dirname }}"
+    state: directory
+    mode: "0755"
+
 - name: Copy over web server config
   become: yes
   ansible.builtin.template:
@@ -35,6 +42,13 @@
     owner: "{{ server_user }}"
     group: "{{ server_user }}"
     mode: "0644"
+
+- name: Ensure cache config directory exists
+  become: yes
+  ansible.builtin.file:
+    path: "{{ timestamped_for_f1_cache_config_path | dirname }}"
+    state: directory
+    mode: "0755"
 
 - name: Copy over cache config
   become: yes
@@ -45,7 +59,8 @@
     group: "{{ server_user }}"
     mode: "0644"
   
-- name: Configure docker daemon to start on boot
+- name: Ensure docker daemon is running and enabled on boot
+  become: yes
   ansible.builtin.service:
     name: docker
     state: started
@@ -53,9 +68,10 @@
 
 - name: Start services
   become: yes
-  ansible.builtin.shell: |
-    "docker compose -f {{ timestamped_for_f1_docker_compose_file_path }} pull"
-    "docker compose -f {{ timestamped_for_f1_docker_compose_file_path }} up dashboard -d"
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - "docker compose -f {{ timestamped_for_f1_docker_compose_path }} pull"
+    - "docker compose -f {{ timestamped_for_f1_docker_compose_path }} up dashboard -d"
 
 - name: Schedule docker image updates
   ansible.builtin.cron:
@@ -63,7 +79,7 @@
     minute: "0"
     hour: "0"
     day: "*"
-    job: "docker compose -f {{ timestamped_for_f1_docker_compose_file_path }} pull && docker compose -f {{ timestamped_for_f1_docker_compose_file_path }} up dashboard -d --force-recreate"
+    job: "docker compose -f {{ timestamped_for_f1_docker_compose_path }} pull && docker compose -f {{ timestamped_for_f1_docker_compose_path }} up dashboard -d --force-recreate"
     state: present
 
 - name: Schedule docker cleanup job

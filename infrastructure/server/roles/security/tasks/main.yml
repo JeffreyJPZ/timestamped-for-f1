@@ -26,6 +26,7 @@
     policy: reject
 
 - name: Disable password and root login for SSH
+  become: yes
   ansible.builtin.lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
@@ -35,6 +36,23 @@
   loop:
     - { regexp: "^PasswordAuthentication", line: "PasswordAuthentication no" }
     - { regexp: "^PermitRootLogin", line: "PermitRootLogin no" }
+
+# Dependency for fail2ban
+- name: Install rsyslog
+  become: yes
+  ansible.builtin.apt:
+    name:
+      - rsyslog
+      - rsyslog-doc
+    state: latest
+    update_cache: yes
+
+- name: Ensure rsyslog is running and enabled on boot
+  become: yes
+  ansible.builtin.service:
+    name: rsyslog
+    state: started
+    enabled: yes
 
 - name: Install fail2ban
   become: yes
@@ -53,6 +71,7 @@
     mode: "0644"
 
 - name: Ensure fail2ban is running and enabled on boot
+  become: yes
   ansible.builtin.service:
     name: fail2ban
     state: started

@@ -3,11 +3,13 @@
 ---
 
 - name: Create admin user
+  become: yes
   ansible.builtin.user:
     name: "{{ admin_user }}"
     shell: /bin/bash
 
 - name: Ensure admin user can log in with their key
+  become: yes
   ansible.posix.authorized_key:
     user: "{{ admin_user }}"
     key: "{{ admin_user_ssh_public_key }}"
@@ -25,6 +27,7 @@
     validate: "visudo -cf %s"
 
 - name: Create server user
+  become: yes
   ansible.builtin.user:
     name: "{{ server_user }}"
     system: yes

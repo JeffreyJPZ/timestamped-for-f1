@@ -2,9 +2,6 @@ services:
   
   cache:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/cache:latest
-    build:
-        context: ./services/cache
-        dockerfile: Dockerfile
     restart: unless-stopped
     expose:
         - "${TIMESTAMPED_FOR_F1_CACHE_PORT:-6379}"
@@ -14,9 +11,6 @@ services:
 
   cache-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/cache-api:latest
-    build:
-        context: ./services/cache-api
-        dockerfile: Dockerfile
     restart: unless-stopped
     expose:
         - "${TIMESTAMPED_FOR_F1_CACHE_API_PORT:-9090}"
@@ -33,9 +27,6 @@ services:
   
   dashboard:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/dashboard:latest
-    build:
-        context: ./dashboard
-        dockerfile: Dockerfile
     expose:
         - "${TIMESTAMPED_FOR_F1_DASHBOARD_PORT:-3000}"
     depends_on:
@@ -54,9 +45,6 @@ services:
 
   openf1-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-api:latest
-    build:
-        context: ./services/openf1
-        dockerfile: Dockerfile
     expose:
         - "${TIMESTAMPED_FOR_F1_OPENF1_API_PORT:-8000}"
     depends_on:
@@ -68,9 +56,6 @@ services:
 
   openf1-db:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-db:latest
-    build:
-        context: ./services/openf1-db
-        dockerfile: Dockerfile
     restart: unless-stopped
     expose:
         - "${TIMESTAMPED_FOR_F1_OPENF1_DB_PORT:-27017}"
@@ -82,9 +67,6 @@ services:
 
   openf1-historical-processing:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/openf1-historical-processing:latest
-    build:
-        context: ./services/openf1
-        dockerfile: Dockerfile
     depends_on:
         - openf1-db
     environment:
@@ -94,9 +76,6 @@ services:
 
   web-api:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-api:latest
-    build:
-        context: ./services/web-api
-        dockerfile: Dockerfile
     restart: unless-stopped
     expose:
         - "${TIMESTAMPED_FOR_F1_WEB_API_PORT:-8080}"
@@ -113,9 +92,6 @@ services:
 
   web-server:
     image: ghcr.io/jeffreyjpz/timestamped-for-f1/web-server:latest
-    build:
-        context: ./services/web-server
-        dockerfile: Dockerfile
     restart: unless-stopped
     ports:
         - "80:80"
