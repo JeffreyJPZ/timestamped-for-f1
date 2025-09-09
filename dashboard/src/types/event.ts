@@ -64,7 +64,14 @@ export const tyreCompound = z
         "HARD",
         "INTERMEDIATE",
         "WET",
-        "UNKNOWN"
+        "UNKNOWN",
+        // Testing compounds
+        "TEST_SOFT",
+        "TEST_MEDIUM",
+        "TEST_HARD",
+        "TEST_INTERMEDIATE",
+        "TEST_WET",
+        "TEST_UNKNOWN"
     ]);
 
 const eventDetails = z
@@ -99,7 +106,7 @@ export const event = z
         category: eventCategory,
         cause: eventCause,
         date: z.iso.datetime({ offset: true }),
-        elapsed_time: z.string().regex(/^(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?$/),
+        elapsed_time: z.string().regex(/^(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?$/).catch("00:00:00"), // Handle elapsed times that underflow (events that are before session start)
         details: eventDetails.nullish(),
         meeting_key: z.number().int().nonnegative(),
         session_key: z.number().int().nonnegative()
