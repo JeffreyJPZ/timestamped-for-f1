@@ -106,7 +106,7 @@ export const event = z
         category: eventCategory,
         cause: eventCause,
         date: z.iso.datetime({ offset: true }),
-        elapsed_time: z.string().regex(/^(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?$/),
+        elapsed_time: z.string().regex(/^-?(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?$/),
         details: eventDetails.nullish(),
         meeting_key: z.number().int().nonnegative(),
         session_key: z.number().int().nonnegative()
